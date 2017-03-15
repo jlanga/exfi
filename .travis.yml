@@ -15,15 +15,15 @@ before_install:
   - conda install --yes abyss bedtools
 
 script:
-  - abyss-bloom build \
-    --kmer=27 \
-    --verbose \
-    --bloom-size=500M \
-    --threads=4 \
-    --levels=1 \
-    genome_k27_m500M_l1.bloom \
+  - abyss-bloom build
+    --kmer=27
+    --verbose
+    --bloom-size=500M
+    --threads=4
+    --levels=1
+    genome_k27_m500M_l1.bloom
     test/genome.fa.gz
-  - python3 exon_finder.py \
-    --input-transcriptome test/transcript.fa \
-    --input-bloom genome_k27_m500M_l1.bloom \
+  - python3 exon_finder.py
+    --input-transcriptome test/transcript.fa
+    --input-bloom genome_k27_m500M_l1.bloom
     --kmer 27

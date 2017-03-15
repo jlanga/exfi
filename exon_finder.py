@@ -83,13 +83,13 @@ def run_pipeline(transcriptome_fn, kmer, bloom_filter_fn):
     
     # Throw away 
     for line in p1.stderr.readlines():
-        stderr.write(line.decode())
+        stderr.write("[abyss-kmers]\t" + line.decode())
     for line in p2.stderr.readlines():
-        stderr.write(line.decode())
+        stderr.write("[bedtools merge]\t" + line.decode())
     for line in p3.stderr.readlines():
-        stderr.write(line.decode())
+        stderr.write("[awk]\t" + line.decode())
     for line in p4.stderr.readlines():
-        stderr.write(line.decode())
+        stderr.write("[bedtools getfasta]\t" + line.decode())
     
     # Reformat output
     ## Dict with the exons per transcript seen

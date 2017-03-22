@@ -10,6 +10,7 @@ Get exons from a transcriptome and raw genomic reads using abyss-bloom and bedto
 abyss>=2.0.0
 bedtools (tested on 2.0)
 python3
+biopython
 ```
 We recomend installing these packages with `conda` and `bioconda`
 

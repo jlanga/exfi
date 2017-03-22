@@ -27,3 +27,13 @@ script:
     --input-transcriptome test/transcript.fa
     --input-bloom genome_k27_m500M_l1.bloom
     --kmer 27
+  - python3 exon_finder.py 
+    --input-transcriptome test/transcript_mutated.fa
+    --input-bloom genome_k27_m500M_l1.bloom
+    --kmer 27
+    > treseq_mutated.tsv
+  - python3 fill_indels.py 
+    -t treseq_mutated.tsv 
+    -i genome_k27_m500M_l1.bloom 
+    -k 27 
+    -o treseq_corrected.tsv

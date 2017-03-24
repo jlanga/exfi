@@ -26,7 +26,8 @@ def split_by_n(iterable_seqs):
                     IUPAC.IUPACAmbiguousDNA
                 ),
                 id = record_id + "_s" + str(subrecord_id), 
-                name = ""
+                name = "",
+                description = " "
             )
 
             yield subrecord

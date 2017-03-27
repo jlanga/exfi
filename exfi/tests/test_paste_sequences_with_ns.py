@@ -23,7 +23,6 @@ class TestPasteSequencesWithNS(TestCase):
         iterator = read_fasta(self.monoseq_file)
         actual = [x for x in paste_sequences_with_ns(iterator)]
         expected = [x for x in read_fasta(self.monoseq_file)]
-        print(actual)
         self.assertEqual(len(actual), len(expected))
 
     def test_paste_one_block(self):

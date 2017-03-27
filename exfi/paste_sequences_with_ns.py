@@ -9,20 +9,14 @@ def paste_sequences_with_ns(iterable_records, number_of_ns=100):
     Join sequences from iterable_records with Ns
     """
 
-    # store and process the transcripts into a dict record.id - seq
-    transcript_to_seq = {}
+    current_record = None
 
     for record in iterable_records:
 
         record.id = record.id.rsplit("_e")[0]
-         
-        if record.id not in transcript_to_seq:
-            transcript_to_seq[record.id] = str(record.seq)
+
+        if current_record and record.id == current_record.id:
+            current_record.seq = current_record.seq + "N" * number_of_ns + str(record.seq)
         else:
-            transcript_to_seq[record.id] += "N" * number_of_ns + str(record.seq)
-    
-    for record_name, sequence in transcript_to_seq.items():
-        yield SeqRecord(
-            id = record_name,
-            seq = Seq(sequence)
-        )
+            yield current_record
+            current_record = record

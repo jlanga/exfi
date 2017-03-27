@@ -43,7 +43,7 @@ parser.add_argument(
     '--output-fasta',
     '-o',
     type = str,
-    required = False,
+    required = True,
     help = 'Path to output fasta file',
     dest = "output_fasta",
     metavar = "FILE"

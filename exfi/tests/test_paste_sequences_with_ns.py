@@ -38,6 +38,3 @@ class TestPasteSequencesWithNS(TestCase):
         actual = [x for x in paste_sequences_with_ns(iterator)]
         expected = 2
         self.assertEqual(len(actual), expected)
-
-
-

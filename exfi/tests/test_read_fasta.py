@@ -19,7 +19,7 @@ class TestReadFasta(TestCase):
     def test_one_sequence(self):
         """Read one sequence"""
         actual = [record for record in read_fasta(self.one_seq)][0]
-        expected_id = "ENSDARE00000830915"
+        expected_id = "ENSDARE00000830915:12-19"
         expected_seq = "GTAAGCCGCGGCGGTGTGTGTGTGTGTGTGTGTTCTCCGTCATCTGTGTTCTGCTGAATG"
         self.assertEqual(actual.id, expected_id)
         self.assertEqual(str(actual.seq), expected_seq)

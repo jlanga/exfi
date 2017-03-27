@@ -7,7 +7,7 @@ from Bio.Alphabet import IUPAC
 def split_by_n(iterable_seqs):
     """(generator)-> generator 
     Split a record by the Ns it contains into multiple Seqs
-    Each new seq.id  is seq.id::subNUMBER
+    Each new seq.id  is seq.id + _s + subNUMBER
     """
     # dict to know
     contig2sequence = {}

@@ -1,39 +1,44 @@
 dist: trusty
 
-language: bash
+language: python
 
-before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y build-essential curl git
-  - curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
-  - bash Miniconda3-latest-Linux-x86_64.sh -b
-  - export PATH="/home/travis/miniconda3/bin:$PATH"
-  - conda config --add channels conda-forge
-  - conda config --add channels defaults
-  - conda config --add channels r
-  - conda config --add channels bioconda
-  - conda install --yes abyss bedtools biopython
+python:
+  - "3.2"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.5-dev" # 3.5 development branch
+  - "3.6"
+  - "3.6-dev" # 3.6 development branch
+  - "3.7-dev" # 3.7 development branch
+  - "nightly" # currently points to 3.7-dev
+# command to install dependencies
+install: "pip install -e ."
+# command to run tests
+script: python3 setup.py test
 
 script:
   - abyss-bloom build
-    --kmer=27
+    --kmer 27
+    --threads 4
+    --levels 1
+    --bloom-size 500M
     --verbose
-    --bloom-size=500M
-    --threads=4
-    --levels=1
     genome_k27_m500M_l1.bloom
     test/genome.fa.gz
-  - python3 exon_finder.py
-    --input-transcriptome test/transcript.fa
+  - find_exons
+    --input-fasta test/transcript.fa
     --input-bloom genome_k27_m500M_l1.bloom
     --kmer 27
-  - python3 exon_finder.py 
-    --input-transcriptome test/transcript_mutated.fa
-    --input-bloom genome_k27_m500M_l1.bloom
-    --kmer 27
-    > treseq_mutated.tsv
-  - python3 fill_indels.py 
-    -t treseq_mutated.tsv 
-    -i genome_k27_m500M_l1.bloom 
-    -k 27 
-    -o treseq_corrected.tsv
+    --output-fasta test_exons_raw.fa
+  - filter_exons
+    --input-fasta test_exons_raw.fa
+    --minimum-length 27
+    --trim-left 1
+    --trim-right 1
+    --output-fasta test_exons_filtered.fa
+  - paste_exons
+    --input-fasta test_exons_filtered.fa
+    --gap-size 100
+    --output-fasta test_pasted.fa
+

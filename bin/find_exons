@@ -4,7 +4,7 @@ import argparse
 
 parser = argparse.ArgumentParser(
     usage = 'find_exons -t transcriptome.fa -i bloom.filter -k 27 -o exons.fa',
-    description='Fix small indels within introns with help of abyss-sealer',
+    description='Find exons in a transcriptome with WGS reads and a Bloom filter',
     epilog = 'Jorge Langa. Send issues and pull requests to github.com/jlanga/'
         'exon_finder'
 )

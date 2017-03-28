@@ -13,11 +13,21 @@ python:
   - "3.7-dev" # 3.7 development branch
   - "nightly" # currently points to 3.7-dev
 # command to install dependencies
+-before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y build-essential curl git
+  - curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+  - bash Miniconda3-latest-Linux-x86_64.sh -b
+  - export PATH="/home/travis/miniconda3/bin:$PATH"
+  - conda config --add channels conda-forge
+  - conda config --add channels defaults
+  - conda config --add channels r
+  - conda config --add channels bioconda
+  - conda install --yes abyss bedtools biopython
 install: "pip install -e ."
 # command to run tests
-script: python3 setup.py test
-
 script:
+  - python3 setup.py test
   - abyss-bloom build
     --kmer 27
     --threads 4

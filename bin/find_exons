@@ -64,6 +64,7 @@ def run_pipeline(transcriptome_fn, kmer, bloom_filter_fn, output_fasta):
     from exfi.read_fasta_from_bedtools_getfasta import read_fasta_from_bedtools_getfasta
     from exfi.write_fasta import write_fasta
     from exfi.read_fasta import read_fasta
+    from exfi.tab_to_seqrecord import tab_to_seqrecord
 
     abyss_bloom_kmers = [  # Run abyss-bloom kmers
     "abyss-bloom", "kmers",
@@ -83,7 +84,7 @@ def run_pipeline(transcriptome_fn, kmer, bloom_filter_fn, output_fasta):
         "bedtools", "getfasta",
             "-fi", transcriptome_fn,
             "-bed", "-",
-            #"-tab"
+            "-tab"
     ]
     
     # Run the pipeline
@@ -106,15 +107,13 @@ def run_pipeline(transcriptome_fn, kmer, bloom_filter_fn, output_fasta):
     
     process_abyss_bloom_kmers.stdout.close()
     process_bedtools_merge.stdout.close()
-    output = process_bedtools_getfasta.communicate()[0]
+    pipeline_output = process_bedtools_getfasta.communicate()[0].decode().split("\n")
     process_abyss_bloom_kmers.wait()
     process_bedtools_merge.wait()
 
-    with open(output_fasta, "w") as f_out:
-        for line in output.decode().split("\n"):
-            if line.startswith(">"):
-                line = line.rsplit(":")[0]
-            f_out.write(line + "\n")
+    seqrecords = tab_to_seqrecord(pipeline_output)
+    seqrecords_formatted = read_fasta_from_bedtools_getfasta(seqrecords)
+    write_fasta(seqrecords_formatted, output_fasta)
 
 
 if __name__ == "__main__":

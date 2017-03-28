@@ -8,15 +8,24 @@ def paste_sequences_with_ns(iterable_records, number_of_ns=100):
     """(iterable, int) -> generator
     Join sequences from iterable_records with Ns
     """
+    ns = "N" * number_of_ns
 
-    current_record = None
+    current_id = None
+    current_seq = []
 
     for record in iterable_records:
 
         record.id = record.id.rsplit("_e")[0]
 
-        if current_record and record.id == current_record.id:
-            current_record.seq = current_record.seq + "N" * number_of_ns + str(record.seq)
-        else:
-            yield current_record
-            current_record = record
+        if current_id and current_id != record.id:
+            yield SeqRecord(id = current_id, seq = Seq(ns.join(current_seq)), description = "")
+            current_id = None
+            current_seq = []
+        
+        current_id = record.id
+        current_seq.append(str(record.seq))
+
+    if current_id:
+        yield SeqRecord(id = current_id, seq = Seq(ns.join(current_seq)), description = "")
+
+

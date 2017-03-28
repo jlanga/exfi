@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+
+import argparse
+
+parser = argparse.ArgumentParser(
+    usage = 'paste_exons -i exons.fa -g 100 -o exons_pasted.fa',
+    description='Paste exons into a single record. Fill the gap between them '
+        'with Ns',
+    epilog = 'Jorge Langa. Send issues and pull requests to github.com/jlanga/'
+        'exon_finder'
+)
+
+parser.add_argument(
+    '--input-fasta',
+    '-i',
+    type = str,
+    required = True,
+    help = 'Input exons in FASTA format',
+    dest = 'input_fasta',
+    metavar = 'FILE'
+)
+
+
+parser.add_argument(
+    '--gap-size',
+    '-g',
+    type = int,
+    required = False,
+    default = 100,
+    help = 'Number of Ns to put between exons',
+    dest = 'gap_size',
+    metavar = 'INT'
+)
+
+parser.add_argument(
+    '--output-fasta',
+    '-o',
+    type = str,
+    required = True,
+    help = 'Output fasta',
+    dest = "output_fasta",
+    metavar = "FILE"
+)
+
+args = parser.parse_args()
+
+if __name__ == '__main__':
+
+    args = vars(parser.parse_args())
+    input_fasta = args["input_fasta"]
+    gap_size = args["gap_size"]
+    output_fasta = args["output_fasta"]
+
+
+    from exfi.read_fasta import read_fasta
+    from exfi.paste_sequences_with_ns import paste_sequences_with_ns
+    from exfi.write_fasta import write_fasta
+
+    
+
+    records = list(read_fasta(input_fasta))
+    #[print(record) for record in records]
+    records_pasted = list(paste_sequences_with_ns(records, number_of_ns= gap_size))
+    #[print(record) for record in records_pasted]
+    write_fasta(records_pasted, output_fasta)

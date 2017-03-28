@@ -17,6 +17,8 @@ setup(
       },
     scripts = [
         "bin/find_exons",
+        "bin/filter_exons",
+        "bin/paste_exons",
     ],
     include_package_data=True,
     zip_safe=False

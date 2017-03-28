@@ -19,6 +19,7 @@ setup(
         "bin/find_exons",
         "bin/filter_exons",
         "bin/paste_exons",
+        "bin/fill_microindels"
     ],
     include_package_data=True,
     zip_safe=False

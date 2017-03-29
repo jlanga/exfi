@@ -51,15 +51,19 @@ if __name__ == '__main__':
     gap_size = args["gap_size"]
     output_fasta = args["output_fasta"]
 
+    # Check inputs
+    from os.path import isfile
+    assert isfile(input_fasta), "ERROR!: Input fasta not found"
+    assert gap_size > 0, "ERROR!: gap_size is not a positive integer"
+    
 
     from exfi.read_fasta import read_fasta
     from exfi.paste_sequences_with_ns import paste_sequences_with_ns
     from exfi.write_fasta import write_fasta
 
-    
-
-    records = list(read_fasta(input_fasta))
+    # Read
+    records = read_fasta(input_fasta)
     #[print(record) for record in records]
-    records_pasted = list(paste_sequences_with_ns(records, number_of_ns= gap_size))
+    records_pasted = paste_sequences_with_ns(records, number_of_ns= gap_size)
     #[print(record) for record in records_pasted]
     write_fasta(records_pasted, output_fasta)

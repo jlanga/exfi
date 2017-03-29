@@ -75,6 +75,13 @@ if __name__ == '__main__':
     trim_right = args["trim_right"]
     output_fasta = args["output_fasta"]
 
+    # Check input
+    from os.path import isfile
+    assert isfile(input_fasta), "ERROR!: Input fasta not found"
+    assert minimum >= 0, "ERROR!: Minimum length is not >= 0"
+    assert trim_left >= 0, "ERROR!: trim-left is not >=0"
+    assert trim_right >= 0, "ERROR!: trim-right is not >=0"
+
     from exfi.read_fasta import read_fasta
     from exfi.trim_sequence import trim_sequence
     from exfi.filter_by_length import filter_by_length

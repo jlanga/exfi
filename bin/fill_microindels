@@ -108,6 +108,15 @@ if __name__ == "__main__":
     max_gap_size = args["max_gap_size"]
     output_fasta = args["output_fasta"]
 
+    # Check files exist
+    from os.path import isfile 
+    assert isfile(input_fasta), "ERROR!: Input fasta not found"
+    assert isfile(bloom_filter), "ERROR!: bloom filter not found"
+
+    # Check integers
+    assert kmer > 0 , "ERROR!: kmer size is not positive"
+    assert max_gap_size > 0, "ERROR!: max_gap_size is not positiveS"
+
     # Prepare temporary files
     from tempfile import NamedTemporaryFile
     prefix = NamedTemporaryFile()

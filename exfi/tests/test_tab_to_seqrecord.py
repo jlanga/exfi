@@ -35,6 +35,15 @@ class TestTabToSeqRecord(TestCase):
             SeqRecord(id="tr1", description= "tr1:15-20", seq= Seq("ACACAGTCAGCTAGTCGATCGATCCATCGTAGT")),
             SeqRecord(id="tr2", description= "tr2:18-25", seq= Seq("ACACAGTCAGCTAGTCATCG")),
         ]
-        self.assertEqual([x.id for x in actual],   [x.id for x in expected])
-        self.assertEqual([x.description for x in actual], [x.description for x in expected])
-        self.assertEqual([x.seq for x in actual],  [x.seq for x in expected])
+        self.assertEqual(
+            [x.id for x in actual],
+            [x.id for x in expected]
+        )
+        self.assertEqual(
+            [x.description for x in actual],
+            [x.description for x in expected]
+        )
+        self.assertEqual(
+            [x.seq for x in actual], 
+            [x.seq for x in expected]
+        )

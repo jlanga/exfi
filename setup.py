@@ -7,6 +7,7 @@ setup(
     packages=['exfi'],
     license='MIT',
     install_requires=[
+        'numpy',
         'Biopython'
     ],
     long_description=open('README.md').read(),

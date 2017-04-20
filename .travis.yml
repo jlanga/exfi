@@ -34,20 +34,25 @@ script:
     --bloom-size 500M
     --verbose
     genome_k27_m500M_l1.bloom
-    test/genome.fa.gz
+    data/genome.fa.gz
   - find_exons
-    --input-fasta test/transcript.fa
+    --input-fasta data/transcript.fa
     --input-bloom genome_k27_m500M_l1.bloom
     --kmer 27
     --output-fasta test_exons_raw.fa
-  - filter_exons
+  - filter_exons_by_length
     --input-fasta test_exons_raw.fa
     --minimum-length 27
     --trim-left 1
     --trim-right 1
-    --output-fasta test_exons_filtered.fa
+    --output-fasta test_exons_filtered_by_length.fa
+  - filter_exons_by_extensibility
+    --input-fasta test_exons_raw.fa
+    --input-bloom genome_k27_m500M_l1.bloom
+    --kmer 27
+    --output-fasta test_exons_filtered_by_extensiblity.fa
   - paste_exons
-    --input-fasta test_exons_filtered.fa
+    --input-fasta test_exons_filteter_by_extensibility.fa
     --gap-size 100
     --output-fasta test_pasted.fa
 

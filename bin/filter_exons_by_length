@@ -3,7 +3,7 @@
 import argparse
 
 parser = argparse.ArgumentParser(
-    usage = 'filter_exons -i exons.fa -m 27 -trim_left 1 -trim_right 1 -o filtered_exons.fa',
+    usage = 'filter_exons -i exons.fa -m 27 -l 1 -r 1 -o filtered_exons.fa',
     description='Trim and filter by length sequences',
     epilog = 'Jorge Langa. Send issues and pull requests to github.com/jlanga/'
         'exon_finder'

@@ -18,7 +18,8 @@ setup(
       },
     scripts = [
         "bin/find_exons",
-        "bin/filter_exons",
+        "bin/filter_exons_by_length",
+        "bin/filter_exons_by_extensibility",
         "bin/paste_exons",
         "bin/fill_microindels"
     ],

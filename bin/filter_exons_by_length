@@ -86,7 +86,7 @@ if __name__ == '__main__':
     from exfi.trim_sequence import trim_sequence
     from exfi.filter_by_length import filter_by_length
 
-    records = SeqIO.read(handle= input_fasta, format= "fasta")
+    records = SeqIO.parse(handle= input_fasta, format= "fasta")
     trimmed = trim_sequence(
         records,
         bases_to_the_left= trim_left,

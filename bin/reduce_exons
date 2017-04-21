@@ -46,10 +46,9 @@ if __name__ == "__main__":
     assert isfile(input_fasta), "ERROR!: input_fasta not found"
 
     # Process
-    from exfi.read_fasta import read_fasta
+    from Bio import SeqIO
     from exfi.reduce_exons import reduce_exons
-    from exfi.write_fasta import write_fasta
     
-    input_records = read_fasta(input_fasta)
+    input_records = SeqIO.read(handle= input_fasta, format= "fasta")
     exons = reduce_exons(input_records)
-    write_fasta(exons, output_fasta)
+    SeqIO.write(sequences= exons, handle= output_fasta, format= "fasta")

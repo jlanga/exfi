@@ -82,17 +82,19 @@ if __name__ == '__main__':
     assert trim_left >= 0, "ERROR!: trim-left is not >=0"
     assert trim_right >= 0, "ERROR!: trim-right is not >=0"
 
-    from exfi.read_fasta import read_fasta
+    from Bio import SeqIO
     from exfi.trim_sequence import trim_sequence
     from exfi.filter_by_length import filter_by_length
-    from exfi.write_fasta import write_fasta
 
-    records = read_fasta(input_fasta)
+    records = SeqIO.read(handle= input_fasta, format= "fasta")
     trimmed = trim_sequence(
         records,
         bases_to_the_left= trim_left,
         bases_to_the_right= trim_right
     )
     filtered = filter_by_length(trimmed, minimum)
-    write_fasta(filtered, output_fasta)
-
+    SeqIO.write(
+        sequences= filtered,
+        handle= output_fasta,
+        format= "fasta"
+    )

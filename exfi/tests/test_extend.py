@@ -3,7 +3,7 @@
 from unittest import TestCase
 
 from exfi.extend import extend_left, extend_right
-from exfi.read_fasta import read_fasta
+from Bio import SeqIO
 
 class TestExtendLeft(TestCase):
 
@@ -16,7 +16,10 @@ class TestExtendLeft(TestCase):
 
     def test_extend_left_one(self):
         """Process just one sequence"""
-        records = read_fasta("exfi/tests/files/one_sequence.fa")
+        records = SeqIO.parse(
+            handle = "exfi/tests/files/one_sequence.fa",
+            format = "fasta"
+        )
         actual = list(extend_left(records, 27))
         expected_ids = [
             "ENSDARE00000830915:12-19l" + letter for letter in "ACGT"
@@ -29,7 +32,10 @@ class TestExtendLeft(TestCase):
 
     def test_extend_left_multiple(self):
         """Process multiple sequences"""
-        records = read_fasta("exfi/tests/files/four_sequences.fa")
+        records = SeqIO.parse(
+            handle = "exfi/tests/files/four_sequences.fa",
+            format = "fasta"
+        )
         actual = list(extend_left(records, 27))
 
         expected_ids = \
@@ -65,7 +71,10 @@ class TestExtendRight(TestCase):
 
     def test_extend_right_one(self):
         """Process just one sequence"""
-        records = read_fasta("exfi/tests/files/one_sequence.fa")
+        records = SeqIO.parse(
+            handle = "exfi/tests/files/one_sequence.fa",
+            format = "fasta"
+        )
         actual = list(extend_right(records, 27))
         expected_ids = [
             "ENSDARE00000830915:12-19r" + letter for letter in "ACGT"
@@ -80,7 +89,10 @@ class TestExtendRight(TestCase):
 
     def test_extend_right_multiple(self):
         """Process multiple sequences"""
-        records = read_fasta("exfi/tests/files/four_sequences.fa")
+        records = SeqIO.parse(
+            handle= "exfi/tests/files/four_sequences.fa",
+            format= "fasta"
+        )
         actual = list(extend_right(records, 27))
         expected_ids = \
             ["tr1_e1r" + letter for letter in "ACGT"] + \

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 from unittest import TestCase
 
-from exfi.read_fasta import read_fasta
 from exfi.filter_by_length import filter_by_length
+from Bio import SeqIO
 
 class TestFilterByLength(TestCase):
     """Test the filter_by_length function"""
@@ -12,35 +12,46 @@ class TestFilterByLength(TestCase):
 
     def test_empty_sequence(self):
         """Test an empty sequence"""
-        actual = [filter_by_length(record, 20) for record in read_fasta("/dev/null")]
+        actual = [filter_by_length(record, 20) for record in list(SeqIO.parse(handle= "/dev/null", format="fasta"))]
         expected = []
         self.assertEqual(actual, expected)
 
     def test_single_short_sequence(self):
         """Test a short sequence"""
-        records = read_fasta(self.monoseq_file)
+        records = SeqIO.parse(
+            handle= self.monoseq_file,
+            format= "fasta"
+        )
         actual = list(filter_by_length(records, 100))
-        print(actual)
         expected = []
         self.assertEqual(actual, expected)
 
     def test_single_long_sequence(self):
         """Test a long sequence"""
-        records = read_fasta(self.monoseq_file)
+        records = list(SeqIO.parse(
+            handle= self.monoseq_file,
+            format= "fasta"
+        ))
         actual = list(filter_by_length(records, 10))
-        expected = list(read_fasta(self.monoseq_file))
+        expected = records
         self.assertEqual(actual[0].id, expected[0].id)
         self.assertEqual(actual[0].seq, expected[0].seq)
 
     def test_two_sequences(self):
         """Test a file containing two sequences"""
-        records = list(read_fasta(self.biseq_file))
+        records = list(SeqIO.parse(
+            handle= self.biseq_file,
+            format= "fasta"
+        ))
         actual = list(filter_by_length(records, 10))
         expected = records
         self.assertEqual(len(actual), len(expected))
 
     def test_multiple_sequences(self):
         """Test a fasta with multiple sequences"""
-        records = list(read_fasta(self.multiseq_file))
+        records = list(SeqIO.parse(
+            handle= self.multiseq_file,
+            format= "fasta"
+        ))
         actual = list(filter_by_length(records, 10))
         self.assertEqual(len(actual), 2)

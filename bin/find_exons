@@ -62,8 +62,7 @@ def run_pipeline(transcriptome_fn, kmer, bloom_filter_fn, output_fasta):
     from subprocess import Popen, PIPE
     from sys import stdin, stdout, stderr
     from exfi.read_fasta_from_bedtools_getfasta import read_fasta_from_bedtools_getfasta
-    from exfi.write_fasta import write_fasta
-    from exfi.read_fasta import read_fasta
+    from Bio import SeqIO
     from exfi.tab_to_seqrecord import tab_to_seqrecord
     from exfi.reduce_exons import reduce_exons
 
@@ -120,7 +119,11 @@ def run_pipeline(transcriptome_fn, kmer, bloom_filter_fn, output_fasta):
     seqrecords = tab_to_seqrecord(pipeline_output)
     seqrecords_formatted = read_fasta_from_bedtools_getfasta(seqrecords)
     exons = reduce_exons(seqrecords_formatted)
-    write_fasta(exons, output_fasta)
+    SeqIO.write(
+        sequences= exons,
+        handle= output_fasta,
+        format= "fasta"
+    )
 
 
 if __name__ == "__main__":

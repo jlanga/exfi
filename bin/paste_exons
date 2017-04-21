@@ -57,13 +57,12 @@ if __name__ == '__main__':
     assert gap_size > 0, "ERROR!: gap_size is not a positive integer"
     
 
-    from exfi.read_fasta import read_fasta
+    from Bio import SeqIO
     from exfi.paste_sequences_with_ns import paste_sequences_with_ns
-    from exfi.write_fasta import write_fasta
 
     # Read
-    records = read_fasta(input_fasta)
+    records = SeqIO.parse(handle= input_fasta, format= "fasta")
     #[print(record) for record in records]
     records_pasted = paste_sequences_with_ns(records, number_of_ns= gap_size)
     #[print(record) for record in records_pasted]
-    write_fasta(records_pasted, output_fasta)
+    SeqIO.write(sequences= records_pasted, handle= output_fasta, format= "fasta")

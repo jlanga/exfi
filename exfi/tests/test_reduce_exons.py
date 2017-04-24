@@ -50,3 +50,26 @@ class TestReduceExons(TestCase):
             [record.id for record in actual],
             [record.id for record in expected]
         )
+
+    def test_different_exons(self):
+        """Read two different exons"""
+        records = list(SeqIO.parse(handle= "exfi/tests/files/two_sequences.fa", format= "fasta"))
+        actual = list(reduce_exons(records))
+        expected = [
+            SeqRecord(
+                id = "EXON00000000001",
+                seq = Seq("GTAAGCCGCGGCGGTGTGTGNNNNNNNNNNNCCGTCATCTGTGTTCTGCTGAATG")
+            ),
+            SeqRecord(
+                id = "EXON00000000002",
+                seq = Seq("GTACAATG")
+            )
+        ]
+        self.assertEqual(
+            [record.id for record in actual],
+            [record.id for record in expected]
+        )
+        self.assertEqual(
+            [record.id for record in actual],
+            [record.id for record in expected]
+        )

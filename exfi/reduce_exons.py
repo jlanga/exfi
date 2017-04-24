@@ -13,7 +13,7 @@ def reduce_exons(iterable_of_seqrecords):
     # Make an association between the exon sequence and info from the transcriptome
     # keys are sequences (as str) and values are 
     # [new_exon_id, old_exon1_id, ..., old_exonN_id]
-    seq_to_exon = dict()
+    seq_to_exon = dict()  # sequence : [exons_ids with such sequence]
 
     for record in iterable_of_seqrecords:
 

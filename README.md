@@ -1,6 +1,6 @@
-[![Build Status](https://travis-ci.org/jlanga/exon_finder.svg?branch=master)](https://travis-ci.org/jlanga/exon_finder)
+[![Build Status](https://travis-ci.org/jlanga/exfi.svg?branch=master)](https://travis-ci.org/jlanga/exfi)
 
-# exon_finder
+# exfi
 Get exons from a transcriptome and raw genomic reads using abyss-bloom and bedtools
 
 ## Requirements

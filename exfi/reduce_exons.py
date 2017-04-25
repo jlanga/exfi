@@ -7,10 +7,11 @@ def reduce_exons(iterable_of_seqrecords):
     and storing graph info into the description header
     """
 
+    # Imports
     from Bio.SeqRecord import SeqRecord
     from Bio.Seq import Seq
 
-    # Make an association between the exon sequence and info from the transcriptome
+    # 1. Make an association between the exon sequence and info from the transcriptome
     # keys are sequences (as str) and values are 
     # [new_exon_id, old_exon1_id, ..., old_exonN_id]
     seq_to_exon = dict()  # sequence : [exons_ids with such sequence]
@@ -26,9 +27,9 @@ def reduce_exons(iterable_of_seqrecords):
             seq_to_exon[sequence] = [new_exon_id]
 
         # Just add the other info
-        seq_to_exon[sequence].append(record.id)
+        seq_to_exon[sequence].append(record.description)
 
-    # revert the dictionary and return sequences
+    # 2. revert the dictionary and return sequences
     # Dict has the structure exon_id : seqrecord
     
     exonid_to_seqrecord = {}

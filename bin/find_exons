@@ -51,81 +51,6 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-
-def run_pipeline(transcriptome_fn, kmer, bloom_filter_fn, output_fasta):
-    """(str, int, str) -> str
-    Run the find exons pipeline:
-        - abyss-bloom kmers: Test all kmers in the transcriptome
-        - bedtools merge: Check overlap and merge
-        - bedtools getfasta: convert bed to fasta
-    """
-    from subprocess import Popen, PIPE
-    from sys import stdin, stdout, stderr
-    from exfi.read_fasta_from_bedtools_getfasta import read_fasta_from_bedtools_getfasta
-    from Bio import SeqIO
-    from exfi.tab_to_seqrecord import tab_to_seqrecord
-    from exfi.reduce_exons import reduce_exons
-
-    abyss_bloom_kmers = [  # Run abyss-bloom kmers
-    "abyss-bloom", "kmers",
-        "--kmer", str(kmer),
-        "--verbose",
-        "--bed",
-        bloom_filter_fn,
-        transcriptome_fn
-    ]   
-
-    bedtools_merge = [  # Merge overlapping kmers
-    "bedtools", "merge",
-        "-d", str(- kmer + 2)
-    ]
-
-    bedtools_getfasta = [  # Get transcriptid:coordinates TAB sequence
-        "bedtools", "getfasta",
-            "-fi", transcriptome_fn,
-            "-bed", "-",
-            "-tab"
-    ]
-    
-    # Run the pipeline
-    # Get all kmers from the transcriptome that are in the genome
-    process_abyss_bloom_kmers = Popen(
-        abyss_bloom_kmers,
-        stdout= PIPE,
-    )
-    
-    # Merge them
-    process_bedtools_merge = Popen(
-        bedtools_merge,
-        stdin= process_abyss_bloom_kmers.stdout,
-        stdout= PIPE
-    )
-
-    # Build a fasta
-    process_bedtools_getfasta = Popen(
-        bedtools_getfasta,
-        stdin= process_bedtools_merge.stdout,
-        stdout= PIPE,
-    )
-    
-    # Manage all processes properly    
-    process_abyss_bloom_kmers.stdout.close()
-    process_bedtools_merge.stdout.close()
-    pipeline_output = process_bedtools_getfasta.communicate()[0].decode().split("\n")
-    process_abyss_bloom_kmers.wait()
-    process_bedtools_merge.wait()
-
-    # Process the results from the pipes
-    seqrecords = tab_to_seqrecord(pipeline_output)
-    seqrecords_formatted = read_fasta_from_bedtools_getfasta(seqrecords)
-    exons = reduce_exons(seqrecords_formatted)
-    SeqIO.write(
-        sequences= exons,
-        handle= output_fasta,
-        format= "fasta"
-    )
-
-
 if __name__ == "__main__":
     
     import sys
@@ -142,4 +67,6 @@ if __name__ == "__main__":
     assert isfile(bloom_filter), "ERROR!: Bloom filter not found"
     assert kmer > 0, "ERROR!: kmer is not a positive integer"
 
-    run_pipeline(transcriptome, kmer, bloom_filter, output_fasta)
+    # Run find_exons
+    from exfi.find_exons import find_exons
+    find_exons(transcriptome, kmer, bloom_filter, output_fasta)

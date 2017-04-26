@@ -51,8 +51,3 @@ script:
     --input-bloom genome_k27_m500M_l1.bloom
     --kmer 27
     --output-fasta test_exons_filtered_by_extensiblity.fa
-  #- paste_exons
-  #  --input-fasta test_exons_filteter_by_extensibility.fa
-  #  --gap-size 100
-  #  --output-fasta test_pasted.fa
-

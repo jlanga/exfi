@@ -73,7 +73,7 @@ def find_exons(transcriptome_fn, kmer, bloom_filter_fn, output_fasta):
 
     # Process the results from the pipes
     seqrecords = tab_to_seqrecord(pipeline_output)
-    exons = reduce_exons(seqrecords)
+    exons = reduce_exons(seqrecords)  # Collapse identical exons into one
     SeqIO.write(
         sequences= exons,
         handle= output_fasta,

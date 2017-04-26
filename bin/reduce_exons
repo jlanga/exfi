@@ -49,6 +49,6 @@ if __name__ == "__main__":
     from Bio import SeqIO
     from exfi.reduce_exons import reduce_exons
     
-    input_records = SeqIO.read(handle= input_fasta, format= "fasta")
+    input_records = SeqIO.parse(handle= input_fasta, format= "fasta")
     exons = reduce_exons(input_records)
     SeqIO.write(sequences= exons, handle= output_fasta, format= "fasta")

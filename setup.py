@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='exfi',
-    version='0.1.1',
+    version='1.0.0',
     packages=['exfi'],
     license='MIT',
     install_requires=[

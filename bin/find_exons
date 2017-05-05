@@ -6,7 +6,18 @@ parser = argparse.ArgumentParser(
     usage = 'find_exons -i transcriptome.fa -b bloom.filter -k 27 -o exons.fa',
     description='Find exons in a transcriptome with WGS reads and a Bloom filter',
     epilog = 'Jorge Langa. Send issues and pull requests to github.com/jlanga/'
-        'exon_finder'
+        'exon_finder',
+)
+
+
+from exfi import __version__
+
+parser.add_argument(
+    '--version',
+    action='version',
+    version='%(prog)s {version}'.format(
+        version=__version__
+    )
 )
 
 parser.add_argument(
@@ -36,14 +47,15 @@ parser.add_argument(
     required = True,
     help = 'The size of the k-mer (enter the same as in the bloom filter)',
     dest = 'kmer',
-    metavar = 'KMER'
+    metavar = 'KMER',
+    default=27
 )
 
 parser.add_argument(
     '--output-fasta',
     '-o',
     type = str,
-    required = False,
+    required = True,
     help = 'Path to output fasta file',
     dest = "output_fasta",
     metavar = "FILE"

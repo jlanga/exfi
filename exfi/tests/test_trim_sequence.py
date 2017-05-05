@@ -42,7 +42,6 @@ class TestTrimSequence(TestCase):
         expected = []
         self.assertEqual(actual, expected)
 
-
     def test_trim_left(self):
         """Trim bases only on the left side"""
         iterator = list(SeqIO.parse(handle= "exfi/tests/files/one_sequence.fa", format= "fasta"))
@@ -72,4 +71,6 @@ class TestTrimSequence(TestCase):
             "GCCGCGGCGGTGTGTGNNNNNNNNNNNCCGTCATCTGTGTTCTGCTG", 
             "TGCGAGTGAGTGTGTGCAGCNNNNNNNNNAGTTTCCTGAAGGATTCTTC"
         ]
+        print(actual)
+        print(expected)
         self.assertEqual([str(x.seq) for x in actual], expected)

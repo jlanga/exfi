@@ -9,6 +9,16 @@ parser = argparse.ArgumentParser(
         'exon_finder'
 )
 
+from exfi import __version__
+
+parser.add_argument(
+    '--version',
+    action='version',
+    version='%(prog)s {version}'.format(
+        version=__version__
+    )
+)
+
 parser.add_argument(
     '--input-fasta',
     '-e',
@@ -23,10 +33,10 @@ parser.add_argument(
     '--output-fasta',
     '-o',
     type = str,
-    required = False,
+    required = True,
     help = 'Path to output fasta file',
     dest = "output_fasta",
-    metavar = "FILE"
+    metavar = "FILE",
 )
 
 args = parser.parse_args()

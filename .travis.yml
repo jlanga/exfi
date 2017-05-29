@@ -23,7 +23,7 @@ addons:
         - build-essential
         - git
         - curl
-        - libboost-deb
+        - libboost-dev
 
 install:
     - bash .travis/travis_install.sh

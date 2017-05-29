@@ -1,7 +1,13 @@
-dist: trusty
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+    - os: osx
 
 language: python
+
 cache: pip
+
 python:
   - "3.3"
   - "3.4"
@@ -27,12 +33,13 @@ install: "pip install -e ."
 # command to run tests
 script:
   - python3 setup.py test
-  - abyss-bloom build
+  - build_baited_bloom_filter
+    --input-fasta data/transcript.fa
     --kmer 27
-    --threads 4
-    --levels 1
     --bloom-size 500M
-    --verbose
+    --levels 1
+    --threads 2 
+    --output-bloom genome_k27_m500M_l1.bloom
     genome_k27_m500M_l1.bloom
     data/genome.fa.gz
   - find_exons

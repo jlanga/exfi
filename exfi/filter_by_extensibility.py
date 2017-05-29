@@ -13,7 +13,7 @@ def _modify_description(description, bases_to_the_left=0, bases_to_the_right=0):
     """
     descriptions = description.split(" ")[1:] # First one is the exon_id
     modified_descriptions = []
-
+    
     for description in descriptions:
         locus, start, end = _extract_loci_start_end(description)
         start += bases_to_the_left
@@ -43,7 +43,7 @@ def filter_by_extensibility(exons, bloom_filter, kmer):
     # - one to compute left extensions,
     # - one to compute the right extensions, and
     # - one to trim and filter
-    
+
     print("Computing all extensions", file= sys.stderr)
     # Compute left and right extensions
     # - Use `extend_left` and `extend_right`
@@ -62,7 +62,7 @@ def filter_by_extensibility(exons, bloom_filter, kmer):
         handle = extensions_raw,
         format="fasta"
     )
-    
+
     print("Checking which are possible", file= sys.stderr)
     # - Use `abyss-bloom kmers` to find out which extensions are there
     command_kmers = [  # Run abyss-bloom kmers
@@ -95,6 +95,6 @@ def filter_by_extensibility(exons, bloom_filter, kmer):
 
     print("Filtering by length and writing to disk", file= sys.stderr)
     exons = filter_by_length(iterables=exons, length=kmer)
-    
+
     for exon in exons:
         yield exon

@@ -16,10 +16,3 @@ else
     popd
 
 fi
-
-export PATH="/home/travis/miniconda3/bin:$PATH"
-conda config --add channels conda-forge
-conda config --add channels defaults
-conda config --add channels r
-conda config --add channels bioconda
-conda install --yes abyss bedtools biopython

@@ -18,7 +18,14 @@ matrix:
 
 
 # commands to install dependencies
-before_install: bash .travis/install.sh
+before_install:
+    - bash .travis/install.sh
+    - export PATH="/home/travis/miniconda3/bin:$PATH"
+    - conda config --add channels conda-forge
+    - conda config --add channels defaults
+    - conda config --add channels r
+    - conda config --add channels bioconda
+    - conda install --yes abyss bedtools biopython
 
 install: "pip install -e ."
 # command to run tests

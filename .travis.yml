@@ -3,7 +3,9 @@ matrix:
     - os: linux
       dist: trusty
       sudo: required
+      python: 3.6
     - os: osx
+      python: 3.6
 
 language: python
 
@@ -31,6 +33,9 @@ before_install:
   - conda config --add channels r
   - conda config --add channels bioconda
   - conda install --yes abyss bedtools biopython
+  - git clone https://github.com/bcgsc/biobloom src/biobloom
+  - pushd src/biobloom && ./autogen.sh && ./configure && make
+
 install: "pip install -e ."
 # command to run tests
 script:

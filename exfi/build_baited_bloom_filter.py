@@ -28,69 +28,69 @@ def build_baited_bloom_filter(
     # Imports
     from subprocess import Popen, PIPE, call
     from sys import stdin, stdout, stderr
-    import tempfile
+    from os.path import dirname
 
-    with tempfile.TemporaryDirectory() as tmpdirname:
+    output_dir = dirname(output_bloom)
+    if output_dir == "":
+        output_dir = "./"
 
-        transcriptome_bf_prefix = "transcriptome"
+    # Prepare the commands
+    build_transcriptome_bf = [
+        'biobloommaker',
+            '--file_prefix', "transcriptome",
+            '--output_dir', output_dir,
+            '--threads', str(threads),
+            '--kmer_size', str(kmer),
+            transcriptome
+    ]
 
-        # Prepare the commands
-        build_transcriptome_bf = [
-            'biobloommaker',
-                '--file_prefix', "transcriptome",
-                '--output_dir', tmpdirname,
-                '--threads', str(threads),
-                '--kmer_size', str(kmer),
-                transcriptome
-        ]
+    categorize = [
+        'biobloomcategorizer',
+            '--prefix', output_dir + '/categories',
+            '--filter_files', output_dir + '/transcriptome.bf',
+            '--threads', str(threads),
+            '--score', str(kmer),
+            '--fa',
+            '--stdout_filter', 'transcriptome',
+            *reads
+    ]
 
-        categorize = [
-            'biobloomcategorizer',
-                '--prefix', tmpdirname + '/categories',
-                '--filter_files', tmpdirname + '/transcriptome.bf',
-                '--threads', str(threads),
-                '--score', str(kmer),
-                '--fa',
-                '--stdout_filter', 'transcriptome',
-                *reads
-        ]
+    build_bf = [
+        'abyss-bloom', 'build',
+            '--verbose',
+            '--kmer', str(kmer),
+            '--bloom-size', bloom_size,
+            '--levels', str(levels),
+            '--threads', str(threads),
+            output_bloom,
+            '/dev/stdin'
+    ]
 
-        build_bf = [
-            'abyss-bloom', 'build',
-                '--verbose',
-                '--kmer', str(kmer),
-                '--bloom-size', bloom_size,
-                '--levels', str(levels),
-                '--threads', str(threads),
-                output_bloom,
-                '/dev/stdin'
-        ]
-
-        # Run the pipeline
-        stderr.write(
-            "\nRunning command: {command}\n".format(
-                command= " ".join(build_transcriptome_bf)
-            )
+    # Run the pipeline
+    stderr.write(
+        "\nRunning command: {command}\n".format(
+            command= " ".join(build_transcriptome_bf)
         )
+    )
 
-        p_build_transcriptome_bf = Popen(
-            build_transcriptome_bf
+    p_build_transcriptome_bf = Popen(
+        build_transcriptome_bf
+    )
+
+    p_build_transcriptome_bf.wait()
+
+    #p_build_transcriptome_bf.communicate()
+
+    stderr.write(
+        "\nRunning commands: {command1} | {command2}\n".format(
+            command1 = " ".join(categorize),
+            command2 = " ".join(build_bf)
         )
+    )
 
-        p_build_transcriptome_bf.wait()
+    p_categorize = Popen(categorize, stdout = PIPE)
+    p_build_bf = Popen(build_bf, stdin = p_categorize.stdout)
 
-        #p_build_transcriptome_bf.communicate()
-
-        stderr.write(
-            "\nRunning commands: {command1} | {command2}\n".format(
-                command1 = " ".join(categorize),
-                command2 = " ".join(build_bf)
-            )
-        )
-
-        p_categorize = Popen(categorize, stdout = PIPE)
-        p_build_bf = Popen(build_bf, stdin = p_categorize.stdout)
-
-        p_categorize.stdout.close()
-        p_categorize.wait()
-        p_build_bf.wait()
+    p_categorize.stdout.close()
+    p_categorize.wait()
+    p_build_bf.wait()

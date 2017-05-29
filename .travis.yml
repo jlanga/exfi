@@ -2,22 +2,24 @@ matrix:
   include:
     - os: linux
       dist: trusty
+      sudo: required
     - os: osx
 
 language: python
 
 cache: pip
 
-python:
-  - "3.3"
-  - "3.4"
-  - "3.5"
-  - "3.5-dev" # 3.5 development branch
-  - "3.6"
-  - "3.6-dev" # 3.6 development branch
-  - "3.7-dev" # 3.7 development branch
-  - "nightly" # currently points to 3.7-dev
-# command to install dependencies
+# python:
+#   - "3.3"
+#   - "3.4"
+#   - "3.5"
+#   - "3.5-dev" # 3.5 development branch
+#   - "3.6"
+#   - "3.6-dev" # 3.6 development branch
+#   - "3.7-dev" # 3.7 development branch
+#   - "nightly" # currently points to 3.7-dev
+
+# commands to install dependencies
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y build-essential curl git
@@ -38,9 +40,8 @@ script:
     --kmer 27
     --bloom-size 500M
     --levels 1
-    --threads 2 
+    --threads 2
     --output-bloom genome_k27_m500M_l1.bloom
-    genome_k27_m500M_l1.bloom
     data/genome.fa.gz
   - find_exons
     --input-fasta data/transcript.fa

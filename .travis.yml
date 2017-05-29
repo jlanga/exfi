@@ -1,15 +1,18 @@
+language: python
+
+cache: pip
+
 matrix:
   include:
     - os: linux
       dist: trusty
       sudo: required
       python: 3.6
+      before:
     - os: osx
       python: 3.6
 
-language: python
 
-cache: pip
 
 # commands to install dependencies
 before_install: bash .travis/install.sh

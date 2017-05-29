@@ -1,6 +1,9 @@
 language: python
 
-cache: pip
+cache:
+  directories:
+    - $HOME/.cache/pip
+    - $HOME/miniconda3 # Add the installation to TRAVIS cache.
 
 matrix:
   include:

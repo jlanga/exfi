@@ -12,7 +12,7 @@ else
     bash Miniconda3-latest-Linux-x86_64.sh -b
     git clone https://github.com/bcgsc/biobloom src/biobloom
     pushd src/biobloom
-    ./autogen.sh && ./configure && make -j 2 && sudo make install-j 2
+    ./autogen.sh && ./configure && make -j 2 && sudo make install -j 2
     popd
 
 fi

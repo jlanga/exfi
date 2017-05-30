@@ -34,6 +34,8 @@ install:
 
 # command to run tests
 script:
+  - export PATH="~/miniconda3/bin:$PATH"
+  - echo $PATH
   - python3 setup.py test
   - build_baited_bloom_filter
     --input-fasta data/transcript.fa

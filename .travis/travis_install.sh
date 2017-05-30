@@ -8,7 +8,6 @@ conda config --add channels r
 conda config --add channels bioconda
 conda install --yes abyss bedtools biopython
 
-
 # Biobloomtools
 git clone https://github.com/bcgsc/biobloom ~/download/biobloom
 pushd ~/download/biobloom

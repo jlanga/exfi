@@ -23,15 +23,15 @@ class TestReduceExons(TestCase):
             id = "EXON00000000001",
             seq = Seq("GTAAGCCGCGGCGGTGTGTGTGTGTGTGTGTGTTCTCCGTCATCTGTGTTCTGCTGAATG")
         )]
-        
+
         self.assertEqual(
             [record.id for record in actual],
             [record.id for record in expected]
         )
 
         self.assertEqual(
-            [record.id for record in actual],
-            [record.id for record in expected]
+            [str(record.seq) for record in actual],
+            [str(record.seq) for record in expected]
         )
 
     def test_same_exon(self):
@@ -47,8 +47,8 @@ class TestReduceExons(TestCase):
             [record.id for record in expected]
         )
         self.assertEqual(
-            [record.id for record in actual],
-            [record.id for record in expected]
+            [str(record.seq) for record in actual],
+            [str(record.seq) for record in expected]
         )
 
     def test_different_exons(self):
@@ -58,18 +58,21 @@ class TestReduceExons(TestCase):
         expected = [
             SeqRecord(
                 id = "EXON00000000001",
-                seq = Seq("GTAAGCCGCGGCGGTGTGTGNNNNNNNNNNNCCGTCATCTGTGTTCTGCTGAATG")
+                seq = Seq("GTAAGCCGCGGCGGTGTGTGTGTGTGTGTGTGTTCTCCGTCATCTGTGTTCTGCTGAATG")
             ),
             SeqRecord(
                 id = "EXON00000000002",
-                seq = Seq("GTACAATG")
+                seq = Seq("AGAATGCGAGTGAGTGTGTGCAGCCACAGTCGTCTGAGTTTCCTGAAGGATTCTTCACGG")
             )
         ]
+        print(actual)
+        print(expected)
+
         self.assertEqual(
             [record.id for record in actual],
             [record.id for record in expected]
         )
         self.assertEqual(
-            [record.id for record in actual],
-            [record.id for record in expected]
+            [str(record.seq) for record in actual],
+            [str(record.seq) for record in expected]
         )

@@ -1,39 +1,48 @@
-dist: trusty
+language: bash
 
-language: python
+cache:
+  pip: true
+  directories:
+    - $HOME/miniconda3 # Add the installation to TRAVIS cache.
+    - $HOME/download # Sufficient to add miniconda.sh to TRAVIS cache.
+    - $HOME/Library/Caches/Homebrew  # osx local
+    - /usr/local/Homebrew/Library/Caches/Homebrew  # osx main
 
-python:
-  - "3.3"
-  - "3.4"
-  - "3.5"
-  - "3.5-dev" # 3.5 development branch
-  - "3.6"
-  - "3.6-dev" # 3.6 development branch
-  - "3.7-dev" # 3.7 development branch
-  - "nightly" # currently points to 3.7-dev
-# command to install dependencies
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: required
+      addons:
+        apt_packages:
+          - build-essential
+          - git
+          - curl
+          - libboost-dev
+      python: 3.6
+    - os: osx
+
+
+# commands to install dependencies
 before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y build-essential curl git
-  - curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
-  - bash Miniconda3-latest-Linux-x86_64.sh -b
-  - export PATH="/home/travis/miniconda3/bin:$PATH"
-  - conda config --add channels conda-forge
-  - conda config --add channels defaults
-  - conda config --add channels r
-  - conda config --add channels bioconda
-  - conda install --yes abyss bedtools biopython
-install: "pip install -e ."
+  - bash .travis/travis_before_install.sh
+  - export PATH="$HOME/miniconda3/bin:$PATH"
+
+install:
+  - bash .travis/travis_install.sh
+  - pip install . --no-deps --upgrade
+
 # command to run tests
 script:
-  - python3 setup.py test
-  - abyss-bloom build
+  - echo $PATH
+  - python --version
+  - build_baited_bloom_filter
+    --input-fasta data/transcript.fa
     --kmer 27
-    --threads 4
-    --levels 1
     --bloom-size 500M
-    --verbose
-    genome_k27_m500M_l1.bloom
+    --levels 1
+    --threads 2
+    --output-bloom genome_k27_m500M_l1.bloom
     data/genome.fa.gz
   - find_exons
     --input-fasta data/transcript.fa

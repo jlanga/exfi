@@ -8,14 +8,12 @@ conda config --add channels r
 conda config --add channels bioconda
 conda install --yes abyss bedtools biopython
 
-
-# Install GCC and boost via brew
 if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
-    brew install gcc boost
+    brew tap homebrew/science
+    brew install biobloomtools
+else
+    git clone https://github.com/bcgsc/biobloom ~/download/biobloom
+    pushd ~/download/biobloom
+    ./autogen.sh && ./configure && make -j 2 && sudo make install -j 2
+    popd
 fi
-
-# Biobloomtools
-git clone https://github.com/bcgsc/biobloom ~/download/biobloom
-pushd ~/download/biobloom
-./autogen.sh && ./configure && make -j 2 && sudo make install -j 2
-popd

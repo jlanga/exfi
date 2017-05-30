@@ -32,6 +32,21 @@ def _bedtools_getfasta_command(transcriptome_fn):
         "-tab"
     ]
 
+def _process_output(process):
+    """
+    Auxiliar function to process the output as it comes
+
+    NEEDS IMPROVEMENT
+    """
+    raw = process.communicate()[0]
+    decoded = raw.decode()
+    del raw
+    splitted = decoded.split("\n")
+    del decoded
+    for line in splitted:
+        yield line
+
+
 def _find_exons_pipeline(kmer, bloom_filter_fn, transcriptome_fn):
     # Prepare the commands
     abyss_bloom_kmers = _abyss_bloom_kmers_command(
@@ -48,10 +63,7 @@ def _find_exons_pipeline(kmer, bloom_filter_fn, transcriptome_fn):
     # Manage all processes properly
     p1.stdout.close()
     p2.stdout.close()
-    pipeline_output_raw = p3.communicate()
-    pipeline_output_stdout = pipeline_output_raw[0].decode()
-    del pipeline_output_raw
-    pipeline_output = pipeline_output_stdout.split("\n")
+    pipeline_output = _process_output(p3)
     p1.wait()
     p2.wait()
 

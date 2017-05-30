@@ -14,6 +14,6 @@ if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
 else
     git clone https://github.com/bcgsc/biobloom ~/download/biobloom
     pushd ~/download/biobloom
-    ./autogen.sh && ./configure && make -j 2 && sudo make install -j 2
+    ./autogen.sh && ./configure && make -j 2 && sudo make install
     popd
 fi

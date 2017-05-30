@@ -6,6 +6,7 @@ cache:
     - $HOME/miniconda3 # Add the installation to TRAVIS cache.
     - $HOME/download # Sufficient to add miniconda.sh to TRAVIS cache.
     - $HOME/Library/Caches/Homebrew  # osx
+    - /usr/local/Homebrew/Library/Caches/Homebrew  # osx
 
 matrix:
   include:

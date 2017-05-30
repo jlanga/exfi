@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Install miniconda
+
 if test -e $HOME/miniconda3/bin ; then
     echo "miniconda already installed."
 else

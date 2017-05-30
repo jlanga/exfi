@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
-# Conda packages
+
+# Install conda packages
+export PATH="~/miniconda3/bin:$PATH"
 conda config --add channels conda-forge
 conda config --add channels defaults
 conda config --add channels r
 conda config --add channels bioconda
 conda install --yes abyss bedtools biopython
 
-# Manually installed repos
+
+# Biobloomtools
 if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
     brew tap homebrew/science
     brew install biobloomtools

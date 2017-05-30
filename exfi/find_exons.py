@@ -40,36 +40,20 @@ def _find_exons_pipeline(kmer, bloom_filter_fn, transcriptome_fn):
     bedtools_merge = _bedtools_merge_command(kmer)
     bedtools_getfasta = _bedtools_getfasta_command(transcriptome_fn)
 
-    # Run the pipeline
-    # Get all kmers from the transcriptome that are in the genome
-    process_abyss_bloom_kmers = Popen(
-        abyss_bloom_kmers,
-        stdout= PIPE,
-    )
 
-    # Merge them
-    process_bedtools_merge = Popen(
-        bedtools_merge,
-        stdin= process_abyss_bloom_kmers.stdout,
-        stdout= PIPE
-    )
-
-    # Build a fasta
-    process_bedtools_getfasta = Popen(
-        bedtools_getfasta,
-        stdin= process_bedtools_merge.stdout,
-        stdout= PIPE,
-    )
+    p1 = Popen(abyss_bloom_kmers, stdout= PIPE)
+    p2 = Popen(bedtools_merge, stdin= p1.stdout, stdout= PIPE)
+    p3 = Popen(bedtools_getfasta, stdin= p2.stdout, stdout= PIPE)
 
     # Manage all processes properly
-    process_abyss_bloom_kmers.stdout.close()
-    process_bedtools_merge.stdout.close()
-    pipeline_output_raw = process_bedtools_getfasta.communicate()
+    p1.stdout.close()
+    p2.stdout.close()
+    pipeline_output_raw = p3.communicate()
     pipeline_output_stdout = pipeline_output_raw[0].decode()
     del pipeline_output_raw
     pipeline_output = pipeline_output_stdout.split("\n")
-    process_abyss_bloom_kmers.wait()
-    process_bedtools_merge.wait()
+    p1.wait()
+    p2.wait()
 
     for line in pipeline_output:
         yield line

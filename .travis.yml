@@ -1,4 +1,4 @@
-language: python
+language: bash
 
 cache:
   directories:
@@ -11,19 +11,17 @@ matrix:
       dist: trusty
       sudo: required
       python: 3.6
-
+      addons:
+          apt_packages:
+              - build-essential
+              - git
+              - curl
+              - libboost-dev
 
 # commands to install dependencies
 before_install:
   - bash .travis/travis_before_install.sh
   - export PATH=/home/travis/miniconda3/bin:$PATH
-
-addons:
-    apt_packages:
-        - build-essential
-        - git
-        - curl
-        - libboost-dev
 
 install:
     - bash .travis/travis_install.sh

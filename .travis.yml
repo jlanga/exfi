@@ -4,19 +4,20 @@ cache:
   directories:
     - $HOME/.cache/pip
     - $HOME/miniconda3 # Add the installation to TRAVIS cache.
+    - $HOME/download # Sufficient to add miniconda.sh to TRAVIS cache.
 
 matrix:
   include:
     - os: linux
       dist: trusty
       sudo: required
-      python: 3.6
       addons:
           apt_packages:
               - build-essential
               - git
               - curl
               - libboost-dev
+    - os: osx
 
 # commands to install dependencies
 before_install:

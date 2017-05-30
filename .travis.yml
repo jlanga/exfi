@@ -22,6 +22,7 @@ matrix:
           - $HOME/.cache/pip
           - $HOME/miniconda3 # Add the installation to TRAVIS cache.
           - $HOME/download # Sufficient to add miniconda.sh to TRAVIS cache.
+      python: 3.6
     - os: osx
       cache:
         directories:

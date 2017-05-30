@@ -64,7 +64,10 @@ def _find_exons_pipeline(kmer, bloom_filter_fn, transcriptome_fn):
     # Manage all processes properly
     process_abyss_bloom_kmers.stdout.close()
     process_bedtools_merge.stdout.close()
-    pipeline_output = process_bedtools_getfasta.communicate()[0].decode().split("\n")
+    pipeline_output_raw = process_bedtools_getfasta.communicate()
+    pipeline_output_stdout = pipeline_output_raw[0].decode()
+    del pipeline_output_raw
+    pipeline_output = pipeline_output_stdout.split("\n")
     process_abyss_bloom_kmers.wait()
     process_bedtools_merge.wait()
 

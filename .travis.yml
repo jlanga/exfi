@@ -5,8 +5,8 @@ cache:
   directories:
     - $HOME/miniconda3 # Add the installation to TRAVIS cache.
     - $HOME/download # Sufficient to add miniconda.sh to TRAVIS cache.
-    - $HOME/Library/Caches/Homebrew  # osx
-    - /usr/local/Homebrew/Library/Caches/Homebrew  # osx
+    - $HOME/Library/Caches/Homebrew  # osx local
+    - /usr/local/Homebrew/Library/Caches/Homebrew  # osx main
 
 matrix:
   include:
@@ -30,7 +30,7 @@ before_install:
 
 install:
     - bash .travis/travis_install.sh
-    - pip install . --no-deps --upgrade
+    - python setup.py install
 
 # command to run tests
 script:

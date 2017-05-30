@@ -29,13 +29,13 @@ before_install:
   - export PATH="$HOME/miniconda3/bin:$PATH"
 
 install:
-    - bash .travis/travis_install.sh
-    - python setup.py install
+  - bash .travis/travis_install.sh
+  - pip install . --no-deps --upgrade
 
 # command to run tests
 script:
   - echo $PATH
-  - python3 setup.py test
+  - python --version
   - build_baited_bloom_filter
     --input-fasta data/transcript.fa
     --kmer 27

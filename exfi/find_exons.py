@@ -18,19 +18,19 @@ def _abyss_bloom_kmers_command(kmer, bloom_filter_fn, transcriptome_fn):
             transcriptome_fn
         ]
 
-def _bedtools_merge_command(kmer):
-    """Merge overlapping kmers"""
-    return ["bedtools", "merge",
-        "-d", str(- kmer + 2)
-    ]
-
-def _bedtools_getfasta_command(transcriptome_fn):
-    """Get transcriptid:coordinates TAB sequence"""
-    return [ "bedtools", "getfasta",
-        "-fi", transcriptome_fn,
-        "-bed", "-",
-        "-tab"
-    ]
+# def _bedtools_merge_command(kmer):
+#     """Merge overlapping kmers"""
+#     return ["bedtools", "merge",
+#         "-d", str(- kmer + 2)
+#     ]
+#
+# def _bedtools_getfasta_command(transcriptome_fn):
+#     """Get transcriptid:coordinates TAB sequence"""
+#     return [ "bedtools", "getfasta",
+#         "-fi", transcriptome_fn,
+#         "-bed", "-",
+#         "-tab"
+#     ]
 
 def _process_output(process):
     """
@@ -40,18 +40,50 @@ def _process_output(process):
     """
     raw = process.communicate()[0]
     decoded = raw.decode()
-    del raw
+    #del raw
     splitted = decoded.split("\n")
-    del decoded
+    #del decoded
     for line in splitted:
         yield line
+
+def _abyss_kmers_to_bed(iterable_of_str):
+    """
+    Convert BED in string format into str, int, int
+    """
+    for record in iterable_of_str:
+        if record:
+            chromosome, start, end, _ = record.strip().split()
+            start = int(start)
+            end = int(end)
+            yield [chromosome, start, end]
+
+def _merge_bed(bed_records):
+    """
+    Merge overlapping by all but one base records
+    """
+    parsed_records = _abyss_kmers_to_bed(bed_records)
+    old = [None, None, None]  # Loci, start, end
+    for new in parsed_records:
+        if not old[0]: # First record
+            old = new
+            continue
+        if old[0] != new[0]: # Change of loci
+            yield old
+            old = new
+            continue
+        if old[0] == new[0] and new[2] != old[2] +1: # Same record
+            yield old
+            old = new
+            continue
+        old[2] = new[2]  # If not different contig or too big jump, update
+    yield old # last step
 
 def _get_fasta(transcriptome_fn, locis):
     transcriptome_dict = SeqIO.to_dict(SeqIO.parse(transcriptome_fn, "fasta"))
     for loci in locis:
-        if loci == "":
+        if not loci:
             continue
-        chromosome, start, end = loci.strip().split("\t")
+        chromosome, start, end = loci #.strip().split("\t")
         record = transcriptome_dict[chromosome][int(start):int(end)]
         record.id = "{chr}:{start}-{end}".format(
             chr = chromosome, start = start, end = end
@@ -65,18 +97,20 @@ def _find_exons_pipeline(kmer, bloom_filter_fn, transcriptome_fn):
     abyss_bloom_kmers = _abyss_bloom_kmers_command(
         kmer, bloom_filter_fn, transcriptome_fn
     )
-    bedtools_merge = _bedtools_merge_command(kmer)
-    bedtools_getfasta = _bedtools_getfasta_command(transcriptome_fn)
-
+    #bedtools_merge = _bedtools_merge_command(kmer)
+    #bedtools_getfasta = _bedtools_getfasta_command(transcriptome_fn)
 
     p1 = Popen(abyss_bloom_kmers, stdout= PIPE)
-    p2 = Popen(bedtools_merge, stdin= p1.stdout, stdout= PIPE)
+    #p2 = Popen(bedtools_merge, stdin= p1.stdout, stdout= PIPE)
 
     # Manage all processes properly
-    p1.stdout.close()
-    pipeline_output = _process_output(p2)
+    #p1.stdout.close()
 
-    for line in _get_fasta(transcriptome_fn, pipeline_output):
+    abyss_kmers_output = _process_output(p1)
+    merged = _merge_bed(abyss_kmers_output)
+    records = _get_fasta(transcriptome_fn, merged)
+
+    for line in records:
         yield line
 
 

@@ -10,7 +10,7 @@ conda install --yes abyss bedtools biopython
 
 if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
     brew tap homebrew/science
-    brew install biobloomtools
+    brew install biobloomtools gcc
 else
     git clone https://github.com/bcgsc/biobloom ~/download/biobloom
     pushd ~/download/biobloom

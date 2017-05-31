@@ -64,8 +64,6 @@ def _find_exons_pipeline(kmer, bloom_filter_fn, transcriptome_fn):
     p1.stdout.close()
     p2.stdout.close()
     pipeline_output = _process_output(p3)
-    p1.wait()
-    p2.wait()
 
     for line in pipeline_output:
         yield line

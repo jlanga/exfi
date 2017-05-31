@@ -25,11 +25,12 @@ matrix:
 # commands to install dependencies
 before_install:
   - bash .travis/travis_before_install.sh
-  - export PATH="$HOME/miniconda3_$TRAVIS_OS_PATH/bin:$PATH"
+  - export PATH="$HOME/miniconda3_linux/bin:$PATH"
 
 install:
   - bash .travis/travis_install.sh
-  - pip install . --no-deps --upgrade
+  - pip --version
+  - pip install . --no-deps --upgrade --user
   - export PATH="$HOME/bin:$PATH"
 
 # command to run tests

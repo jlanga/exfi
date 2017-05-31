@@ -77,8 +77,7 @@ def filter_by_extensibility(exons, bloom_filter, kmer):
     ]
     out_handle = open(extensions_filtered, "w")
     process_kmers = Popen(command_kmers, stdout=out_handle)
-    _, errs = process_kmers.communicate()
-
+    
     # - Read the results (as a generator)
     extensions = SeqIO.parse(handle=extensions_filtered, format="fasta")
 

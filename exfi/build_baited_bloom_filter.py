@@ -29,7 +29,7 @@ def build_baited_bloom_filter(
 
     # Imports
     from subprocess import Popen, PIPE
-    from sys import stdout, stderr
+    from sys import stderr
     from os.path import dirname
 
     output_dir = dirname(output_bloom)

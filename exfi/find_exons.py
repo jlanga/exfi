@@ -3,11 +3,9 @@
 
 # Import everything
 from subprocess import Popen, PIPE
-from sys import stdout, stderr
+from sys import stderr
 from Bio import SeqIO
-from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
-from exfi.tab_to_seqrecord import tab_to_seqrecord
 from exfi.reduce_exons import reduce_exons
 
 

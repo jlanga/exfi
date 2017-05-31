@@ -21,5 +21,7 @@ else
         --output-document $HOME/download/miniconda_$TRAVIS_OS_NAME.sh \
         $url
     chmod +x $HOME/download/miniconda_$TRAVIS_OS_NAME.sh
-    $HOME/download/miniconda.sh -b -p $HOME/miniconda3_$TRAVIS_OS_NAME
+    $HOME/download/miniconda_$TRAVIS_OS_NAME.sh \
+        -b \
+        -p $HOME/miniconda3_$TRAVIS_OS_NAME
 fi

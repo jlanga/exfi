@@ -46,6 +46,19 @@ def _process_output(process):
     for line in splitted:
         yield line
 
+def _get_fasta(transcriptome_fn, locis):
+    transcriptome_dict = SeqIO.to_dict(SeqIO.parse(transcriptome_fn, "fasta"))
+    for loci in locis:
+        if loci == "":
+            continue
+        chromosome, start, end = loci.strip().split("\t")
+        record = transcriptome_dict[chromosome][int(start):int(end)]
+        record.id = "{chr}:{start}-{end}".format(
+            chr = chromosome, start = start, end = end
+        )
+        #print(record)
+        yield record
+
 
 def _find_exons_pipeline(kmer, bloom_filter_fn, transcriptome_fn):
     # Prepare the commands
@@ -58,14 +71,12 @@ def _find_exons_pipeline(kmer, bloom_filter_fn, transcriptome_fn):
 
     p1 = Popen(abyss_bloom_kmers, stdout= PIPE)
     p2 = Popen(bedtools_merge, stdin= p1.stdout, stdout= PIPE)
-    p3 = Popen(bedtools_getfasta, stdin= p2.stdout, stdout= PIPE)
 
     # Manage all processes properly
     p1.stdout.close()
-    p2.stdout.close()
-    pipeline_output = _process_output(p3)
+    pipeline_output = _process_output(p2)
 
-    for line in pipeline_output:
+    for line in _get_fasta(transcriptome_fn, pipeline_output):
         yield line
 
 
@@ -89,8 +100,8 @@ def find_exons(transcriptome_fn, kmer, bloom_filter_fn, output_fasta):
     )
 
     # Process the results from the pipes
-    seqrecords = tab_to_seqrecord(pipeline_output)
-    exons = reduce_exons(seqrecords)  # Collapse identical exons into one
+    #seqrecords = tab_to_seqrecord(pipeline_output)
+    exons = reduce_exons(pipeline_output)  # Collapse identical exons into one
     SeqIO.write(
         sequences= exons,
         handle= output_fasta,

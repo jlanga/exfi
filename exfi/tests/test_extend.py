@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-from unittest import TestCase
 
+from unittest import TestCase
 from exfi.extend import extend_left, extend_right
 from Bio import SeqIO
+
 
 class TestExtendLeft(TestCase):
 
@@ -17,24 +18,25 @@ class TestExtendLeft(TestCase):
     def test_extend_left_one(self):
         """Process just one sequence"""
         records = SeqIO.parse(
-            handle = "exfi/tests/files/one_sequence.fa",
-            format = "fasta"
+            handle="exfi/tests/files/one_sequence.fa",
+            format="fasta"
         )
         actual = list(extend_left(records, 27))
         expected_ids = [
             "ENSDARE00000830915:12-19l" + letter for letter in "ACGT"
         ]
-        expected_sequences = [ # seq was GTAAGCCGCGGCGGTGTGTGTGTGTGTGTGTGTTCTCCGTCATCTGTGTTCTGCTGAATG
+        expected_sequences = [  # seq was
+            # GTAAGCCGCGGCGGTGTGTGTGTGTGTGTGTGTTCTCCGTCATCTGTGTTCTGCTGAATG
             letter + "GTAAGCCGCGGCGGTGTGTGTGTGTG" for letter in "ACGT"
         ]
         self.assertEqual([x.id for x in actual], expected_ids)
-        self.assertEqual([str(x.seq) for x in actual], expected_sequences) 
+        self.assertEqual([str(x.seq) for x in actual], expected_sequences)
 
     def test_extend_left_multiple(self):
         """Process multiple sequences"""
         records = SeqIO.parse(
-            handle = "exfi/tests/files/four_sequences.fa",
-            format = "fasta"
+            handle="exfi/tests/files/four_sequences.fa",
+            format="fasta"
         )
         actual = list(extend_left(records, 27))
 
@@ -56,7 +58,7 @@ class TestExtendLeft(TestCase):
 
         [print(x.id) for x in actual]
         print(expected_ids)
-        
+
 
 class TestExtendRight(TestCase):
 
@@ -67,31 +69,28 @@ class TestExtendRight(TestCase):
         expected = []
         self.assertEqual(actual, expected)
 
-
-
     def test_extend_right_one(self):
         """Process just one sequence"""
         records = SeqIO.parse(
-            handle = "exfi/tests/files/one_sequence.fa",
-            format = "fasta"
+            handle="exfi/tests/files/one_sequence.fa",
+            format="fasta"
         )
         actual = list(extend_right(records, 27))
         expected_ids = [
             "ENSDARE00000830915:12-19r" + letter for letter in "ACGT"
         ]
-        expected_sequences = [ # seq was GTAAGCCGCGGCGGTGTGTGTGTGTGTGTGTGTTCTCCGTCATCTGTGTTCTGCTGAATG
+        expected_sequences = [  # seq was
+            # GTAAGCCGCGGCGGTGTGTGTGTGTGTGTGTGTTCTCCGTCATCTGTGTTCTGCTGAATG
             "CTCCGTCATCTGTGTTCTGCTGAATG" + letter for letter in "ACGT"
         ]
         self.assertEqual([x.id for x in actual], expected_ids)
-        self.assertEqual([str(x.seq) for x in actual], expected_sequences) 
-
-
+        self.assertEqual([str(x.seq) for x in actual], expected_sequences)
 
     def test_extend_right_multiple(self):
         """Process multiple sequences"""
         records = SeqIO.parse(
-            handle= "exfi/tests/files/four_sequences.fa",
-            format= "fasta"
+            handle="exfi/tests/files/four_sequences.fa",
+            format="fasta"
         )
         actual = list(extend_right(records, 27))
         expected_ids = \
@@ -104,11 +103,11 @@ class TestExtendRight(TestCase):
 
         expected_sequences = \
             ["CGATCGATCAGTAGCTAGCTAGTCAC" + letter for letter in "ACGT"] + \
-            ["AGCTCAGTACGATCGACTACGAGTCA" + letter for letter in "ACGT"]    
-              
-        [print(str(x.seq)) for x in actual]
+            ["AGCTCAGTACGATCGACTACGAGTCA" + letter for letter in "ACGT"]
+
+        print(str(x.seq) for x in actual)
         print()
-        [print(x) for x in expected_sequences]
+        print([x for x in expected_sequences])
         self.assertEqual(
             [str(x.seq) for x in actual],
             expected_sequences

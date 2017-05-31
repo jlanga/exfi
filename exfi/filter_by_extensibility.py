@@ -77,10 +77,8 @@ def filter_by_extensibility(exons, bloom_filter, kmer):
     ]
     out_handle = open(extensions_filtered, "w")
     Popen(command_kmers, stdout=out_handle)
-
     # - Read the results (as a generator)
     extensions = SeqIO.parse(handle=extensions_filtered, format="fasta")
-
     print("Trimming by extensibility", file=sys.stderr)
     # - Process the extensions by name
     # i.e., from EXONXXXXXXXX[l|r]["ACGT"] just get the EXONXXXXXXX[l|r]

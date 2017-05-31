@@ -56,7 +56,7 @@ class TestExtendLeft(TestCase):
             expected_sequences
         )
 
-        [print(x.id) for x in actual]
+        print([x.id for x in actual])
         print(expected_ids)
 
 

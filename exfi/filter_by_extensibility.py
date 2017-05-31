@@ -38,7 +38,7 @@ def filter_by_extensibility(exons, bloom_filter, kmer):
     from Bio import SeqIO  # To read and write fastas
     from exfi.filter_by_length import filter_by_length
     from exfi.extend import extend_left, extend_right
-    from subprocess import Popen, PIPE
+    from subprocess import Popen
     from itertools import chain
     import sys
 
@@ -77,7 +77,7 @@ def filter_by_extensibility(exons, bloom_filter, kmer):
     ]
     out_handle = open(extensions_filtered, "w")
     process_kmers = Popen(command_kmers, stdout=out_handle)
-    outs, errs = process_kmers.communicate()
+    _, errs = process_kmers.communicate()
 
     # - Read the results (as a generator)
     extensions = SeqIO.parse(handle=extensions_filtered, format="fasta")

@@ -3,7 +3,7 @@
 
 # Import everything
 from subprocess import Popen, PIPE
-from sys import stdin, stdout, stderr
+from sys import stdout, stderr
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord

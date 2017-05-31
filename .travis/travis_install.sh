@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Install conda packages
-export PATH="$HOME/miniconda3/bin:$PATH"
+export PATH="$HOME/miniconda3_$TRAVIS_OS_NAME/bin:$PATH"
 conda config --add channels conda-forge
 conda config --add channels defaults
 conda config --add channels r

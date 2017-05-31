@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
+
 # Imports
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 
+
 def _make_seq_to_exon(iterable_of_seqrecords):
-    # 1. Make an association between the exon sequence and info from the transcriptome
+    # 1. Make an association between the exon sequence and info from
+    # the transcriptome
     # keys are sequences (as str) and values are
     # [new_exon_id, old_exon1_id, ..., old_exonN_id]
     seq_to_exon = dict()  # sequence : [exons_ids with such sequence]
@@ -17,7 +20,7 @@ def _make_seq_to_exon(iterable_of_seqrecords):
 
         # Initialize the sequence
         if str(record.seq) not in seq_to_exon:
-            new_exon_id = 'EXON{:011d}'.format(len(seq_to_exon)+1)
+            new_exon_id = 'EXON{:011d}'.format(len(seq_to_exon) + 1)
             seq_to_exon[sequence] = [new_exon_id]
 
         # Just add the other info
@@ -39,9 +42,9 @@ def _exonid_to_seqrecord(seq_to_exon):
         description = " ".join(info[1:])
 
         record = SeqRecord(
-            id = identifier,
-            description = description,
-            seq = Seq(sequence)
+            id=identifier,
+            description=description,
+            seq=Seq(sequence)
         )
 
         exonid_to_seqrecord[identifier] = record

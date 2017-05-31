@@ -20,8 +20,6 @@ matrix:
           - git
           - curl
           - libboost-dev
-      python: 3.6
-    - os: osx
 
 
 # commands to install dependencies
@@ -37,7 +35,7 @@ install:
 # command to run tests
 script:
   - echo $PATH
-  - python --version
+  - python3 --version
   - build_baited_bloom_filter
     --input-fasta data/transcript.fa
     --kmer 27

@@ -4,6 +4,8 @@
 from subprocess import Popen, PIPE
 from sys import stdin, stdout, stderr
 from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 from exfi.tab_to_seqrecord import tab_to_seqrecord
 from exfi.reduce_exons import reduce_exons
 
@@ -84,12 +86,15 @@ def _get_fasta(transcriptome_fn, locis):
         if not loci:
             continue
         chromosome, start, end = loci #.strip().split("\t")
-        record = transcriptome_dict[chromosome][int(start):int(end)]
-        record.id = "{chr}:{start}-{end}".format(
-            chr = chromosome, start = start, end = end
-        )
+        seq = transcriptome_dict[chromosome][int(start):int(end)].seq
+        identifier = "{0}:{1}-{2}".format(chromosome, start, end)
+        description = identifier
         #print(record)
-        yield record
+        yield SeqRecord(
+            id= identifier,
+            seq= seq,
+            description = description
+        )
 
 
 def _find_exons_pipeline(kmer, bloom_filter_fn, transcriptome_fn):

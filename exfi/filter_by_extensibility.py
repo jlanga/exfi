@@ -7,26 +7,29 @@ def _extract_loci_start_end(description):
     return locus, int(start), int(end)
 
 
-def _modify_description(description, bases_to_the_left=0, bases_to_the_right=0):
+def _modify_description(
+    description,
+    bases_to_the_left=0,
+    bases_to_the_right=0
+):
     """(str) -> str
     Process multiple descriptions at once
     """
-    descriptions = description.split(" ")[1:] # First one is the exon_id
+    descriptions = description.split(" ")[1:]  # First one is the exon_id
     modified_descriptions = []
-    
+
     for description in descriptions:
         locus, start, end = _extract_loci_start_end(description)
         start += bases_to_the_left
         end -= bases_to_the_right
         modified_descriptions.append(
             "{locus}:{start}-{end}".format(
-                locus = locus,
-                start = start,
-                end = end
+                locus=locus,
+                start=start,
+                end=end
             )
         )
     return " ".join(modified_descriptions)
-
 
 
 def filter_by_extensibility(exons, bloom_filter, kmer):
@@ -44,7 +47,7 @@ def filter_by_extensibility(exons, bloom_filter, kmer):
     # - one to compute the right extensions, and
     # - one to trim and filter
 
-    print("Computing all extensions", file= sys.stderr)
+    print("Computing all extensions", file=sys.stderr)
     # Compute left and right extensions
     # - Use `extend_left` and `extend_right`
     extensions = chain(
@@ -58,42 +61,48 @@ def filter_by_extensibility(exons, bloom_filter, kmer):
     extensions_raw = prefix.name + "_raw.fa"
     extensions_filtered = prefix.name + "_filtered.fa"
     SeqIO.write(
-        sequences = extensions,
-        handle = extensions_raw,
+        sequences=extensions,
+        handle=extensions_raw,
         format="fasta"
     )
 
-    print("Checking which are possible", file= sys.stderr)
+    print("Checking which are possible", file=sys.stderr)
     # - Use `abyss-bloom kmers` to find out which extensions are there
     command_kmers = [  # Run abyss-bloom kmers
         "abyss-bloom", "kmers",
-            "--kmer", str(kmer),
-            "--verbose",
-            bloom_filter,
-            extensions_raw
+        "--kmer", str(kmer),
+        "--verbose",
+        bloom_filter,
+        extensions_raw
     ]
     out_handle = open(extensions_filtered, "w")
-    process_kmers = Popen(command_kmers, stdout = out_handle)
+    process_kmers = Popen(command_kmers, stdout=out_handle)
     outs, errs = process_kmers.communicate()
 
-
     # - Read the results (as a generator)
-    extensions = SeqIO.parse(handle = extensions_filtered, format = "fasta")
+    extensions = SeqIO.parse(handle=extensions_filtered, format="fasta")
 
-
-    print("Trimming by extensibility", file= sys.stderr)
+    print("Trimming by extensibility", file=sys.stderr)
     # - Process the extensions by name
     # i.e., from EXONXXXXXXXX[l|r]["ACGT"] just get the EXONXXXXXXX[l|r]
-    extension_names = set([extension.id.split(":")[0][:-1] for extension in extensions])
+    extension_names = set(
+        [extension.id.split(":")[0][:-1] for extension in extensions]
+    )
     for exon in exons:
         if exon.id + "l" not in extension_names:
             exon.seq = exon.seq[1:]
-            exon.description = _modify_description(exon.description, bases_to_the_left=1)
+            exon.description = _modify_description(
+                exon.description,
+                bases_to_the_left=1
+            )
         if exon.id + "r" not in extension_names:
             exon.seq = exon.seq[:-1]
-            exon.description = _modify_description(exon.description, bases_to_the_right=1)
+            exon.description = _modify_description(
+                exon.description,
+                bases_to_the_right=1
+            )
 
-    print("Filtering by length and writing to disk", file= sys.stderr)
+    print("Filtering by length and writing to disk", file=sys.stderr)
     exons = filter_by_length(iterables=exons, length=kmer)
 
     for exon in exons:

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+
 def extend_left(records, kmer):
     """(iterable of SeqRecord, int) -> generator
 
@@ -13,14 +14,14 @@ def extend_left(records, kmer):
     assert isinstance(kmer, int) and kmer > 0, \
         "Incompatible kmer {}".format(kmer)
 
-    records = (record for record in records if len(record) >= kmer -1)
+    records = (record for record in records if len(record) >= kmer - 1)
 
     for record in records:
         for letter in "ACGT":
             new_record = SeqRecord(
-                id = record.id,
-                seq = record.seq,
-                description = ""
+                id=record.id,
+                seq=record.seq,
+                description=""
             )
             new_record.id += "l" + letter
             new_record.seq = Seq(letter + str(new_record.seq)[:kmer-1])
@@ -40,14 +41,14 @@ def extend_right(records, kmer):
     assert isinstance(kmer, int) and kmer > 0, \
         "Incompatible kmer {}".format(kmer)
 
-    records = (record for record in records if len(record) >= kmer -1)
+    records = (record for record in records if len(record) >= kmer - 1)
 
     for record in records:
         for letter in "ACGT":
             new_record = SeqRecord(
-                id = record.id,
-                seq = record.seq,
-                description = ""
+                id=record.id,
+                seq=record.seq,
+                description=""
             )
             new_record.id += "r" + letter
             new_record.seq = Seq(str(new_record.seq)[-kmer+1:] + letter)

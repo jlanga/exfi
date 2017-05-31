@@ -1,0 +1,6 @@
+*__pycache__*
+*sublime*
+build/
+dist/
+results/
+src/

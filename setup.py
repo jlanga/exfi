@@ -13,7 +13,7 @@ setup(
     long_description=open('README.md').read(),
     test_suite='nose.collector',
     tests_require=['nose'],
-    scripts = [
+    scripts=[
         "bin/build_baited_bloom_filter",
         "bin/find_exons",
         "bin/filter_exons_by_length",

@@ -95,7 +95,7 @@ def _find_exons_pipeline(kmer, bloom_filter_fn, transcriptome_fn):
     abyss_bloom_kmers = _abyss_bloom_kmers_command(
         kmer, bloom_filter_fn, transcriptome_fn
     )
-    p1 = Popen(abyss_bloom_kmers, stdout=PIPE)
+    p1 = Popen(abyss_bloom_kmers, stdout=PIPE, shell=False)
     abyss_kmers_output = _process_output(p1)  # Grab output
     merged = _merge_bed(abyss_kmers_output)  # Merge bed regions
     records = _get_fasta(transcriptome_fn, merged)  # Get the subsequences

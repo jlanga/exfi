@@ -75,9 +75,7 @@ def build_baited_bloom_filter(
         )
     )
 
-    p_build_transcriptome_bf = Popen(
-        build_transcriptome_bf
-    )
+    p_build_transcriptome_bf = Popen(build_transcriptome_bf, shell=False)
 
     p_build_transcriptome_bf.wait()
 
@@ -88,8 +86,8 @@ def build_baited_bloom_filter(
         )
     )
 
-    p_categorize = Popen(categorize, stdout=PIPE)
-    p_build_bf = Popen(build_bf, stdin=p_categorize.stdout)
+    p_categorize = Popen(categorize, stdout=PIPE, shell=False)
+    p_build_bf = Popen(build_bf, stdin=p_categorize.stdout, shell=False)
 
     p_categorize.stdout.close()
     p_categorize.wait()

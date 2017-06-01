@@ -4,3 +4,4 @@ build/
 dist/
 results/
 src/
+exfi.egg-info

@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 
 import argparse
+from exfi import __version__
 
 parser = argparse.ArgumentParser(
-    usage = 'filter_exons -i exons.fa -m 27 -l 1 -r 1 -o filtered_exons.fa',
+    usage='filter_exons -i exons.fa -m 27 -l 1 -r 1 -o filtered_exons.fa',
     description='Trim and filter by length sequences',
-    epilog = 'Jorge Langa. Send issues and pull requests to github.com/jlanga/'
-        'exon_finder'
+    epilog='Jorge Langa. Send issues and pull requests to github.com/jlanga/'
+           'exon_finder'
 )
-
-from exfi import __version__
 
 parser.add_argument(
     '--version',
@@ -22,54 +21,54 @@ parser.add_argument(
 parser.add_argument(
     '--input-fasta',
     '-e',
-    type = str,
-    required = True,
-    help = 'Input exons in FASTA format',
-    dest = 'input_fasta',
-    metavar = 'FILE'
+    type=str,
+    required=True,
+    help='Input exons in FASTA format',
+    dest='input_fasta',
+    metavar='FILE'
 )
 
 parser.add_argument(
     '--minimum-length',
     '-m',
-    type = int,
-    required = False,
-    help = 'Minimum length of a sequence to be retained [0]',
-    default= 0,
-    dest = 'minimum',
-    metavar = 'INT'
+    type=int,
+    required=False,
+    help='Minimum length of a sequence to be retained [0]',
+    default=0,
+    dest='minimum',
+    metavar='INT'
 )
 
 parser.add_argument(
     '--trim-left',
     '-l',
-    type = int,
-    required = False,
-    help = 'Number of bases to cut from the 5\' end',
-    default= 0,
-    dest = 'trim_left',
-    metavar = 'INT'
+    type=int,
+    required=False,
+    help='Number of bases to cut from the 5\' end',
+    default=0,
+    dest='trim_left',
+    metavar='INT'
 )
 
 parser.add_argument(
     '--trim-right',
     '-r',
-    type = int,
-    required = False,
-    help = 'Number of bases to cut from the 3\' end',
-    default= 0,
-    dest = 'trim_right',
-    metavar = 'INT'
+    type=int,
+    required=False,
+    help='Number of bases to cut from the 3\' end',
+    default=0,
+    dest='trim_right',
+    metavar='INT'
 )
 
 parser.add_argument(
     '--output-fasta',
     '-o',
-    type = str,
-    required = True,
-    help = 'File to write the suriving sequences in FASTA format',
-    dest = 'output_fasta',
-    metavar = 'FILE'
+    type=str,
+    required=True,
+    help='File to write the suriving sequences in FASTA format',
+    dest='output_fasta',
+    metavar='FILE'
 )
 
 args = parser.parse_args()
@@ -95,15 +94,15 @@ if __name__ == '__main__':
     from exfi.trim_sequence import trim_sequence
     from exfi.filter_by_length import filter_by_length
 
-    records = SeqIO.parse(handle= input_fasta, format= "fasta")
+    records = SeqIO.parse(handle=input_fasta, format="fasta")
     trimmed = trim_sequence(
         records,
-        bases_to_the_left= trim_left,
-        bases_to_the_right= trim_right
+        bases_to_the_left=trim_left,
+        bases_to_the_right=trim_right
     )
     filtered = filter_by_length(trimmed, minimum)
     SeqIO.write(
-        sequences= filtered,
-        handle= output_fasta,
-        format= "fasta"
+        sequences=filtered,
+        handle=output_fasta,
+        format="fasta"
     )

@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 
 import argparse
+import sys
+from exfi.find_exons import find_exons
+from os.path import isfile
+from exfi import __version__
 
 parser = argparse.ArgumentParser(
-    usage = 'find_exons -i transcriptome.fa -b bloom.filter -k 27 -o exons.fa',
-    description='Find exons in a transcriptome with WGS reads and a Bloom filter',
-    epilog = 'Jorge Langa. Send issues and pull requests to github.com/jlanga/'
-        'exon_finder',
+    usage='find_exons -i transcriptome.fa -b bloom.filter -k 27 -o exons.fa',
+    description='Find exons in a transcriptome with WGS reads and a Bloom '
+                'filter',
+    epilog='Jorge Langa. Send issues and pull requests to github.com/jlanga/'
+           'exon_finder',
 )
-
-
-from exfi import __version__
 
 parser.add_argument(
     '--version',
@@ -23,50 +25,48 @@ parser.add_argument(
 parser.add_argument(
     '--input-fasta',
     '-i',
-    type = str,
-    required = True,
-    help = 'Input transcriptome in FASTA format',
-    dest = 'input_fasta',
-    metavar = 'FILE'
+    type=str,
+    required=True,
+    help='Input transcriptome in FASTA format',
+    dest='input_fasta',
+    metavar='FILE'
 )
 
 parser.add_argument(
     '--input-bloom',
     '-b',
-    type = str,
-    required = True,
-    help = 'Bloom filter with genomic sequences (from abyss-bloom)',
-    dest = 'bloom_filter',
-    metavar = 'BLOOM'
+    type=str,
+    required=True,
+    help='Bloom filter with genomic sequences (from abyss-bloom)',
+    dest='bloom_filter',
+    metavar='BLOOM'
 )
 
 parser.add_argument(
     '--kmer',
     '-k',
-    type = int,
-    required = True,
-    help = 'The size of the k-mer (enter the same as in the bloom filter)',
-    dest = 'kmer',
-    metavar = 'KMER',
+    type=int,
+    required=True,
+    help='The size of the k-mer (enter the same as in the bloom filter)',
+    dest='kmer',
+    metavar='KMER',
     default=27
 )
 
 parser.add_argument(
     '--output-fasta',
     '-o',
-    type = str,
-    required = True,
-    help = 'Path to output fasta file',
-    dest = "output_fasta",
-    metavar = "FILE"
+    type=str,
+    required=True,
+    help='Path to output fasta file',
+    dest="output_fasta",
+    metavar="FILE"
 )
 
 args = parser.parse_args()
 
 if __name__ == "__main__":
-    
-    import sys
-    
+
     args = vars(parser.parse_args())
     transcriptome = args["input_fasta"]
     bloom_filter = args["bloom_filter"]
@@ -74,11 +74,11 @@ if __name__ == "__main__":
     output_fasta = args["output_fasta"]
 
     # check inputs
-    from os.path import isfile
+
     assert isfile(transcriptome), "ERROR!: input_fasta not found"
     assert isfile(bloom_filter), "ERROR!: Bloom filter not found"
     assert kmer > 0, "ERROR!: kmer is not a positive integer"
 
     # Run find_exons
-    from exfi.find_exons import find_exons
+
     find_exons(transcriptome, kmer, bloom_filter, output_fasta)

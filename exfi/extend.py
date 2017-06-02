@@ -11,9 +11,6 @@ def extend_left(records, kmer):
     Records shorter than kmer - 1 won't be extended or returned.
     """
 
-    assert isinstance(kmer, int) and kmer > 0, \
-        "Incompatible kmer {}".format(kmer)
-
     records = (record for record in records if len(record) >= kmer - 1)
 
     for record in records:
@@ -35,9 +32,6 @@ def extend_right(records, kmer):
     yield the four possible extensions to the right of the record.
     Records shorter than kmer - 1 won't be extended or returned.
     """
-
-    assert isinstance(kmer, int) and kmer > 0, \
-        "Incompatible kmer {}".format(kmer)
 
     records = (record for record in records if len(record) >= kmer - 1)
 

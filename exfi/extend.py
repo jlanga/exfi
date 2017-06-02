@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from Bio.SeqRecord import SeqRecord
+from Bio.Seq import Seq
 
 def extend_left(records, kmer):
     """(iterable of SeqRecord, int) -> generator
@@ -8,8 +10,6 @@ def extend_left(records, kmer):
     yield the four possible extensions to the left of the record.
     Records shorter than kmer - 1 won't be extended or returned.
     """
-    from Bio.SeqRecord import SeqRecord
-    from Bio.Seq import Seq
 
     assert isinstance(kmer, int) and kmer > 0, \
         "Incompatible kmer {}".format(kmer)
@@ -35,8 +35,6 @@ def extend_right(records, kmer):
     yield the four possible extensions to the right of the record.
     Records shorter than kmer - 1 won't be extended or returned.
     """
-    from Bio.SeqRecord import SeqRecord
-    from Bio.Seq import Seq
 
     assert isinstance(kmer, int) and kmer > 0, \
         "Incompatible kmer {}".format(kmer)

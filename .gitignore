@@ -6,3 +6,4 @@ results/
 src/
 exfi.egg-info
 .ipynb_checkpoints
+data/

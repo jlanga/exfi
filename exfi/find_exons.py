@@ -6,7 +6,7 @@ from subprocess import Popen, PIPE
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from exfi.reduce_exons import reduce_exons
-
+import sys
 
 def _abyss_bloom_kmers_command(kmer, bloom_filter_fn, transcriptome_fn):
     """Test all kmers in transcriptome_fn"""
@@ -26,12 +26,10 @@ def _process_output(process):
 
     NEEDS IMPROVEMENT
     """
-    raw = process.communicate()[0]
-    decoded = raw.decode()
-    splitted = decoded.split("\n")
-    for line in splitted:
-        yield line
-
+    for stdout_line in iter(process.stdout.readline, b''):
+        yield stdout_line.decode().strip()
+    process.stdout.close()
+    process.wait()
 
 def _abyss_kmers_to_bed(iterable_of_str):
     """
@@ -71,7 +69,7 @@ def _get_fasta(transcriptome_fn, locis):
     """(fasta file, list of lists) -> seqrecord
     Extract subsequences in trancriptome_fn according to locis
     """
-    transcriptome_dict = SeqIO.to_dict(SeqIO.parse(transcriptome_fn, "fasta"))
+    transcriptome_dict = SeqIO.index(transcriptome_fn, "fasta")
     for loci in locis:
         if not loci:
             continue

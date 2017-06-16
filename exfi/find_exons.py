@@ -6,10 +6,9 @@ from subprocess import Popen, PIPE
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from exfi.reduce_exons import reduce_exons
-import sys
 
 def _abyss_bloom_kmers_command(kmer, bloom_filter_fn, transcriptome_fn):
-    """Test all kmers in transcriptome_fn"""
+    """Test all kmers of length k from transcriptome_fn in bloom_filter_fn"""
     return [
         "abyss-bloom", "kmers",
         "--kmer", str(kmer),
@@ -32,9 +31,7 @@ def _process_output(process):
     process.wait()
 
 def _abyss_kmers_to_bed(iterable_of_str):
-    """
-    Convert BED in string format into str, int, int
-    """
+    """Convert BED in string format into str, int, int"""
     for record in iterable_of_str:
         if record:
             chromosome, start, end, _ = record.strip().split()
@@ -44,9 +41,7 @@ def _abyss_kmers_to_bed(iterable_of_str):
 
 
 def _merge_bed(bed_records):
-    """
-    Merge overlapping by all but one base records
-    """
+    """Merge overlapping by all but one base records"""
     parsed_records = _abyss_kmers_to_bed(bed_records)
     old = [None, None, None]  # Loci, start, end
     for new in parsed_records:
@@ -87,7 +82,9 @@ def _get_fasta(transcriptome_fn, locis):
 def _find_exons_pipeline(kmer, bloom_filter_fn, transcriptome_fn):
     """
     Main pipeline:
-    - Search for kmers, merge them if there is a big overlap, return sequences
+    - Search for kmers,
+    - merge them if there is a big overlap,
+    - return sequences
     """
     # Prepare the commands
     abyss_bloom_kmers = _abyss_bloom_kmers_command(

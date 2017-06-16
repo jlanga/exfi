@@ -15,7 +15,10 @@ def _modify_description(
     """(str) -> str
     Process multiple descriptions at once
     """
+    print("raw description: ", description)
     descriptions = description.split(" ")[1:]  # First one is the exon_id
+
+    print("processed description: ", descriptions)
     modified_descriptions = []
 
     for description in descriptions:
@@ -76,15 +79,21 @@ def filter_by_extensibility(exons, bloom_filter, kmer):
         extensions_raw
     ]
     out_handle = open(extensions_filtered, "w")
-    Popen(command_kmers, stdout=out_handle, shell=False)
+    p = Popen(command_kmers, stdout=out_handle, stderr=sys.stderr, shell=False)
+    p.wait()
     # - Read the results (as a generator)
-    extensions = SeqIO.parse(handle=extensions_filtered, format="fasta")
+    extendables = set(SeqIO.index(
+        filename=extensions_filtered,
+        format="fasta"
+    ).keys())
+    print(extendables)
     print("Trimming by extensibility", file=sys.stderr)
     # - Process the extensions by name
     # i.e., from EXONXXXXXXXX[l|r]["ACGT"] just get the EXONXXXXXXX[l|r]
     extension_names = set(
-        [extension.id.split(":")[0][:-1] for extension in extensions]
+        [extension.split(":")[0][:-1] for extension in extendables]
     )
+
     for exon in exons:
         if exon.id + "l" not in extension_names:
             exon.seq = exon.seq[1:]

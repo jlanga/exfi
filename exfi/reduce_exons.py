@@ -21,7 +21,7 @@ def reduce_exons(iterable_of_seqrecords):
     # Go over each record
     for record in iterable_of_seqrecords:
         seq = str(record.seq)
-        if seq in seq_to_id.keys():  # Just append
+        if seq in seq_to_id:  # Just append
             seq_to_description[seq] += " " + record.description
         else:  # Enter values in both dicts
             seq_to_description[seq] = record.description

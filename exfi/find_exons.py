@@ -18,6 +18,16 @@ def _abyss_bloom_kmers_command(kmer, bloom_filter_fn, transcriptome_fn):
         transcriptome_fn
     ]
 
+# def _abyss_kmers_to_bed(iterable_of_str):
+#     """Convert BED in string format into str, int, int"""
+#     for record in iterable_of_str:
+#         chromosome, start, end, _ = record.strip().split()
+#         yield [chromosome, int(start), int(end)]
+# def _abyss_kmers_to_bed(line):
+#     """Convert BED in string format into str, int, int"""
+#     chromosome, start, end, _ = record.strip().split()
+#     yield [chromosome, int(start), int(end)]
+
 
 def _process_output(process):
     """
@@ -26,24 +36,17 @@ def _process_output(process):
     NEEDS IMPROVEMENT
     """
     for stdout_line in iter(process.stdout.readline, b''):
-        yield stdout_line.decode().strip()
+        chromosome, start, end, _ = stdout_line.decode().strip().split()
+        yield [chromosome, int(start), int(end)]
     process.stdout.close()
     process.wait()
 
 
-def _abyss_kmers_to_bed(iterable_of_str):
-    """Convert BED in string format into str, int, int"""
-    for record in iterable_of_str:
-        if record:
-            chromosome, start, end, _ = record.strip().split()
-            yield [chromosome, int(start), int(end)]
-
-
 def _merge_bed(bed_records):
     """Merge overlapping by all but one base records"""
-    parsed_records = _abyss_kmers_to_bed(bed_records)
+    #parsed_records = _abyss_kmers_to_bed(bed_records)
     old = [None, None, None]  # Loci, start, end
-    for new in parsed_records:
+    for new in bed_records:
         if not old[0]:  # First record
             old = new
             continue
@@ -63,16 +66,14 @@ def _get_fasta(transcriptome_fn, locis):
     """(fasta file, list of lists) -> seqrecord
     Extract subsequences in trancriptome_fn according to locis
     """
-    transcriptome_dict = SeqIO.index(transcriptome_fn, "fasta")
+    transcriptome_dict = SeqIO.to_dict(SeqIO.parse(transcriptome_fn, "fasta"))
     for loci in locis:
-        # if not loci:
-        #     continue
         chromosome, start, end = loci
         identifier = "{0}:{1}-{2}".format(chromosome, start, end)
         description = identifier
         yield SeqRecord(
             id=identifier,
-            seq=transcriptome_dict[chromosome][start:end].seq,
+            seq=transcriptome_dict[chromosome].seq[start:end],
             description=identifier
         )
 

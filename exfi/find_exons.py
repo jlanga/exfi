@@ -68,13 +68,12 @@ def _get_fasta(transcriptome_fn, locis):
         # if not loci:
         #     continue
         chromosome, start, end = loci
-        seq = transcriptome_dict[chromosome][start:end].seq
         identifier = "{0}:{1}-{2}".format(chromosome, start, end)
         description = identifier
         yield SeqRecord(
             id=identifier,
-            seq=seq,
-            description=description
+            seq=transcriptome_dict[chromosome][start:end].seq,
+            description=identifier
         )
 
 
@@ -93,8 +92,7 @@ def _find_exons_pipeline(kmer, bloom_filter_fn, transcriptome_fn):
     abyss_kmers_output = _process_output(p1)  # Grab output
     merged = _merge_bed(abyss_kmers_output)  # Merge bed regions
     records = _get_fasta(transcriptome_fn, merged)  # Get the subsequences
-    for line in records:
-        yield line
+    yield from records
 
 
 def find_exons(transcriptome_fn, kmer, bloom_filter_fn, output_fasta):
@@ -111,14 +109,14 @@ def find_exons(transcriptome_fn, kmer, bloom_filter_fn, output_fasta):
         - output_fasta: fasta with the different exons
     """
 
-    pipeline_output = _find_exons_pipeline(
+    exons_raw = _find_exons_pipeline(
         kmer, bloom_filter_fn, transcriptome_fn
     )
 
     # Process the results from the pipes
-    exons = reduce_exons(pipeline_output)  # Collapse identical exons into one
+    exons_reduced = reduce_exons(exons_raw)  # Collapse identical exons into one
     SeqIO.write(
-        sequences=exons,
+        sequences=exons_reduced,
         handle=output_fasta,
         format="fasta"
     )

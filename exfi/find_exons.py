@@ -30,14 +30,13 @@ def _process_output(process):
     process.stdout.close()
     process.wait()
 
+
 def _abyss_kmers_to_bed(iterable_of_str):
     """Convert BED in string format into str, int, int"""
     for record in iterable_of_str:
         if record:
             chromosome, start, end, _ = record.strip().split()
-            start = int(start)
-            end = int(end)
-            yield [chromosome, start, end]
+            yield [chromosome, int(start), int(end)]
 
 
 def _merge_bed(bed_records):
@@ -48,11 +47,11 @@ def _merge_bed(bed_records):
         if not old[0]:  # First record
             old = new
             continue
-        if old[0] != new[0]:  # Change of loci
+        elif old[0] != new[0]:  # Change of loci
             yield old
             old = new
             continue
-        if old[0] == new[0] and new[2] != old[2] + 1:  # Same record
+        elif old[0] == new[0] and new[2] != old[2] + 1:  # Same record
             yield old
             old = new
             continue
@@ -66,10 +65,10 @@ def _get_fasta(transcriptome_fn, locis):
     """
     transcriptome_dict = SeqIO.index(transcriptome_fn, "fasta")
     for loci in locis:
-        if not loci:
-            continue
+        # if not loci:
+        #     continue
         chromosome, start, end = loci
-        seq = transcriptome_dict[chromosome][int(start):int(end)].seq
+        seq = transcriptome_dict[chromosome][start:end].seq
         identifier = "{0}:{1}-{2}".format(chromosome, start, end)
         description = identifier
         yield SeqRecord(

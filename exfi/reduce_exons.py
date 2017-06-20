@@ -29,7 +29,7 @@ def reduce_exons(iterable_of_seqrecords):
 
     # Collect data from both dicts into a SeqRecord and return
     for seq in seq_to_data.keys():
-        identifier, *descripti  on = seq_to_data[seq]
+        identifier, *description = seq_to_data[seq]
         record = SeqRecord(
             id=identifier,
             description=" ".join(description),

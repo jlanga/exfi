@@ -9,29 +9,30 @@ from Bio.Seq import Seq
 def reduce_exons(iterable_of_seqrecords):
     """Reduce the exons by sequence identity
 
-    Build 2 dicts in which keys are the sequences. In one of them store
-    {seq : exon_identifier} and in the other {seq : description} where
-    description is the exon coordinates.
-    Once collected all records, return them.
+    Build a dict whose keys are the sequence in str format and the values are
+    lists in which the first element is the exon_id and the remaining are
+    the coordinates in loci:start-end format
     """
     # Initialize
-    seq_to_id = dict()
-    seq_to_description = dict()
+    seq_to_data = dict()
 
     # Go over each record
     for record in iterable_of_seqrecords:
         seq = str(record.seq)
-        if seq in seq_to_id:  # Just append
-            seq_to_description[seq] += " " + record.description
+        if seq in seq_to_data:  # Just append
+            seq_to_data[seq].append(record.description)
         else:  # Enter values in both dicts
-            seq_to_description[seq] = record.description
-            seq_to_id[seq] = 'EXON{:011d}'.format(len(seq_to_id) + 1)
+            seq_to_data[seq] = [
+                'EXON{:011d}'.format(len(seq_to_data) + 1),
+                record.description
+            ]
 
     # Collect data from both dicts into a SeqRecord and return
-    for seq in seq_to_id.keys():
+    for seq in seq_to_data.keys():
+        identifier, *descripti  on = seq_to_data[seq]
         record = SeqRecord(
-            id=seq_to_id[seq],
-            description=seq_to_description[seq],
+            id=identifier,
+            description=" ".join(description),
             seq=Seq(seq)
         )
         yield record

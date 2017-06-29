@@ -3,6 +3,7 @@
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 
+
 def extend_left(records, kmer):
     """(iterable of SeqRecord, int) -> generator
 

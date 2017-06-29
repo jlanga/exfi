@@ -120,7 +120,7 @@ if __name__ == '__main__':
     assert threads >= 1, 'ERROR: incorrect number of threads'
     for read_file in reads:
         assert isfile(read_file), 'ERROR: file {file} does not exist'.format(
-            file = read_file
+            file=read_file
         )
 
     # Check if programs are in path

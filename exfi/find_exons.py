@@ -7,6 +7,7 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from exfi.reduce_exons import reduce_exons
 
+
 def _abyss_bloom_kmers_command(kmer, bloom_filter_fn, transcriptome_fn):
     """Test all kmers of length k from transcriptome_fn in bloom_filter_fn"""
     return [
@@ -17,16 +18,6 @@ def _abyss_bloom_kmers_command(kmer, bloom_filter_fn, transcriptome_fn):
         bloom_filter_fn,
         transcriptome_fn
     ]
-
-# def _abyss_kmers_to_bed(iterable_of_str):
-#     """Convert BED in string format into str, int, int"""
-#     for record in iterable_of_str:
-#         chromosome, start, end, _ = record.strip().split()
-#         yield [chromosome, int(start), int(end)]
-# def _abyss_kmers_to_bed(line):
-#     """Convert BED in string format into str, int, int"""
-#     chromosome, start, end, _ = record.strip().split()
-#     yield [chromosome, int(start), int(end)]
 
 
 def _process_output(process):
@@ -44,7 +35,6 @@ def _process_output(process):
 
 def _merge_bed(bed_records):
     """Merge overlapping by all but one base records"""
-    #parsed_records = _abyss_kmers_to_bed(bed_records)
     old = [None, None, None]  # Loci, start, end
     for new in bed_records:
         if not old[0]:  # First record
@@ -70,7 +60,6 @@ def _get_fasta(transcriptome_fn, locis):
     for loci in locis:
         chromosome, start, end = loci
         identifier = "{0}:{1}-{2}".format(chromosome, start, end)
-        description = identifier
         yield SeqRecord(
             id=identifier,
             seq=transcriptome_dict[chromosome].seq[start:end],
@@ -115,7 +104,8 @@ def find_exons(transcriptome_fn, kmer, bloom_filter_fn, output_fasta):
     )
 
     # Process the results from the pipes
-    exons_reduced = reduce_exons(exons_raw)  # Collapse identical exons into one
+    exons_reduced = reduce_exons(exons_raw)
+
     SeqIO.write(
         sequences=exons_reduced,
         handle=output_fasta,

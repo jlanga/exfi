@@ -1,3 +1,14 @@
+#!/usr/bin/env python3
+
+# Import shit
+from Bio import SeqIO  # To read and write fastas
+from exfi.filter_by_length import filter_by_length
+from exfi.extend import extend_left, extend_right
+from subprocess import Popen
+from itertools import chain
+import sys
+
+
 def _extract_loci_start_end(description):
     """(str) -> str, int, int
     Get coordinates from string
@@ -15,10 +26,8 @@ def _modify_description(
     """(str) -> str
     Process multiple descriptions at once
     """
-    print("raw description: ", description)
     descriptions = description.split(" ")[1:]  # First one is the exon_id
 
-    print("processed description: ", descriptions)
     modified_descriptions = []
 
     for description in descriptions:
@@ -36,14 +45,6 @@ def _modify_description(
 
 
 def filter_by_extensibility(exons, bloom_filter, kmer):
-
-    # Import shit
-    from Bio import SeqIO  # To read and write fastas
-    from exfi.filter_by_length import filter_by_length
-    from exfi.extend import extend_left, extend_right
-    from subprocess import Popen
-    from itertools import chain
-    import sys
 
     # Read raw exons. Use list since we will process it three times:
     # - one to compute left extensions,
@@ -86,7 +87,7 @@ def filter_by_extensibility(exons, bloom_filter, kmer):
         filename=extensions_filtered,
         format="fasta"
     ).keys())
-    print(extendables)
+    #print(extendables)
     print("Trimming by extensibility", file=sys.stderr)
     # - Process the extensions by name
     # i.e., from EXONXXXXXXXX[l|r]["ACGT"] just get the EXONXXXXXXX[l|r]

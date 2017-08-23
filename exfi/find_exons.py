@@ -7,98 +7,62 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from exfi.reduce_exons import reduce_exons
 import sys
-
-def _abyss_bloom_kmers_command(kmer, bloom_filter_fn, transcriptome_fn):
-    """Test all kmers in transcriptome_fn"""
-    return [
-        "abyss-bloom", "kmers",
-        "--kmer", str(kmer),
-        "--verbose",
-        "--bed",
-        bloom_filter_fn,
-        transcriptome_fn
-    ]
+import tempfile
 
 
 def _process_output(process):
-    """
-    Auxiliar function to process the output as it comes
-
-    NEEDS IMPROVEMENT
-    """
+    """Get lines from the output of a Popen."""
     for stdout_line in iter(process.stdout.readline, b''):
         yield stdout_line.decode().strip()
     process.stdout.close()
     process.wait()
 
-def _abyss_kmers_to_bed(iterable_of_str):
-    """
-    Convert BED in string format into str, int, int
-    """
-    for record in iterable_of_str:
-        if record:
-            chromosome, start, end, _ = record.strip().split()
-            start = int(start)
-            end = int(end)
-            yield [chromosome, start, end]
+
+def _str_to_bed(bed_string):
+    """Convert BED in string format into (str, int, int)."""
+    chromosome, start, end = bed_string.strip().split("\t")
+    start = int(start)
+    end = int(end)
+    return (chromosome, start, end)
 
 
-def _merge_bed(bed_records):
-    """
-    Merge overlapping by all but one base records
-    """
-    parsed_records = _abyss_kmers_to_bed(bed_records)
-    old = [None, None, None]  # Loci, start, end
-    for new in parsed_records:
-        if not old[0]:  # First record
-            old = new
-            continue
-        if old[0] != new[0]:  # Change of loci
-            yield old
-            old = new
-            continue
-        if old[0] == new[0] and new[2] != old[2] + 1:  # Same record
-            yield old
-            old = new
-            continue
-        old[2] = new[2]  # If not different contig or too big jump, update
-    yield old  # last step
+def _get_fasta(transcriptome_dict, iterable_of_bed):
+    """Extract subsequences in trancriptome_fn according to locis.
 
-
-def _get_fasta(transcriptome_fn, locis):
-    """(fasta file, list of lists) -> seqrecord
-    Extract subsequences in trancriptome_fn according to locis
+    (fasta file, list of lists) -> seqrecord
     """
-    transcriptome_dict = SeqIO.index(transcriptome_fn, "fasta")
-    for loci in locis:
-        if not loci:
-            continue
-        chromosome, start, end = loci
-        seq = transcriptome_dict[chromosome][int(start):int(end)].seq
+    for bed in iterable_of_bed:
+        chromosome, start, end = bed
+        seq = transcriptome_dict[chromosome][start:end].seq
         identifier = "{0}:{1}-{2}".format(chromosome, start, end)
         description = identifier
-        yield SeqRecord(
-            id=identifier,
-            seq=seq,
-            description=description
-        )
+        yield SeqRecord(id=identifier, seq=seq, description=description)
 
 
-def _find_exons_pipeline(kmer, bloom_filter_fn, transcriptome_fn):
-    """
+def _find_exons_pipeline(kmer, bloom_filter_fn, transcriptome_fn, max_fp_bases=5):
+    """Find exons according to the Bloom filter -> BED
     Main pipeline:
-    - Search for kmers, merge them if there is a big overlap, return sequences
+    - Check every kmer,
+    - merge if there is an overlap of k-1 bases
+    - Throw away too short exons (k + max_fp_bases)
+    - merge consecutive exons if they have an ovelap of 2*max_fp_bases
     """
     # Prepare the commands
-    abyss_bloom_kmers = _abyss_bloom_kmers_command(
-        kmer, bloom_filter_fn, transcriptome_fn
-    )
-    p1 = Popen(abyss_bloom_kmers, stdout=PIPE, shell=False)
-    abyss_kmers_output = _process_output(p1)  # Grab output
-    merged = _merge_bed(abyss_kmers_output)  # Merge bed regions
-    records = _get_fasta(transcriptome_fn, merged)  # Get the subsequences
-    for line in records:
-        yield line
+    c_kmers = ["abyss-bloom", "kmers", "--kmer", str(kmer), "--verbose",
+        "--bed", bloom_filter_fn, transcriptome_fn]
+    c_merge1 = ["bedtools", "merge", "-d", str(-kmer + 2)]
+    c_filter = ["awk", "$3 - $2 >= {min_length}".format(
+        min_length=kmer + max_fp_bases
+    )]
+    c_merge2 = ["bedtools", "merge", "-d", str(-10 + 2)]
+    c_sort = ["bedtools", "sort"]
+    # Run all of them streamlined
+    p_kmers = Popen(c_kmers, stdout=PIPE)
+    p_merge1 = Popen(c_merge1, stdin=p_kmers.stdout, stdout=PIPE)
+    p_filter = Popen(c_filter, stdin=p_merge1.stdout, stdout=PIPE)
+    p_merge2 = Popen(c_merge2, stdin=p_filter.stdout, stdout=PIPE)
+    p_kmers.stdout.close()
+    yield from map(_str_to_bed, _process_output(p_merge2))
 
 
 def find_exons(transcriptome_fn, kmer, bloom_filter_fn, output_fasta):
@@ -114,15 +78,14 @@ def find_exons(transcriptome_fn, kmer, bloom_filter_fn, output_fasta):
             kmer as above
         - output_fasta: fasta with the different exons
     """
-
-    pipeline_output = _find_exons_pipeline(
-        kmer, bloom_filter_fn, transcriptome_fn
+    # Get predicted exons in bed format
+    positive_exons_bed = _find_exons_pipeline(
+        kmer, bloom_filter_fn, transcriptome_fn, max_fp_bases=5
     )
-
-    # Process the results from the pipes
-    exons = reduce_exons(pipeline_output)  # Collapse identical exons into one
-    SeqIO.write(
-        sequences=exons,
-        handle=output_fasta,
-        format="fasta"
-    )
+    # Bed -> fasta
+    transcriptome_dict = SeqIO.index(filename=transcriptome_fn, format="fasta")
+    positive_exons_fasta = _get_fasta(transcriptome_dict, positive_exons_bed)
+    # Reduce
+    exons = reduce_exons(positive_exons_fasta)  # Collapse identical exons into one
+    # Write
+    SeqIO.write(sequences=exons, handle=output_fasta, format="fasta")

@@ -11,18 +11,10 @@ from exfi.reduce_exons import reduce_exons
 def _process_output(process):
     """Get lines from the output of a Popen."""
     for stdout_line in iter(process.stdout.readline, b''):
-        chromosome, start, end, _ = stdout_line.decode().strip().split()
-        yield [chromosome, int(start), int(end)]
+        chromosome, start, end = stdout_line.decode().strip().split()
+        yield (chromosome, int(start), int(end))
     process.stdout.close()
     process.wait()
-
-
-def _str_to_bed(bed_string):
-    """Convert BED in string format into (str, int, int)."""
-    chromosome, start, end = bed_string.strip().split("\t")
-    start = int(start)
-    end = int(end)
-    return (chromosome, start, end)
 
 
 def _get_fasta(transcriptome_dict, iterable_of_bed):
@@ -60,7 +52,7 @@ def _find_exons_pipeline(kmer, bloom_filter_fn, transcriptome_fn, max_fp_bases=5
     p_filter = Popen(c_filter, stdin=p_merge1.stdout, stdout=PIPE)
     p_merge2 = Popen(c_merge2, stdin=p_filter.stdout, stdout=PIPE)
     p_kmers.stdout.close()
-    yield from map(_str_to_bed, _process_output(p_merge2))
+    yield from _process_output(p_merge2)
 
 
 def find_exons(transcriptome_fn, kmer, bloom_filter_fn, output_fasta):

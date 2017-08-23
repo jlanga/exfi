@@ -16,8 +16,6 @@ setup(
     scripts=[
         "bin/build_baited_bloom_filter",
         "bin/find_exons",
-        "bin/filter_exons_by_length",
-        "bin/filter_exons_by_extensibility",
         "bin/reduce_exons",
     ],
     include_package_data=True,

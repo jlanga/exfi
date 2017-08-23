@@ -6,8 +6,6 @@ from subprocess import Popen, PIPE
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from exfi.reduce_exons import reduce_exons
-import sys
-import tempfile
 
 
 def _process_output(process):
@@ -56,7 +54,6 @@ def _find_exons_pipeline(kmer, bloom_filter_fn, transcriptome_fn, max_fp_bases=5
         min_length=kmer + max_fp_bases
     )]
     c_merge2 = ["bedtools", "merge", "-d", str(-10 + 2)]
-    c_sort = ["bedtools", "sort"]
     # Run all of them streamlined
     p_kmers = Popen(c_kmers, stdout=PIPE)
     p_merge1 = Popen(c_merge1, stdin=p_kmers.stdout, stdout=PIPE)

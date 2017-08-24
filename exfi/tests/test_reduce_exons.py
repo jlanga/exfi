@@ -3,8 +3,6 @@
 
 from unittest import TestCase
 from Bio import SeqIO
-from Bio.SeqRecord import SeqRecord
-from Bio.Seq import Seq
 from exfi.reduce_exons import reduce_exons
 from exfi.tests.auxiliary_functions import equal_list_of_seqrecords
 

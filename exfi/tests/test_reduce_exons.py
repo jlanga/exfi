@@ -6,97 +6,59 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 from exfi.reduce_exons import reduce_exons
-
+from exfi.tests.auxiliary_functions import equal_list_of_seqrecords
 
 class TestReduceExons(TestCase):
 
     def test_empty_sequence(self):
-        """Test /dev/null"""
+        """reduce_exons.py: test empty fasta"""
         records = SeqIO.parse(
-            handle="/dev/null",
+            handle="exfi/tests/files/reduce_exons/empty_sequence_input.fa",
             format="fasta"
         )
         actual = list(reduce_exons(records))
-        expected = []
-        self.assertEqual(actual, expected)
+        expected = list(SeqIO.parse(
+            handle="exfi/tests/files/reduce_exons/empty_sequence_output.fa",
+            format="fasta"
+        ))
+        self.assertTrue(equal_list_of_seqrecords(actual, expected))
 
     def test_one_exon(self):
-        """Try a single exon"""
-        records = list(SeqIO.parse(
-            handle="exfi/tests/files/one_sequence.fa",
+        """reduce_exons.py: test single exon"""
+        records = SeqIO.parse(
+            handle="exfi/tests/files/reduce_exons/one_exon_input.fa",
+            format="fasta"
+        )
+        actual = list(reduce_exons(records))
+        expected = list(SeqIO.parse(
+            handle="exfi/tests/files/reduce_exons/one_exon_output.fa",
             format="fasta"
         ))
-        actual = list(reduce_exons(records))
-        expected = [SeqRecord(
-            id="EXON00000000001",
-            seq=Seq(
-                "GTAAGCCGCGGCGGTGTGTGTGTGTGTGTGTGTTCTCCGTCATCTGTGTTCTGCTGAATG"
-            )
-        )]
-
-        self.assertEqual(
-            [record.id for record in actual],
-            [record.id for record in expected]
-        )
-
-        self.assertEqual(
-            [str(record.seq) for record in actual],
-            [str(record.seq) for record in expected]
-        )
+        self.assertTrue(equal_list_of_seqrecords(actual, expected))
 
     def test_same_exon(self):
-        """Read the same exon twice"""
-        records = list(SeqIO.parse(
-            handle="exfi/tests/files/one_sequence.fa",
+        """reduce_exons.py: read the same exon twice"""
+        records = SeqIO.parse(
+            handle="exfi/tests/files/reduce_exons/same_exon_input.fa",
             format="fasta"
-        )) * 2
+        )
         actual = list(reduce_exons(records))
-        expected = [SeqRecord(
-            id="EXON00000000001",
-            seq=Seq(
-                "GTAAGCCGCGGCGGTGTGTGTGTGTGTGTGTGTTCTCCGTCATCTGTGTTCTGCTGAATG"
-            )
-        )]
-        self.assertEqual(
-            [record.id for record in actual],
-            [record.id for record in expected]
-        )
-        self.assertEqual(
-            [str(record.seq) for record in actual],
-            [str(record.seq) for record in expected]
-        )
-
-    def test_different_exons(self):
-        """Read two different exons"""
-        records = list(SeqIO.parse(
-            handle="exfi/tests/files/two_sequences.fa",
+        expected = list(SeqIO.parse(
+            handle="exfi/tests/files/reduce_exons/same_exon_output.fa",
             format="fasta"
         ))
-        actual = list(reduce_exons(records))
-        expected = [
-            SeqRecord(
-                id="EXON00000000001",
-                seq=Seq(
-                    "GTAAGCCGCGGCGGTGTGTGTGTGTGTGTGTGTTCTCCGTCAT"
-                    "CTGTGTTCTGCTGAATG"
-                )
-            ),
-            SeqRecord(
-                id="EXON00000000002",
-                seq=Seq(
-                    "AGAATGCGAGTGAGTGTGTGCAGCCACAGTCGTCTGAGTTTCCT"
-                    "GAAGGATTCTTCACGG"
-                )
-            )
-        ]
-        print(actual)
-        print(expected)
+        self.assertTrue(equal_list_of_seqrecords(actual, expected))
 
-        self.assertEqual(
-            [record.id for record in actual],
-            [record.id for record in expected]
+
+    def test_different_exons(self):
+        """reduce_exons.py: read the same exon twice"""
+        records = SeqIO.parse(
+            handle="exfi/tests/files/reduce_exons/different_exons_input.fa",
+            format="fasta"
         )
-        self.assertEqual(
-            [str(record.seq) for record in actual],
-            [str(record.seq) for record in expected]
-        )
+        actual = list(reduce_exons(records))
+        expected = list(SeqIO.parse(
+            handle="exfi/tests/files/reduce_exons/different_exons_output.fa",
+            format="fasta"
+        ))
+        self.assertTrue(equal_list_of_seqrecords(actual, expected))

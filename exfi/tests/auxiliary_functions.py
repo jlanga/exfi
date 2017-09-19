@@ -4,10 +4,9 @@
 Auxiliary functions and classes for testing
 """
 
-from Bio import SeqIO
-
 class CustomAssertions:
 
+    @classmethod
     def assertEqualListOfSeqrecords(self, records1, records2):
         """
         Check if each element of list_of_seqrecords1 is exactly equal to each one of

@@ -54,8 +54,7 @@ def build_baited_bloom_filter(
         '--score', str(kmer),
         '--fa',
         '--stdout_filter', 'transcriptome',
-        *reads
-    ]
+    ] + reads
 
     build_bf = [
         'abyss-bloom', 'build',

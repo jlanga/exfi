@@ -4,8 +4,7 @@ import argparse
 import sys
 from exfi.find_exons import \
     _get_fasta, \
-    _find_exons_pipeline, \
-    find_exons
+    _find_exons_pipeline
 from exfi.reduce_exons import reduce_exons
 from Bio import SeqIO
 from os.path import isfile
@@ -95,7 +94,7 @@ if __name__ == "__main__":
     assert isfile(bloom_filter), "ERROR!: Bloom filter not found"
     assert kmer > 0, "ERROR!: kmer is not a positive integer"
     assert max_fp_bases >= 0, "ERROR!: max_fp_bases is not a positive integer"
-    
+
     # Get predicted exons in bed format
     positive_exons_bed = _find_exons_pipeline(
         kmer, bloom_filter, transcriptome, max_fp_bases

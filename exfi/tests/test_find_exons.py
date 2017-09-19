@@ -120,13 +120,14 @@ class TestFindExonsPipeline(TestCase):
     @classmethod
     def test_notranscriptome_noreads(self):
         """find_exons.py: Process an empty transcriptome and an empty BF"""
-        process = Popen(['abyss-bloom', 'build',
-                '--kmer', "30",
-                '--bloom-size', "100M",
-                '--levels', "1",
-                '--threads', "1",
-                "/tmp/test_bloom.bf",
-                '/dev/null'],
+        process = Popen(
+            ['abyss-bloom', 'build',
+            '--kmer', "30",
+            '--bloom-size', "100M",
+            '--levels', "1",
+            '--threads', "1",
+            "/tmp/test_bloom.bf",
+            '/dev/null'],
             stdout=open("/dev/null", 'w'),
             stderr=open("/dev/null", "w")
         )
@@ -139,7 +140,7 @@ class TestFindExonsPipeline(TestCase):
         )
         results = list(results)
         os.remove("/tmp/test_bloom.bf")
-        self.assertEqual(results, [])
+        self.assertEqual(first=results, second=[])
 
 
     @classmethod
@@ -164,7 +165,7 @@ class TestFindExonsPipeline(TestCase):
         )
         results = list(results)
         os.remove('/tmp/test_bloom.bf')
-        self.assertEqual(results, [])
+        self.assertEqual(first=results, second=[])
 
     @classmethod
     def test_small_data(self):
@@ -189,4 +190,4 @@ class TestFindExonsPipeline(TestCase):
         )
         results = list(results)
         os.remove('/tmp/test_bloom.bf')
-        self.assertEqual(results, [])
+        self.assertEqual(first=results, second=[])

@@ -13,38 +13,39 @@ import os
 
 class TestProcessOutput(TestCase):
 
-    @classmethod
     def test_empty_process(self):
         """find_exons.py: process an empty stream"""
         command = ["cat", "/dev/null"]
         process = Popen(command, stdout=PIPE)
         results = list(_process_output(process))
-        self.assertEqual(results, [])
+        self.assertEqual(first=results, second=[])
 
-    @classmethod
     def test_simple_process(self):
         """find_exons.py: process an simple stream"""
         command = ["cat", "exfi/tests/files/find_exons/simple.bed"]
         process = Popen(command, stdout=PIPE)
         results = list(_process_output(process))
-        self.assertEqual(results, [("test", 4, 27)])
+        self.assertEqual(
+            results,
+            second=[("test", 4, 27)]
+        )
 
-    @classmethod
     def test_big_process(self):
         """find_exons.py: process an big stream"""
         command = ["cat", "exfi/tests/files/find_exons/big.bed"]
         process = Popen(command, stdout=PIPE)
         results = list(_process_output(process))
         self.assertEqual(
-            results,
-            [("test1", 14, 27), ("test2", 15, 19),
-            ("test2", 17, 21), ("test3", 19, 25)]
+            first=results,
+            second=[
+                ("test1", 14, 27), ("test2", 15, 19),
+                ("test2", 17, 21), ("test3", 19, 25)
+            ]
         )
 
 
 class TestGetFasta(TestCase, CustomAssertions):
 
-    @classmethod
     def test_empty_sequence_empty_bed(self):
         """find_exons.py: process an empty fasta and an empty bed"""
         results = _get_fasta(
@@ -53,10 +54,10 @@ class TestGetFasta(TestCase, CustomAssertions):
         )
         expected = []
         self.assertEqual(
-            list(results), expected
+            first=list(results),
+            second=expected
         )
 
-    @classmethod
     def test_empty_sequence_one_bed(self):
         """find_exons.py: process an empty fasta and an empty bed"""
         results = _get_fasta(
@@ -65,10 +66,10 @@ class TestGetFasta(TestCase, CustomAssertions):
         )
         expected = []
         self.assertEqual(
-            list(results), expected
+            first=list(results),
+            second=expected
         )
 
-    @classmethod
     def test_one_sequence_empty_bed(self):
         """find_exons.py: process a simple fasta and an empty bed"""
         results = _get_fasta(
@@ -79,10 +80,10 @@ class TestGetFasta(TestCase, CustomAssertions):
         )
         expected = []
         self.assertEqual(
-            list(results), expected
+            first=list(results),
+            second=expected
         )
 
-    @classmethod
     def test_one_sequence_one_bed(self):
         """find_exons.py: process an single fasta and a single bed record"""
         record_dict = SeqIO.index(
@@ -95,10 +96,8 @@ class TestGetFasta(TestCase, CustomAssertions):
             handle="exfi/tests/files/find_exons/one_sequence_one_bed_output.fa",
             format="fasta"
         ))
-        #print(record_dict)
-        self.assertEqualListOfSeqrecords(results, expected)
+        self.assertEqualListOfSeqrecords(results,expected)
 
-    @classmethod
     def test_multiple_sequences_multiple_beds(self):
         """find_exons.py: process an multiline fasta and multple bed"""
         record_dict = SeqIO.index(
@@ -111,13 +110,11 @@ class TestGetFasta(TestCase, CustomAssertions):
             handle="exfi/tests/files/find_exons/multiple_sequences_multiple_beds_output.fa",
             format="fasta"
         ))
-        #print(record_dict)
-        self.assertEqualListOfSeqrecords(results, expected)
+        self.assertEqualListOfSeqrecords(results,expected)
 
 
 class TestFindExonsPipeline(TestCase):
 
-    @classmethod
     def test_notranscriptome_noreads(self):
         """find_exons.py: Process an empty transcriptome and an empty BF"""
         process = Popen(
@@ -140,10 +137,11 @@ class TestFindExonsPipeline(TestCase):
         )
         results = list(results)
         os.remove("/tmp/test_bloom.bf")
-        self.assertEqual(first=results, second=[])
+        self.assertEqual(
+            first=results,
+            second=[]
+        )
 
-
-    @classmethod
     def test_transcriptome_noreads(self):
         """find_exons.py: Process a small transcriptome and an empty BF"""
         process = Popen(['abyss-bloom', 'build',
@@ -165,9 +163,11 @@ class TestFindExonsPipeline(TestCase):
         )
         results = list(results)
         os.remove('/tmp/test_bloom.bf')
-        self.assertEqual(first=results, second=[])
+        self.assertEqual(
+            first=results,
+            second=[]
+        )
 
-    @classmethod
     def test_small_data(self):
         """find_exons.py: Process an empty transcriptome and a small BF"""
         process = Popen(['abyss-bloom', 'build',
@@ -190,4 +190,7 @@ class TestFindExonsPipeline(TestCase):
         )
         results = list(results)
         os.remove('/tmp/test_bloom.bf')
-        self.assertEqual(first=results, second=[])
+        self.assertEqual(
+            first=results,
+            second=[]
+        )

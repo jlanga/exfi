@@ -9,6 +9,7 @@ from exfi.tests.auxiliary_functions import CustomAssertions
 
 class TestReduceExons(TestCase, CustomAssertions):
 
+    @classmethod
     def test_empty_sequence(self):
         """reduce_exons.py: test empty fasta"""
         records = SeqIO.parse(
@@ -25,7 +26,7 @@ class TestReduceExons(TestCase, CustomAssertions):
             list(expected)
         )
 
-
+    @classmethod
     def test_one_exon(self):
         """reduce_exons.py: test single exon"""
         records = SeqIO.parse(
@@ -42,6 +43,7 @@ class TestReduceExons(TestCase, CustomAssertions):
             list(expected)
         )
 
+    @classmethod
     def test_same_exon(self):
         """reduce_exons.py: read the same exon twice"""
         records = SeqIO.parse(
@@ -58,7 +60,7 @@ class TestReduceExons(TestCase, CustomAssertions):
             list(expected)
         )
 
-
+    @classmethod
     def test_different_exons(self):
         """reduce_exons.py: read the same exon twice"""
         records = SeqIO.parse(

@@ -21,6 +21,7 @@ class TestBuildBaitedBloomFilter(TestCase):
     #         reads="exfi/bin/tests/files/empty.txt"
     #     )
 
+    @classmethod
     def test_build_empty_library(self):
         '''build_baited_bloom_filter.py: build a BF without reads'''
         build_baited_bloom_filter(
@@ -33,6 +34,7 @@ class TestBuildBaitedBloomFilter(TestCase):
             reads=["exfi/bin/tests/files/empty.txt"]
         )
 
+    @classmethod
     def test_build_one_library(self):
         '''build_baited_bloom_filter.py: build the BF with one library'''
         build_baited_bloom_filter(
@@ -45,6 +47,7 @@ class TestBuildBaitedBloomFilter(TestCase):
             reads=["exfi/bin/tests/build_baited_bloom_filter/reads_1.fq"]
         )
 
+    @classmethod
     def test_build_two_libraries(self):
         '''build_baited_bloom_filter.py: build the BF with two libraries'''
         build_baited_bloom_filter(

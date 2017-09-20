@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser(
     description='Find exons in a transcriptome with WGS reads and a Bloom '
                 'filter',
     epilog='Jorge Langa. Send issues and pull requests to github.com/jlanga/'
-           'exon_finder',
+           'exfi',
 )
 
 parser.add_argument(

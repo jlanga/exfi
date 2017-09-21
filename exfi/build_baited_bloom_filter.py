@@ -36,6 +36,10 @@ def build_baited_bloom_filter(
     if output_dir == "":
         output_dir = "./"
 
+    # Convert single read library to list
+    if isinstance(reads, str):
+        reads = [reads]
+
     # Prepare the commands
     build_transcriptome_bf = [
         'biobloommaker',
@@ -69,7 +73,7 @@ def build_baited_bloom_filter(
 
     # Run the pipeline
     stderr.write(
-        "\nRunning command: {command}\n".format(
+        "\n\nRunning command: {command}\n".format(
             command=" ".join(build_transcriptome_bf)
         )
     )
@@ -79,7 +83,7 @@ def build_baited_bloom_filter(
     p_build_transcriptome_bf.wait()
 
     stderr.write(
-        "\nRunning commands: {command1} | {command2}\n".format(
+        "\n\nRunning commands: {command1} | {command2}\n".format(
             command1=" ".join(categorize),
             command2=" ".join(build_bf)
         )

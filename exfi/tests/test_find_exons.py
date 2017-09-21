@@ -10,6 +10,8 @@ from subprocess import Popen, PIPE
 from Bio import SeqIO
 from exfi.tests.auxiliary_functions import CustomAssertions
 import os
+import tempfile
+
 
 class TestProcessOutput(TestCase):
 
@@ -117,13 +119,14 @@ class TestFindExonsPipeline(TestCase):
 
     def test_notranscriptome_noreads(self):
         """find_exons.py: Process an empty transcriptome and an empty BF"""
+        tmp_bf = tempfile.mktemp(suffix=".bf")
         process = Popen(
             ['abyss-bloom', 'build',
             '--kmer', "30",
             '--bloom-size', "100M",
             '--levels', "1",
             '--threads', "1",
-            "/tmp/test_bloom.bf",
+            tmp_bf,
             '/dev/null'],
             stdout=open("/dev/null", 'w'),
             stderr=open("/dev/null", "w")
@@ -131,12 +134,12 @@ class TestFindExonsPipeline(TestCase):
         process.wait()
         results = _find_exons_pipeline(
             kmer=30,
-            bloom_filter_fn="/tmp/test_bloom.bf",
+            bloom_filter_fn=tmp_bf,
             transcriptome_fn="/dev/null",
             max_fp_bases=5
         )
         results = list(results)
-        os.remove("/tmp/test_bloom.bf")
+        os.unlink(tmp_bf)
         self.assertEqual(
             first=results,
             second=[]
@@ -144,12 +147,13 @@ class TestFindExonsPipeline(TestCase):
 
     def test_transcriptome_noreads(self):
         """find_exons.py: Process a small transcriptome and an empty BF"""
+        tmp_bf = tempfile.mktemp(suffix=".bf")
         process = Popen(['abyss-bloom', 'build',
                 '--kmer', "30",
                 '--bloom-size', "100M",
                 '--levels', "1",
                 '--threads', "1",
-                "/tmp/test_bloom.bf",
+                tmp_bf,
                 '/dev/null'],
             stdout=open('/dev/null', 'w'),
             stderr=open('/dev/null', 'w')
@@ -157,12 +161,12 @@ class TestFindExonsPipeline(TestCase):
         process.wait()
         results = _find_exons_pipeline(
             kmer=30,
-            bloom_filter_fn='/tmp/test_bloom.bf',
+            bloom_filter_fn=tmp_bf,
             transcriptome_fn='exfi/tests/files/find_exons/small_transcriptome.fa',
             max_fp_bases=5
         )
         results = list(results)
-        os.remove('/tmp/test_bloom.bf')
+        os.unlink(tmp_bf)
         self.assertEqual(
             first=results,
             second=[]
@@ -170,12 +174,13 @@ class TestFindExonsPipeline(TestCase):
 
     def test_small_data(self):
         """find_exons.py: Process an empty transcriptome and a small BF"""
+        tmp_bf = tempfile.mktemp(suffix=".bf")
         process = Popen(['abyss-bloom', 'build',
                 '--kmer', "30",
                 '--bloom-size', "100M",
                 '--levels', "1",
                 '--threads', "1",
-                "/tmp/test_bloom.bf",
+                tmp_bf,
                 'exfi/tests/files/find_exons/reads_1.fq',
                 'exfi/tests/files/find_exons/reads_2.fq'],
             stdout=open('/dev/null', 'w'),
@@ -184,12 +189,12 @@ class TestFindExonsPipeline(TestCase):
         process.wait()
         results = _find_exons_pipeline(
             kmer=30,
-            bloom_filter_fn='/tmp/test_bloom.bf',
+            bloom_filter_fn=tmp_bf,
             transcriptome_fn='exfi/tests/files/find_exons/small_transcriptome.fa',
             max_fp_bases=5
         )
         results = list(results)
-        os.remove('/tmp/test_bloom.bf')
+        os.remove(tmp_bf)
         self.assertEqual(
             first=results,
             second=[]

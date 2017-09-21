@@ -1,9 +1,10 @@
 from setuptools import setup
 
+from exfi import __version__
 
 setup(
     name='exfi',
-    version='1.1.0',
+    version=__version__,
     packages=['exfi'],
     license='MIT',
     install_requires=[

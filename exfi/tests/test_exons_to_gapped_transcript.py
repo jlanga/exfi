@@ -65,8 +65,6 @@ class TestBuildTranscriptToExonDict(TestCase):
         self.assertEqual(actual, expected)
 
 
-from exfi.tests.auxiliary_functions import CustomAssertions
-
 class TestExonsToGappedTranscript(TestCase, CustomAssertions):
     # exon_dict_to_gapped_transcript(transcript_to_exons, exome_fn, number_of_ns=100)
     def test_empty_both(self):

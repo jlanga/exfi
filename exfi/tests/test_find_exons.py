@@ -127,7 +127,12 @@ class TestGetFasta(unittest.TestCase, CustomAssertions):
 
 
 
-
+def _silent_popen(command):
+    """Create a Popen with no stderr and stdout"""
+    return Popen(command,
+        stdout=open("/dev/null", 'w'),
+        stderr=open("/dev/null", 'w')
+    )
 
 class TestFindExonsPipeline(unittest.TestCase):
 
@@ -138,23 +143,18 @@ class TestFindExonsPipeline(unittest.TestCase):
         tmp_dir = tempfile.mkdtemp()
         tmp_bf = tmp_dir + "/test.bf"
         command = _get_build_bf_command("30", "100M", "1", "1", tmp_bf, reads_fns)
-        print(command)
-        process = Popen(
-            command,
-            stdout=open("/dev/null", 'w'),
-            stderr=open("/dev/null", "w")
-        )
+        process = _silent_popen(command)
         process.wait()
-        results = list(_find_exons_pipeline(
-            kmer=30,
-            bloom_filter_fn=tmp_bf,
-            transcriptome_fn=transcriptome_fn,
-            max_fp_bases=5
-        ))
+
         shutil.rmtree(tmp_dir)
         self.assertEqual(
-            first=results,
-            second=[]
+            results = list(_find_exons_pipeline(
+                kmer=30,
+                bloom_filter_fn=tmp_bf,
+                transcriptome_fn=transcriptome_fn,
+                max_fp_bases=5
+            )),
+            []
         )
 
     def test_transcriptome_noreads(self):
@@ -164,22 +164,18 @@ class TestFindExonsPipeline(unittest.TestCase):
         tmp_dir = tempfile.mkdtemp()
         tmp_bf = tmp_dir + "/test.bf"
         command = _get_build_bf_command("30", "100M", "1", "1", tmp_bf, reads_fns)
-        process = Popen(
-            command,
-            stdout=open('/dev/null', 'w'),
-            stderr=open('/dev/null', 'w')
-        )
+        process = _silent_popen(command)
         process.wait()
-        results = list(_find_exons_pipeline(
-            kmer=30,
-            bloom_filter_fn=tmp_bf,
-            transcriptome_fn= transcriptome_fn,
-            max_fp_bases=5
-        ))
+        results =
         shutil.rmtree(tmp_dir)
         self.assertEqual(
-            first=results,
-            second=[]
+            list(_find_exons_pipeline(
+                kmer=30,
+                bloom_filter_fn=tmp_bf,
+                transcriptome_fn= transcriptome_fn,
+                max_fp_bases=5
+            )),
+            []
         )
 
     def test_small_data(self):
@@ -192,22 +188,18 @@ class TestFindExonsPipeline(unittest.TestCase):
         tmp_dir = tempfile.mkdtemp()
         tmp_bf = tmp_dir + "/test.bf"
         command = _get_build_bf_command("30", "100M", "1", "1", tmp_bf, reads_fns)
-        process = Popen(
-            command,
-            stdout=open('/dev/null', 'w'),
-            stderr=open('/dev/null', 'w')
-        )
+        process = _silent_popen(command)
         process.wait()
-        results = list(_find_exons_pipeline(
-            kmer=30,
-            bloom_filter_fn=tmp_bf,
-            transcriptome_fn=transcriptome_fn,
-            max_fp_bases=5
-        ))
+        results =
         shutil.rmtree(tmp_dir)
         self.assertEqual(
-            first=results,
-            second=[]
+            list(_find_exons_pipeline(
+                kmer=30,
+                bloom_filter_fn=tmp_bf,
+                transcriptome_fn=transcriptome_fn,
+                max_fp_bases=5
+            )),
+            []
         )
 
 

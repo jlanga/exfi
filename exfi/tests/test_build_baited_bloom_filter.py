@@ -4,7 +4,7 @@ from unittest import TestCase
 from exfi.build_baited_bloom_filter import \
     build_baited_bloom_filter
 import tempfile
-import os
+import shutil
 
 class TestBuildBaitedBloomFilter(TestCase):
 
@@ -14,62 +14,66 @@ class TestBuildBaitedBloomFilter(TestCase):
 
         Note: biobloommaker fails
         '''
-        folder = tempfile.mkdtemp()
+        tmp_dir = tempfile.mkdtemp()
+        tmp_bf = tmp_dir + "/test.bf"
         build_baited_bloom_filter(
             transcriptome="exfi/tests/files/empty.txt",
             kmer=30,
             bloom_size="100M",
             levels=1,
-            output_bloom=folder + "test.bf",
+            output_bloom=tmp_bf,
             threads=1,
             reads="exfi/tests/files/empty.txt"
         )
-        os.rmdir(folder)
+        shutil.rmtree(tmp_dir)
 
     @classmethod
     def test_build_empty_library(self):
         '''build_baited_bloom_filter.py: build a BF without reads'''
-        folder = tempfile.mkdtemp()
+        tmp_dir = tempfile.mkdtemp()
+        tmp_bf = tmp_dir + "/test.bf"
         build_baited_bloom_filter(
             transcriptome="exfi/tests/files/build_baited_bloom_filter/small_transcriptome.fa",
             kmer=30,
             bloom_size="100M",
             levels=1,
-            output_bloom=folder + "test.bf",
+            output_bloom=tmp_bf,
             threads=1,
             reads=["exfi/tests/files/empty.txt"]
         )
-        os.rmdir(folder)
+        shutil.rmtree(tmp_dir)
 
     @classmethod
     def test_build_one_library(self):
         '''build_baited_bloom_filter.py: build the BF with one library'''
-        folder = tempfile.mkdtemp()
+        tmp_dir = tempfile.mkdtemp()
+        tmp_bf = tmp_dir + "/test.bf"
         build_baited_bloom_filter(
             transcriptome="exfi/tests/files/build_baited_bloom_filter/small_transcriptome.fa",
             kmer=30,
             bloom_size="100M",
             levels=1,
-            output_bloom=folder + "test.bf",
+            output_bloom=tmp_bf,
             threads=1,
             reads=["exfi/tests/files/build_baited_bloom_filter/reads_1.fq"]
         )
-        os.rmdir(folder)
+        shutil.rmtree(tmp_dir)
 
     @classmethod
     def test_build_two_libraries(self):
         '''build_baited_bloom_filter.py: build the BF with two libraries'''
-        folder = tempfile.mkdtemp()
+        tmp_dir = tempfile.mkdtemp()
+        tmp_bf = tmp_dir + "/test.bf"
         build_baited_bloom_filter(
             transcriptome="exfi/tests/files/build_baited_bloom_filter/small_transcriptome.fa",
             kmer=30,
             bloom_size="100M",
             levels=1,
-            output_bloom=folder + "test.bf",
+            output_bloom=tmp_bf,
             threads=1,
             reads=[
                 "exfi/tests/files/build_baited_bloom_filter/reads_1.fq",
                 "exfi/tests/files/build_baited_bloom_filter/reads_2.fq"
             ]
         )
-        os.rmdir(folder)
+        shutil.rmtree(tmp_dir)

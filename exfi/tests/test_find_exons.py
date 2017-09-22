@@ -11,6 +11,7 @@ from Bio import SeqIO
 from exfi.tests.auxiliary_functions import CustomAssertions
 import os
 import tempfile
+import shutil
 
 
 class TestProcessOutput(TestCase):
@@ -119,7 +120,8 @@ class TestFindExonsPipeline(TestCase):
 
     def test_notranscriptome_noreads(self):
         """find_exons.py: Process an empty transcriptome and an empty BF"""
-        tmp_bf = tempfile.mktemp(suffix=".bf")
+        tmp_dir = tempfile.mkdtemp()
+        tmp_bf = tmp_dir + "/test.bf"
         process = Popen(
             ['abyss-bloom', 'build',
             '--kmer', "30",
@@ -139,7 +141,7 @@ class TestFindExonsPipeline(TestCase):
             max_fp_bases=5
         )
         results = list(results)
-        os.unlink(tmp_bf)
+        shutil.rmtree(tmp_dir)
         self.assertEqual(
             first=results,
             second=[]
@@ -147,7 +149,8 @@ class TestFindExonsPipeline(TestCase):
 
     def test_transcriptome_noreads(self):
         """find_exons.py: Process a small transcriptome and an empty BF"""
-        tmp_bf = tempfile.mktemp(suffix=".bf")
+        tmp_dir = tempfile.mkdtemp()
+        tmp_bf = tmp_dir + "/test.bf"
         process = Popen(['abyss-bloom', 'build',
                 '--kmer', "30",
                 '--bloom-size', "100M",
@@ -166,7 +169,7 @@ class TestFindExonsPipeline(TestCase):
             max_fp_bases=5
         )
         results = list(results)
-        os.unlink(tmp_bf)
+        shutil.rmtree(tmp_dir)
         self.assertEqual(
             first=results,
             second=[]
@@ -174,7 +177,8 @@ class TestFindExonsPipeline(TestCase):
 
     def test_small_data(self):
         """find_exons.py: Process an empty transcriptome and a small BF"""
-        tmp_bf = tempfile.mktemp(suffix=".bf")
+        tmp_dir = tempfile.mkdtemp()
+        tmp_bf = tmp_dir + "/test.bf"
         process = Popen(['abyss-bloom', 'build',
                 '--kmer', "30",
                 '--bloom-size', "100M",
@@ -194,7 +198,7 @@ class TestFindExonsPipeline(TestCase):
             max_fp_bases=5
         )
         results = list(results)
-        os.remove(tmp_bf)
+        shutil.rmtree(tmp_dir)
         self.assertEqual(
             first=results,
             second=[]

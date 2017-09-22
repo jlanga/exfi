@@ -141,16 +141,14 @@ class TestFindExonsPipeline(unittest.TestCase):
         reads_fns = ["/dev/null"]
         transcriptome_fn = "/dev/null"
         tmp_dir = tempfile.mkdtemp()
-        tmp_bf = tmp_dir + "/test.bf"
         command = _get_build_bf_command("30", "100M", "1", "1", tmp_bf, reads_fns)
         process = _silent_popen(command)
         process.wait()
-
         shutil.rmtree(tmp_dir)
         self.assertEqual(
             results = list(_find_exons_pipeline(
                 kmer=30,
-                bloom_filter_fn=tmp_bf,
+                bloom_filter_fn=tmp_dir + "notranscriptome_noreads.bf",
                 transcriptome_fn=transcriptome_fn,
                 max_fp_bases=5
             )),
@@ -162,16 +160,14 @@ class TestFindExonsPipeline(unittest.TestCase):
         reads_fns = ["/dev/null"]
         transcriptome_fn = 'exfi/tests/files/find_exons/small_transcriptome.fa'
         tmp_dir = tempfile.mkdtemp()
-        tmp_bf = tmp_dir + "/test.bf"
         command = _get_build_bf_command("30", "100M", "1", "1", tmp_bf, reads_fns)
         process = _silent_popen(command)
         process.wait()
-        results =
         shutil.rmtree(tmp_dir)
         self.assertEqual(
             list(_find_exons_pipeline(
                 kmer=30,
-                bloom_filter_fn=tmp_bf,
+                bloom_filter_fn=tmp_dir + "transcriptome_noreads.bf",
                 transcriptome_fn= transcriptome_fn,
                 max_fp_bases=5
             )),
@@ -186,16 +182,14 @@ class TestFindExonsPipeline(unittest.TestCase):
         ]
         transcriptome_fn = 'exfi/tests/files/find_exons/small_transcriptome.fa'
         tmp_dir = tempfile.mkdtemp()
-        tmp_bf = tmp_dir + "/test.bf"
         command = _get_build_bf_command("30", "100M", "1", "1", tmp_bf, reads_fns)
         process = _silent_popen(command)
         process.wait()
-        results =
         shutil.rmtree(tmp_dir)
         self.assertEqual(
             list(_find_exons_pipeline(
                 kmer=30,
-                bloom_filter_fn=tmp_bf,
+                bloom_filter_fn=tmp_dir + "small.bf",
                 transcriptome_fn=transcriptome_fn,
                 max_fp_bases=5
             )),

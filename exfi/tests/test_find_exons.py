@@ -17,7 +17,7 @@ import shutil
 
 def command_to_list(command):
     """Execute command and return output as list of strings"""
-    process = Popen(command, stdout=PIPE)
+    process = Popen(command, stdout=PIPE, shell=False)
     results = list(_process_output(process))
     return results
 
@@ -131,7 +131,8 @@ def _silent_popen(command):
     """Create a Popen with no stderr and stdout"""
     return Popen(command,
         stdout=open("/dev/null", 'w'),
-        stderr=open("/dev/null", 'w')
+        stderr=open("/dev/null", 'w'),
+        shell=False
     )
 
 def _bf_and_process(reads_fns, transcriptome_fn):

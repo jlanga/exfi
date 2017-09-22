@@ -12,31 +12,34 @@ from exfi.tests.auxiliary_functions import CustomAssertions
 import tempfile
 import shutil
 
+def command_to_list(command):
+    """Execute command and return output as list of strings"""
+    process = Popen(command, stdout=PIPE)
+    results = list(_process_output(process))
+    return results
 
 class TestProcessOutput(TestCase):
 
     def test_empty_process(self):
         """find_exons.py: process an empty stream"""
-        command = ["cat", "/dev/null"]
-        process = Popen(command, stdout=PIPE)
-        results = list(_process_output(process))
+        results = command_to_list(["cat", "/dev/null"])
         self.assertEqual(first=results, second=[])
 
     def test_simple_process(self):
         """find_exons.py: process an simple stream"""
-        command = ["cat", "exfi/tests/files/find_exons/simple.bed"]
-        process = Popen(command, stdout=PIPE)
-        results = list(_process_output(process))
+        results = command_to_list(
+            ["cat", "exfi/tests/files/find_exons/simple.bed"]
+        )
         self.assertEqual(
-            results,
+            first=results,
             second=[("test", 4, 27)]
         )
 
     def test_big_process(self):
         """find_exons.py: process an big stream"""
-        command = ["cat", "exfi/tests/files/find_exons/big.bed"]
-        process = Popen(command, stdout=PIPE)
-        results = list(_process_output(process))
+        results = command_to_list(
+            ["cat", "exfi/tests/files/find_exons/big.bed"]
+        )
         self.assertEqual(
             first=results,
             second=[

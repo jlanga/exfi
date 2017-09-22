@@ -75,8 +75,7 @@ def build_baited_bloom_filter(
     from os.path import dirname
 
     output_dir = dirname(output_bloom)
-    if output_dir == "":
-        output_dir = "./"
+    if output_dir == "": output_dir = "./"
 
     # Convert single read library to list
     if isinstance(reads, str):

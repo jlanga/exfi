@@ -4,7 +4,6 @@ from unittest import TestCase
 from exfi.exons_to_gapped_transcript import \
     build_transcript_to_exon_dict, \
     exon_dict_to_gapped_transcript
-from Bio import SeqIO
 from exfi.tests.auxiliary_functions import \
     CustomAssertions, \
     _fasta_to_list

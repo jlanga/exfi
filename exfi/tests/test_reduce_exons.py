@@ -2,7 +2,6 @@
 
 
 from unittest import TestCase
-from Bio import SeqIO
 from exfi.reduce_exons import reduce_exons
 from exfi.tests.auxiliary_functions import \
     CustomAssertions, \

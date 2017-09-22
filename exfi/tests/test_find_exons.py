@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from unittest import TestCase
+import unittest
 from exfi.find_exons import \
     _process_output, \
     _get_fasta, \
@@ -18,7 +18,7 @@ def command_to_list(command):
     results = list(_process_output(process))
     return results
 
-class TestProcessOutput(TestCase):
+class TestProcessOutput(unittest.TestCase):
 
     def test_empty_process(self):
         """find_exons.py: process an empty stream"""
@@ -58,23 +58,30 @@ def fasta_to_list(filename):
     """SeqIO.parse wrapper for fasta files"""
     return list(SeqIO.parse(handle=filename, format="fasta"))
 
-class TestGetFasta(TestCase, CustomAssertions):
+def getfasta_to_list(transcriptome_dict, iterable_of_bed):
+    """Convert to a list the generator from getfasta"""
+    return list(_get_fasta(transcriptome_dict, iterable_of_bed))
+
+
+class TestGetFasta(unittest.TestCase, CustomAssertions):
 
     def test_empty_sequence_empty_bed(self):
         """find_exons.py: process an empty fasta and an empty bed"""
         transcriptome_dict={}
         iterable_of_bed=[]
-        results = list(_get_fasta(transcriptome_dict, iterable_of_bed))
-        expected = []
-        self.assertEqual(results, expected)
+        self.assertEqual(
+            getfasta_to_list(transcriptome_dict, iterable_of_bed),
+            []
+        )
 
     def test_empty_sequence_one_bed(self):
         """find_exons.py: process an empty fasta and an empty bed"""
         transcriptome_dict={}
         iterable_of_bed=[("test1", 14, 27)]
-        results = list(_get_fasta(transcriptome_dict, iterable_of_bed))
-        expected = []
-        self.assertEqual(results, expected)
+        self.assertEqualListOfSeqrecords(
+            getfasta_to_list(transcriptome_dict, iterable_of_bed),
+            []
+        )
 
     def test_one_sequence_empty_bed(self):
         """find_exons.py: process a simple fasta and an empty bed"""
@@ -82,9 +89,10 @@ class TestGetFasta(TestCase, CustomAssertions):
             "exfi/tests/files/find_exons/single_sequence.fa"
         )
         iterable_of_bed = []
-        results = list(_get_fasta(transcriptome_dict, iterable_of_bed))
-        expected = []
-        self.assertEqual(results, expected)
+        self.assertEqualListOfSeqrecords(
+            getfasta_to_list(transcriptome_dict, iterable_of_bed),
+            []
+        )
 
     def test_one_sequence_one_bed(self):
         """find_exons.py: process an single fasta and a single bed record"""
@@ -92,11 +100,12 @@ class TestGetFasta(TestCase, CustomAssertions):
             "exfi/tests/files/find_exons/one_sequence_one_bed_input.fa"
         )
         iterable_of_bed = [("test1", 0, 60)]
-        results = list(_get_fasta(transcriptome_dict, iterable_of_bed))
-        expected = fasta_to_list(
-            "exfi/tests/files/find_exons/one_sequence_one_bed_output.fa"
+        self.assertEqualListOfSeqrecords(
+            getfasta_to_list(transcriptome_dict, iterable_of_bed),
+            fasta_to_list(
+                "exfi/tests/files/find_exons/one_sequence_one_bed_output.fa"
+            )
         )
-        self.assertEqualListOfSeqrecords(results,expected)
 
     def test_multiple_sequences_multiple_beds(self):
         """find_exons.py: process an multiline fasta and multple bed"""
@@ -106,14 +115,15 @@ class TestGetFasta(TestCase, CustomAssertions):
         iterable_of_bed = [
             ("test1", 0, 60), ("test2", 0, 40), ("test3", 10, 20)
         ]
-        results = list(_get_fasta(transcriptome_dict, iterable_of_bed))
-        expected = fasta_to_list(
-            "exfi/tests/files/find_exons/multiple_sequences_multiple_beds_output.fa",
+        self.assertEqualListOfSeqrecords(
+            getfasta_to_list(transcriptome_dict, iterable_of_bed),
+            fasta_to_list(
+                "exfi/tests/files/find_exons/multiple_sequences_multiple_beds_output.fa",
+            )
         )
-        self.assertEqualListOfSeqrecords(results,expected)
 
 
-class TestFindExonsPipeline(TestCase):
+class TestFindExonsPipeline(unittest.TestCase):
 
     def test_notranscriptome_noreads(self):
         """find_exons.py: Process an empty transcriptome and an empty BF"""

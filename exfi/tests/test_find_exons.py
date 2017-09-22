@@ -11,26 +11,31 @@ from exfi.build_baited_bloom_filter import \
 
 from subprocess import Popen, PIPE
 from Bio import SeqIO
-from exfi.tests.auxiliary_functions import CustomAssertions
+from exfi.tests.auxiliary_functions import \
+    CustomAssertions, \
+    _command_to_list, \
+    _fasta_to_dict, \
+    _fasta_to_list, \
+    _getfasta_to_list, \
+    _bf_and_process, \
+    _silent_popen
+
 import tempfile
 import shutil
 
-def command_to_list(command):
-    """Execute command and return output as list of strings"""
-    process = Popen(command, stdout=PIPE, shell=False)
-    results = list(_process_output(process))
-    return results
+
+
 
 class TestProcessOutput(unittest.TestCase):
 
     def test_empty_process(self):
         """find_exons.py: process an empty stream"""
-        results = command_to_list(["cat", "/dev/null"])
+        results = _command_to_list(["cat", "/dev/null"])
         self.assertEqual(first=results, second=[])
 
     def test_simple_process(self):
         """find_exons.py: process an simple stream"""
-        results = command_to_list(
+        results = _command_to_list(
             ["cat", "exfi/tests/files/find_exons/simple.bed"]
         )
         self.assertEqual(
@@ -40,7 +45,7 @@ class TestProcessOutput(unittest.TestCase):
 
     def test_big_process(self):
         """find_exons.py: process an big stream"""
-        results = command_to_list(
+        results = _command_to_list(
             ["cat", "exfi/tests/files/find_exons/big.bed"]
         )
         self.assertEqual(
@@ -52,18 +57,6 @@ class TestProcessOutput(unittest.TestCase):
         )
 
 
-def fasta_to_dict(filename):
-    """SeqIO.index wrapper for fasta files"""
-    return SeqIO.index(filename=filename, format="fasta")
-
-
-def fasta_to_list(filename):
-    """SeqIO.parse wrapper for fasta files"""
-    return list(SeqIO.parse(handle=filename, format="fasta"))
-
-def getfasta_to_list(transcriptome_dict, iterable_of_bed):
-    """Convert to a list the generator from getfasta"""
-    return list(_get_fasta(transcriptome_dict, iterable_of_bed))
 
 
 class TestGetFasta(unittest.TestCase, CustomAssertions):
@@ -73,7 +66,7 @@ class TestGetFasta(unittest.TestCase, CustomAssertions):
         transcriptome_dict={}
         iterable_of_bed=[]
         self.assertEqual(
-            getfasta_to_list(transcriptome_dict, iterable_of_bed),
+            _getfasta_to_list(transcriptome_dict, iterable_of_bed),
             []
         )
 
@@ -82,74 +75,49 @@ class TestGetFasta(unittest.TestCase, CustomAssertions):
         transcriptome_dict={}
         iterable_of_bed=[("test1", 14, 27)]
         self.assertEqualListOfSeqrecords(
-            getfasta_to_list(transcriptome_dict, iterable_of_bed),
+            _getfasta_to_list(transcriptome_dict, iterable_of_bed),
             []
         )
 
     def test_one_sequence_empty_bed(self):
         """find_exons.py: process a simple fasta and an empty bed"""
-        transcriptome_dict = fasta_to_dict(
+        transcriptome_dict = _fasta_to_dict(
             "exfi/tests/files/find_exons/single_sequence.fa"
         )
         iterable_of_bed = []
         self.assertEqualListOfSeqrecords(
-            getfasta_to_list(transcriptome_dict, iterable_of_bed),
+            _getfasta_to_list(transcriptome_dict, iterable_of_bed),
             []
         )
 
     def test_one_sequence_one_bed(self):
         """find_exons.py: process an single fasta and a single bed record"""
-        transcriptome_dict = fasta_to_dict(
+        transcriptome_dict = _fasta_to_dict(
             "exfi/tests/files/find_exons/one_sequence_one_bed_input.fa"
         )
         iterable_of_bed = [("test1", 0, 60)]
         self.assertEqualListOfSeqrecords(
-            getfasta_to_list(transcriptome_dict, iterable_of_bed),
-            fasta_to_list(
+            _getfasta_to_list(transcriptome_dict, iterable_of_bed),
+            _fasta_to_list(
                 "exfi/tests/files/find_exons/one_sequence_one_bed_output.fa"
             )
         )
 
     def test_multiple_sequences_multiple_beds(self):
         """find_exons.py: process an multiline fasta and multple bed"""
-        transcriptome_dict = fasta_to_dict(
+        transcriptome_dict = _fasta_to_dict(
             "exfi/tests/files/find_exons/multiple_sequences_multiple_beds_input.fa",
         )
         iterable_of_bed = [
             ("test1", 0, 60), ("test2", 0, 40), ("test3", 10, 20)
         ]
         self.assertEqualListOfSeqrecords(
-            getfasta_to_list(transcriptome_dict, iterable_of_bed),
-            fasta_to_list(
+            _getfasta_to_list(transcriptome_dict, iterable_of_bed),
+            _fasta_to_list(
                 "exfi/tests/files/find_exons/multiple_sequences_multiple_beds_output.fa",
             )
         )
 
-
-
-def _silent_popen(command):
-    """Create a Popen with no stderr and stdout"""
-    return Popen(command,
-        stdout=open("/dev/null", 'w'),
-        stderr=open("/dev/null", 'w'),
-        shell=False
-    )
-
-def _bf_and_process(reads_fns, transcriptome_fn):
-    """Build the BF and process the reads"""
-    tmp_dir = tempfile.mkdtemp()
-    tmp_bf = tmp_dir + "transcriptome_noreads.bf"
-    command = _get_build_bf_command("30", "100M", "1", "1", tmp_bf, reads_fns)
-    process = _silent_popen(command)
-    process.wait()
-    results = _find_exons_pipeline(
-        kmer=30,
-        bloom_filter_fn=tmp_bf,
-        transcriptome_fn=transcriptome_fn,
-        max_fp_bases=5
-    )
-    shutil.rmtree(tmp_dir)
-    return list(results)
 
 class TestFindExonsPipeline(unittest.TestCase):
 

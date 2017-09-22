@@ -9,7 +9,6 @@ from exfi.find_exons import \
 from subprocess import Popen, PIPE
 from Bio import SeqIO
 from exfi.tests.auxiliary_functions import CustomAssertions
-import os
 import tempfile
 import shutil
 

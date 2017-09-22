@@ -84,65 +84,44 @@ class TestBuildTranscriptToExonDict(TestCase):
 class TestExonsToGappedTranscript(TestCase, CustomAssertions):
     # exon_dict_to_gapped_transcript(transcript_to_exons, exome_fn, number_of_ns=100)
     def test_empty_both(self):
-        transcript_to_exons = {}
         exome_fn = "exfi/tests/files/exons_to_gapped_transcript/empty_exome.fa"
-        actual = list(exon_dict_to_gapped_transcript(
-            transcript_to_exons,
-            exome_fn
-        ))
-        expected = []
-        self.assertEqual(actual, expected)
+        self.assertEqual(
+            list(exon_dict_to_gapped_transcript(
+                {},
+                exome_fn
+            )),
+            []
+        )
 
     def test_empty_exome(self):
-        transcript_to_exons = {"ENSDART00000161035.1":
-            ("EXON00000000001", "EXON00000000002", "EXON00000000003")
-        }
         exome_fn = "exfi/tests/files/exons_to_gapped_transcript/empty_exome.fa"
-        actual = list(exon_dict_to_gapped_transcript(
-            transcript_to_exons,
-            exome_fn
-        ))
-        expected = list(SeqIO.parse(
-            handle="exfi/tests/files/exons_to_gapped_transcript/empty_exome_result.fa",
-            format="fasta"
-        ))
+        actual = list(exon_dict_to_gapped_transcript(simple_dict, exome_fn))
+        expected = _fasta_to_list(
+            "exfi/tests/files/exons_to_gapped_transcript/empty_exome_result.fa"
+        )
         self.assertEqualListOfSeqrecords(actual, expected)
 
     def test_empty_transcriptome(self):
-        transcript_to_exons = {}
         exome_fn = "exfi/tests/files/exons_to_gapped_transcript/ordered.fa"
-        actual = list(exon_dict_to_gapped_transcript(
-            transcript_to_exons,
-            exome_fn
-        ))
-        expected = []
-        self.assertEqualListOfSeqrecords(actual, expected)
+        actual = list(exon_dict_to_gapped_transcript({}, exome_fn))
+        self.assertEqualListOfSeqrecords(actual, [])
 
     def test_single_exon(self):
-        transcript_to_exons = {"ENSDART00000161035.1" : ("EXON00000000001", )}
         exome_fn = "exfi/tests/files/exons_to_gapped_transcript/single.fa"
         actual = list(exon_dict_to_gapped_transcript(
-            transcript_to_exons,
-            exome_fn
+            very_simple_dict, exome_fn
         ))
-        print(actual)
-        expected = list(SeqIO.parse(
-            handle="exfi/tests/files/exons_to_gapped_transcript/single_exon_result.fa",
-            format="fasta"
-        ))
+        expected = _fasta_to_list(
+            "exfi/tests/files/exons_to_gapped_transcript/single_exon_result.fa"
+        )
         self.assertEqualListOfSeqrecords(actual, expected)
 
     def test_multiple(self):
-        transcript_to_exons = {"ENSDART00000161035.1":
-            ("EXON00000000001", "EXON00000000002", "EXON00000000003")
-        }
         exome_fn = "exfi/tests/files/exons_to_gapped_transcript/ordered.fa"
         actual = list(exon_dict_to_gapped_transcript(
-            transcript_to_exons,
-            exome_fn
+            simple_dict, exome_fn
         ))
-        expected = list(SeqIO.parse(
-            handle="exfi/tests/files/exons_to_gapped_transcript/paste_ordered.fa",
-            format="fasta"
-        ))
+        expected = _fasta_to_list(
+            "exfi/tests/files/exons_to_gapped_transcript/paste_ordered.fa",
+        )
         self.assertEqualListOfSeqrecords(actual, expected)

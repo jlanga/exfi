@@ -1,29 +1,13 @@
 #!/usr/bin/env python3
 
 import unittest
-from exfi.find_exons import \
-    _process_output, \
-    _get_fasta, \
-    _find_exons_pipeline
-
-from exfi.build_baited_bloom_filter import \
-    _get_build_bf_command
-
-from subprocess import Popen, PIPE
-from Bio import SeqIO
 from exfi.tests.auxiliary_functions import \
     CustomAssertions, \
     _command_to_list, \
     _fasta_to_dict, \
     _fasta_to_list, \
     _getfasta_to_list, \
-    _bf_and_process, \
-    _silent_popen
-
-import tempfile
-import shutil
-
-
+    _bf_and_process
 
 
 class TestProcessOutput(unittest.TestCase):
@@ -55,8 +39,6 @@ class TestProcessOutput(unittest.TestCase):
                 ("test2", 17, 21), ("test3", 19, 25)
             ]
         )
-
-
 
 
 class TestGetFasta(unittest.TestCase, CustomAssertions):

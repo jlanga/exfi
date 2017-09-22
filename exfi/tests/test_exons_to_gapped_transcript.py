@@ -5,7 +5,14 @@ from exfi.exons_to_gapped_transcript import \
     build_transcript_to_exon_dict, \
     exon_dict_to_gapped_transcript
 from Bio import SeqIO
-from exfi.tests.auxiliary_functions import CustomAssertions
+from exfi.tests.auxiliary_functions import \
+    CustomAssertions, \
+    _fasta_to_list
+
+def fasta_to_transcript_to_exon_dict(fasta_fn):
+    """Pipe to read fasta and build dict"""
+    exons = _fasta_to_list(fasta_fn)
+    return build_transcript_to_exon_dict(exons)
 
 class TestBuildTranscriptToExonDict(TestCase):
 
@@ -15,42 +22,34 @@ class TestBuildTranscriptToExonDict(TestCase):
         self.assertEqual(actual, expected)
 
     def test_single_exon(self):
-        exons = SeqIO.parse(
-            handle="exfi/tests/files/exons_to_gapped_transcript/single.fa",
-            format="fasta"
+        actual = fasta_to_transcript_to_exon_dict(
+            "exfi/tests/files/exons_to_gapped_transcript/single.fa",
         )
-        actual = build_transcript_to_exon_dict(exons)
         expected = {"ENSDART00000161035.1": ("EXON00000000001", )}  # TODO
         self.assertEqual(actual, expected)
 
     def test_ordered_exons(self):
-        exons = SeqIO.parse(
-            handle="exfi/tests/files/exons_to_gapped_transcript/ordered.fa",
-            format="fasta"
+        actual = fasta_to_transcript_to_exon_dict(
+            "exfi/tests/files/exons_to_gapped_transcript/ordered.fa",
         )
-        actual = build_transcript_to_exon_dict(exons)
         expected = {"ENSDART00000161035.1":
             ("EXON00000000001", "EXON00000000002", "EXON00000000003")
         }
         self.assertEqual(actual, expected)
 
     def test_disordered_exons(self):
-        exons = SeqIO.parse(
-            handle="exfi/tests/files/exons_to_gapped_transcript/disordered.fa",
-            format="fasta"
+        actual = fasta_to_transcript_to_exon_dict(
+            "exfi/tests/files/exons_to_gapped_transcript/disordered.fa",
         )
-        actual = build_transcript_to_exon_dict(exons)
         expected = {"ENSDART00000161035.1":
             ("EXON00000000001", "EXON00000000002", "EXON00000000003")
         }
         self.assertEqual(actual, expected)
 
     def test_different_transcripts(self):
-        exons = SeqIO.parse(
-            handle="exfi/tests/files/exons_to_gapped_transcript/different_transcripts.fa",
-            format="fasta"
+        actual = fasta_to_transcript_to_exon_dict(
+            "exfi/tests/files/exons_to_gapped_transcript/different_transcripts.fa",
         )
-        actual = build_transcript_to_exon_dict(exons)
         expected = {
             "ENSDART00000161035.1": (
                 "EXON00000000001", "EXON00000000002", "EXON00000000003"

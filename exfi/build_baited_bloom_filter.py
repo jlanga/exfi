@@ -1,5 +1,47 @@
 #!/usr/bin/env python3
 
+import shutil
+
+def _get_biobloommaker_command(output_dir, threads, kmer, transcriptome):
+    """Helper function to compose the command to execute"""
+    biobloommaker_path = shutil.which('biobloommaker')
+    build_transcriptome_bf = [
+        biobloommaker_path,
+        '--file_prefix', "transcriptome",
+        '--output_dir', output_dir,
+        '--threads', str(threads),
+        '--kmer_size', str(kmer),
+        transcriptome
+    ]
+    return build_transcriptome_bf
+
+def _get_categorize_command(output_dir, threads, kmer, reads):
+    """Helper function to compose the categorize command"""
+    categorize_path = shutil.which('biobloomcategorizer')
+    categorize = [
+        categorize_path,
+        '--prefix', output_dir + '/categories',
+        '--filter_files', output_dir + '/transcriptome.bf',
+        '--threads', str(threads),
+        '--score', str(kmer),
+        '--fa',
+        '--stdout_filter', 'transcriptome',
+    ] + reads
+    return categorize
+
+def _get_build_bf_command(kmer, bloom_size, levels, threads, output_bloom, input_fns):
+    """Helper function to compose command to get the final Bloom Filter"""
+    abyss_bloom_path = shutil.which('abyss-bloom')
+    build_bf = [
+        abyss_bloom_path, 'build',
+        '--verbose',
+        '--kmer', str(kmer),
+        '--bloom-size', bloom_size,
+        '--levels', str(levels),
+        '--threads', str(threads),
+        output_bloom,
+    ] + input_fns
+    return build_bf
 
 def build_baited_bloom_filter(
     transcriptome,
@@ -41,35 +83,17 @@ def build_baited_bloom_filter(
         reads = [reads]
 
     # Prepare the commands
-    build_transcriptome_bf = [
-        'biobloommaker',
-        '--file_prefix', "transcriptome",
-        '--output_dir', output_dir,
-        '--threads', str(threads),
-        '--kmer_size', str(kmer),
-        transcriptome
-    ]
+    build_transcriptome_bf = _get_biobloommaker_command(
+        output_dir, threads, kmer, transcriptome
+    )
 
-    categorize = [
-        'biobloomcategorizer',
-        '--prefix', output_dir + '/categories',
-        '--filter_files', output_dir + '/transcriptome.bf',
-        '--threads', str(threads),
-        '--score', str(kmer),
-        '--fa',
-        '--stdout_filter', 'transcriptome',
-    ] + reads
+    categorize = _get_categorize_command(
+        output_dir, threads, kmer, reads
+    )
 
-    build_bf = [
-        'abyss-bloom', 'build',
-        '--verbose',
-        '--kmer', str(kmer),
-        '--bloom-size', bloom_size,
-        '--levels', str(levels),
-        '--threads', str(threads),
-        output_bloom,
-        '/dev/stdin'
-    ]
+    build_bf =_get_build_bf_command(
+        kmer, bloom_size, levels, threads, output_bloom, ["/dev/stdin"]
+    )
 
     # Run the pipeline
     stderr.write(
@@ -83,7 +107,7 @@ def build_baited_bloom_filter(
     p_build_transcriptome_bf.wait()
 
     stderr.write(
-        "\n\nRunning commands: {command1} | {command2}\n".format(
+        "\n\nRunning command: {command1} | {command2}\n".format(
             command1=" ".join(categorize),
             command2=" ".join(build_bf)
         )

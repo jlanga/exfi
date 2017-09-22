@@ -5,7 +5,10 @@ from exfi.find_exons import \
     _process_output, \
     _get_fasta, \
     _find_exons_pipeline
-    #find_exons
+
+from exfi.build_baited_bloom_filter import \
+    _get_build_bf_command
+
 from subprocess import Popen, PIPE
 from Bio import SeqIO
 from exfi.tests.auxiliary_functions import CustomAssertions
@@ -123,31 +126,31 @@ class TestGetFasta(unittest.TestCase, CustomAssertions):
         )
 
 
+
+
+
 class TestFindExonsPipeline(unittest.TestCase):
 
     def test_notranscriptome_noreads(self):
         """find_exons.py: Process an empty transcriptome and an empty BF"""
+        reads_fns = ["/dev/null"]
+        transcriptome_fn = "/dev/null"
         tmp_dir = tempfile.mkdtemp()
         tmp_bf = tmp_dir + "/test.bf"
+        command = _get_build_bf_command("30", "100M", "1", "1", tmp_bf, reads_fns)
+        print(command)
         process = Popen(
-            ['abyss-bloom', 'build',
-            '--kmer', "30",
-            '--bloom-size', "100M",
-            '--levels', "1",
-            '--threads', "1",
-            tmp_bf,
-            '/dev/null'],
+            command,
             stdout=open("/dev/null", 'w'),
             stderr=open("/dev/null", "w")
         )
         process.wait()
-        results = _find_exons_pipeline(
+        results = list(_find_exons_pipeline(
             kmer=30,
             bloom_filter_fn=tmp_bf,
-            transcriptome_fn="/dev/null",
+            transcriptome_fn=transcriptome_fn,
             max_fp_bases=5
-        )
-        results = list(results)
+        ))
         shutil.rmtree(tmp_dir)
         self.assertEqual(
             first=results,
@@ -156,26 +159,23 @@ class TestFindExonsPipeline(unittest.TestCase):
 
     def test_transcriptome_noreads(self):
         """find_exons.py: Process a small transcriptome and an empty BF"""
+        reads_fns = ["/dev/null"]
+        transcriptome_fn = 'exfi/tests/files/find_exons/small_transcriptome.fa'
         tmp_dir = tempfile.mkdtemp()
         tmp_bf = tmp_dir + "/test.bf"
-        process = Popen(['abyss-bloom', 'build',
-                '--kmer', "30",
-                '--bloom-size', "100M",
-                '--levels', "1",
-                '--threads', "1",
-                tmp_bf,
-                '/dev/null'],
+        command = _get_build_bf_command("30", "100M", "1", "1", tmp_bf, reads_fns)
+        process = Popen(
+            command,
             stdout=open('/dev/null', 'w'),
             stderr=open('/dev/null', 'w')
         )
         process.wait()
-        results = _find_exons_pipeline(
+        results = list(_find_exons_pipeline(
             kmer=30,
             bloom_filter_fn=tmp_bf,
-            transcriptome_fn='exfi/tests/files/find_exons/small_transcriptome.fa',
+            transcriptome_fn= transcriptome_fn,
             max_fp_bases=5
-        )
-        results = list(results)
+        ))
         shutil.rmtree(tmp_dir)
         self.assertEqual(
             first=results,
@@ -184,29 +184,32 @@ class TestFindExonsPipeline(unittest.TestCase):
 
     def test_small_data(self):
         """find_exons.py: Process an empty transcriptome and a small BF"""
+        reads_fns = [
+            'exfi/tests/files/find_exons/reads_1.fq',
+            'exfi/tests/files/find_exons/reads_2.fq'
+        ]
+        transcriptome_fn = 'exfi/tests/files/find_exons/small_transcriptome.fa'
         tmp_dir = tempfile.mkdtemp()
         tmp_bf = tmp_dir + "/test.bf"
-        process = Popen(['abyss-bloom', 'build',
-                '--kmer', "30",
-                '--bloom-size', "100M",
-                '--levels', "1",
-                '--threads', "1",
-                tmp_bf,
-                'exfi/tests/files/find_exons/reads_1.fq',
-                'exfi/tests/files/find_exons/reads_2.fq'],
+        command = _get_build_bf_command("30", "100M", "1", "1", tmp_bf, reads_fns)
+        process = Popen(
+            command,
             stdout=open('/dev/null', 'w'),
             stderr=open('/dev/null', 'w')
         )
         process.wait()
-        results = _find_exons_pipeline(
+        results = list(_find_exons_pipeline(
             kmer=30,
             bloom_filter_fn=tmp_bf,
-            transcriptome_fn='exfi/tests/files/find_exons/small_transcriptome.fa',
+            transcriptome_fn=transcriptome_fn,
             max_fp_bases=5
-        )
-        results = list(results)
+        ))
         shutil.rmtree(tmp_dir)
         self.assertEqual(
             first=results,
             second=[]
         )
+
+
+if __name__ == "__main__":
+    unittest.main()

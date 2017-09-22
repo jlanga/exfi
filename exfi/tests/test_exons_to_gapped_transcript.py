@@ -84,6 +84,8 @@ class TestBuildTranscriptToExonDict(TestCase):
 class TestExonsToGappedTranscript(TestCase, CustomAssertions):
     # exon_dict_to_gapped_transcript(transcript_to_exons, exome_fn, number_of_ns=100)
     def test_empty_both(self):
+        """exons_to_gapped_transcript.py: paste from an empty exome and an empty
+         transcriptome"""
         exome_fn = "exfi/tests/files/exons_to_gapped_transcript/empty_exome.fa"
         self.assertEqual(
             list(exon_dict_to_gapped_transcript(
@@ -94,6 +96,8 @@ class TestExonsToGappedTranscript(TestCase, CustomAssertions):
         )
 
     def test_empty_exome(self):
+        """exons_to_gapped_transcript.py: paste from an empty exome and an a
+        nonempty transcriptome"""
         exome_fn = "exfi/tests/files/exons_to_gapped_transcript/empty_exome.fa"
         actual = list(exon_dict_to_gapped_transcript(simple_dict, exome_fn))
         expected = _fasta_to_list(
@@ -102,11 +106,15 @@ class TestExonsToGappedTranscript(TestCase, CustomAssertions):
         self.assertEqualListOfSeqrecords(actual, expected)
 
     def test_empty_transcriptome(self):
+        """exons_to_gapped_transcript.py: paste from a nonempty exome and an
+        empty transcriptome"""
         exome_fn = "exfi/tests/files/exons_to_gapped_transcript/ordered.fa"
         actual = list(exon_dict_to_gapped_transcript({}, exome_fn))
         self.assertEqualListOfSeqrecords(actual, [])
 
     def test_single_exon(self):
+        """exons_to_gapped_transcript.py: paste from a single exon exome and a
+        one transcript transcriptome"""
         exome_fn = "exfi/tests/files/exons_to_gapped_transcript/single.fa"
         actual = list(exon_dict_to_gapped_transcript(
             very_simple_dict, exome_fn
@@ -117,6 +125,7 @@ class TestExonsToGappedTranscript(TestCase, CustomAssertions):
         self.assertEqualListOfSeqrecords(actual, expected)
 
     def test_multiple(self):
+        """exons_to_gapped_transcript.py: complex case"""
         exome_fn = "exfi/tests/files/exons_to_gapped_transcript/ordered.fa"
         actual = list(exon_dict_to_gapped_transcript(
             simple_dict, exome_fn

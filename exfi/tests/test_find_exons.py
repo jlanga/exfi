@@ -134,45 +134,37 @@ def _silent_popen(command):
         stderr=open("/dev/null", 'w')
     )
 
+def _bf_and_process(reads_fns, transcriptome_fn):
+    """Build the BF and process the reads"""
+    tmp_dir = tempfile.mkdtemp()
+    tmp_bf = tmp_dir + "transcriptome_noreads.bf"
+    command = _get_build_bf_command("30", "100M", "1", "1", tmp_bf, reads_fns)
+    process = _silent_popen(command)
+    process.wait()
+    results = _find_exons_pipeline(
+        kmer=30,
+        bloom_filter_fn=tmp_bf,
+        transcriptome_fn=transcriptome_fn,
+        max_fp_bases=5
+    )
+    shutil.rmtree(tmp_dir)
+    return list(results)
+
 class TestFindExonsPipeline(unittest.TestCase):
 
     def test_notranscriptome_noreads(self):
         """find_exons.py: Process an empty transcriptome and an empty BF"""
         reads_fns = ["/dev/null"]
         transcriptome_fn = "/dev/null"
-        tmp_dir = tempfile.mkdtemp()
-        command = _get_build_bf_command("30", "100M", "1", "1", tmp_bf, reads_fns)
-        process = _silent_popen(command)
-        process.wait()
-        shutil.rmtree(tmp_dir)
-        self.assertEqual(
-            results = list(_find_exons_pipeline(
-                kmer=30,
-                bloom_filter_fn=tmp_dir + "notranscriptome_noreads.bf",
-                transcriptome_fn=transcriptome_fn,
-                max_fp_bases=5
-            )),
-            []
-        )
+        results = _bf_and_process(reads_fns, transcriptome_fn)
+        self.assertEqual(results, [])
 
     def test_transcriptome_noreads(self):
         """find_exons.py: Process a small transcriptome and an empty BF"""
         reads_fns = ["/dev/null"]
         transcriptome_fn = 'exfi/tests/files/find_exons/small_transcriptome.fa'
-        tmp_dir = tempfile.mkdtemp()
-        command = _get_build_bf_command("30", "100M", "1", "1", tmp_bf, reads_fns)
-        process = _silent_popen(command)
-        process.wait()
-        shutil.rmtree(tmp_dir)
-        self.assertEqual(
-            list(_find_exons_pipeline(
-                kmer=30,
-                bloom_filter_fn=tmp_dir + "transcriptome_noreads.bf",
-                transcriptome_fn= transcriptome_fn,
-                max_fp_bases=5
-            )),
-            []
-        )
+        results = _bf_and_process(reads_fns, transcriptome_fn)
+        self.assertEqual(results, [])
 
     def test_small_data(self):
         """find_exons.py: Process an empty transcriptome and a small BF"""
@@ -181,20 +173,8 @@ class TestFindExonsPipeline(unittest.TestCase):
             'exfi/tests/files/find_exons/reads_2.fq'
         ]
         transcriptome_fn = 'exfi/tests/files/find_exons/small_transcriptome.fa'
-        tmp_dir = tempfile.mkdtemp()
-        command = _get_build_bf_command("30", "100M", "1", "1", tmp_bf, reads_fns)
-        process = _silent_popen(command)
-        process.wait()
-        shutil.rmtree(tmp_dir)
-        self.assertEqual(
-            list(_find_exons_pipeline(
-                kmer=30,
-                bloom_filter_fn=tmp_dir + "small.bf",
-                transcriptome_fn=transcriptome_fn,
-                max_fp_bases=5
-            )),
-            []
-        )
+        results = _bf_and_process(reads_fns, transcriptome_fn)
+        self.assertEqual(results, [])
 
 
 if __name__ == "__main__":

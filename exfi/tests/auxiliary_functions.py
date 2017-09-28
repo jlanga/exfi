@@ -48,7 +48,7 @@ def _silent_popen(command):
 def _bf_and_process(reads_fns, transcriptome_fn):
     """Build the BF and process the reads"""
     tmp_dir = tempfile.mkdtemp()
-    tmp_bf = tmp_dir + "transcriptome_noreads.bf"
+    tmp_bf = tmp_dir + "/transcriptome_noreads.bf"
     command = _get_build_bf_command("30", "100M", "1", "1", tmp_bf, reads_fns)
     process = _silent_popen(command)
     process.wait()

@@ -4,8 +4,10 @@ import unittest
 from exfi.exons_to_splicegraph import \
     exons_to_df, \
     exon_to_coordinates, \
-    transcript_to_path
+    transcript_to_path, \
+    compute_edge_overlaps
 
+import networkx as nx
 import pandas as pd
 import numpy as np
 from Bio import SeqIO
@@ -193,6 +195,80 @@ class TestTranscriptToPath(unittest.TestCase):
                 )\
                 .set_index('transcript_id')
             )
+        )
+
+
+class TestComputeOverlaps(unittest.TestCase):
+
+    def test_empty_exome(self):
+        """exons_to_splicegraph.py: compute the overlaps of an empty exome"""
+        splice_graph = nx.DiGraph()
+        overlaps = compute_edge_overlaps(splice_graph)
+        self.assertEqual(
+            overlaps,
+            {}
+        )
+
+    def test_single_exon(self):
+        """exons_to_splicegraph.py: compute the overlaps of a single exon exome"""
+        splice_graph = nx.DiGraph()
+        exons = SeqIO.index(
+            filename="exfi/tests/files/exons_to_splicegraph/single.fa",
+            format="fasta"
+        )
+        exon_df = exons_to_df(exons)
+        exon2coord = exon_to_coordinates(exons)
+        splice_graph.add_nodes_from(exon2coord.keys())
+        nx.set_node_attributes(
+            G=splice_graph,
+            name='coordinates',
+            values = exon2coord
+        )
+        transcript2path = transcript_to_path(exon_df).to_dict()["path"]
+        for path in transcript2path.values():
+            splice_graph.add_path(path)
+        overlaps = compute_edge_overlaps(splice_graph)
+        self.assertEqual(
+            overlaps,
+            {}
+        )
+
+    def test_multiple_exons(self):
+        """build_splicegraph.py: compute the overlaps of a simple exome"""
+        splice_graph = nx.DiGraph()
+        exons = SeqIO.index(
+            filename="exfi/tests/files/exons_to_splicegraph/different_transcripts.fa",
+            format="fasta"
+        )
+        exon_df = exons_to_df(exons)
+        exon2coord = exon_to_coordinates(exons)
+        splice_graph.add_nodes_from(exon2coord.keys())
+        nx.set_node_attributes(
+            G=splice_graph,
+            name='coordinates',
+            values = exon2coord
+        )
+        transcript2path = transcript_to_path(exon_df).to_dict()["path"]
+        for path in transcript2path.values():
+            splice_graph.add_path(path)
+        overlaps = compute_edge_overlaps(splice_graph)
+        self.assertEqual(
+            overlaps,
+            {
+                ('EXON00000000001', 'EXON00000000002'): -71,
+                ('EXON00000000002', 'EXON00000000003'): -5,
+                ('EXON00000000004', 'EXON00000000005'): 2,
+                ('EXON00000000005', 'EXON00000000006'): -13,
+                ('EXON00000000006', 'EXON00000000007'): 1,
+                ('EXON00000000007', 'EXON00000000008'): 1,
+                ('EXON00000000008', 'EXON00000000009'): 5,
+                ('EXON00000000009', 'EXON00000000010'): 0,
+                ('EXON00000000010', 'EXON00000000011'): -3,
+                ('EXON00000000011', 'EXON00000000012'): -13,
+                ('EXON00000000012', 'EXON00000000013'): -21,
+                ('EXON00000000013', 'EXON00000000014'): -1,
+                ('EXON00000000014', 'EXON00000000015'): -1
+            }
         )
 
 

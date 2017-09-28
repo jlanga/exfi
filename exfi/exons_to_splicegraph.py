@@ -152,3 +152,60 @@ def build_splicegraph(exons):
     )
 
     return splice_graph
+
+
+def splicegraph_to_gfa1(splice_graph, paths, filename):
+    """(nx.Digraph, transcript_to_path_dict, fileout) -> None
+
+    Write splice graph to filename in GFA 1 format
+    """
+    with open(filename, "w") as gfa:
+        # Header
+        gfa.write("H\tVN:Z:1.0\n")
+
+        # Nodes
+        node2seq = nx.get_node_attributes(
+            G=splice_graph,
+            name='sequence'
+        )
+        for node in sorted(splice_graph.nodes()):
+            gfa.write(
+                "S\t{node}\t{sequence}\t{length}\n".format(
+                node=node,
+                sequence=node2seq[node],
+                length=len(node2seq[node])
+            )
+        )
+        del node2seq
+
+        # Edges
+        edge2overlap = nx.get_edge_attributes(
+            G=splice_graph,
+            name="overlap"
+        )
+        for edge in sorted(splice_graph.edges()):
+            node1, node2 = edge
+            overlap = edge2overlap[edge]
+            # is an overlap or a gap
+            if overlap > 0:
+                overlap = "{}M".format(overlap)
+            else:
+                overlap = "{}D".format(-overlap)
+            gfa.write(
+                "L\t{node1}\t{orientation1}\t{node2}\t{orientation2}\t{overlap}\n".format(
+                    node1=node1,
+                    orientation1="+",
+                    node2=node2,
+                    orientation2="+",
+                    overlap = overlap
+                )
+            )
+
+        # Paths
+        for transcript_id in sorted(paths.keys()):
+            gfa.write(
+                "P\t{transcript_id}\t{path}\n".format(
+                    transcript_id=transcript_id,
+                    path=",".join(paths[transcript_id])
+                )
+            )

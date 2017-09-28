@@ -6,13 +6,16 @@ from exfi.exons_to_splicegraph import \
     exon_to_coordinates, \
     transcript_to_path, \
     compute_edge_overlaps, \
-    build_splicegraph
+    build_splicegraph, \
+    splicegraph_to_gfa1
 
 import networkx as nx
 import pandas as pd
 import numpy as np
 from Bio import SeqIO
-
+import filecmp
+import tempfile
+import os
 
 class TestExonsToDF(unittest.TestCase):
 
@@ -336,6 +339,66 @@ class TestBuildSplicegraph(unittest.TestCase):
                 expected
             )
         )
+
+
+class TestWriteGFA1(unittest.TestCase):
+
+    def test_empty(self):
+        """Write an empty GFA1 (just header)"""
+        tmp_file = tempfile.mkstemp()[1]
+        exons = SeqIO.index(filename="/dev/null", format="fasta")
+        splice_graph = build_splicegraph(exons)
+        paths = transcript_to_path(exons_to_df(exons)).to_dict()['path']
+        splicegraph_to_gfa1(
+            splice_graph=splice_graph,
+            paths=paths,
+            filename=tmp_file
+        )
+        self.assertTrue(filecmp.cmp(
+            tmp_file,
+            "exfi/tests/files/exons_to_splicegraph/empty.gfa"
+        ))
+        os.remove(tmp_file)
+
+    def test_simple(self):
+        """Write a single exon GFA"""
+        tmp_file = tempfile.mkstemp()[1]
+        exons = SeqIO.index(
+            filename="exfi/tests/files/exons_to_splicegraph/single.fa",
+            format="fasta"
+        )
+        splice_graph = build_splicegraph(exons)
+        paths = transcript_to_path(exons_to_df(exons)).to_dict()['path']
+        splicegraph_to_gfa1(
+            splice_graph=splice_graph,
+            paths=paths,
+            filename=tmp_file
+        )
+        self.assertTrue(filecmp.cmp(
+            tmp_file,
+            "exfi/tests/files/exons_to_splicegraph/single.gfa"
+        ))
+        os.remove(tmp_file)
+
+    def test_multiple(self):
+        """Write a more complex GFA"""
+        tmp_file = tempfile.mkstemp()[1]
+        exons = SeqIO.index(
+            filename="exfi/tests/files/exons_to_splicegraph/different_transcripts.fa",
+            format="fasta"
+        )
+        splice_graph = build_splicegraph(exons)
+        paths = transcript_to_path(exons_to_df(exons)).to_dict()['path']
+        splicegraph_to_gfa1(
+            splice_graph=splice_graph,
+            paths=paths,
+            filename=tmp_file
+        )
+        self.assertTrue(filecmp.cmp(
+            tmp_file,
+            "exfi/tests/files/exons_to_splicegraph/different.gfa"
+        ))
+        os.remove(tmp_file)
 
 
 

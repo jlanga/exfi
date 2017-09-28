@@ -54,3 +54,6 @@ script:
     --input-fasta test_exons_raw.fa
     --output-fasta gapped_transcripts.fa
     --number-of-ns 100
+  - exons_to_splicegraph
+    --input-fasta test_exons_raw.fa
+    --output-gfa test_exons_raw.gfa

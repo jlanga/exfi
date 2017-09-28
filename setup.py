@@ -9,7 +9,9 @@ setup(
     license='MIT',
     install_requires=[
         'numpy',
-        'Biopython'
+        'Biopython',
+        'networkx',
+        'pandas'
     ],
     long_description=open('README.md').read(),
     test_suite='nose.collector',
@@ -18,7 +20,8 @@ setup(
         "bin/build_baited_bloom_filter",
         "bin/find_exons",
         "bin/reduce_exons",
-        "bin/exons_to_gapped_transcript"
+        "bin/exons_to_gapped_transcript",
+        "bin/exons_to_splicegraph"
     ],
     include_package_data=True,
     zip_safe=False

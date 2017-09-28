@@ -5,7 +5,8 @@ from exfi.exons_to_splicegraph import \
     exons_to_df, \
     exon_to_coordinates, \
     transcript_to_path, \
-    compute_edge_overlaps
+    compute_edge_overlaps, \
+    build_splicegraph
 
 import networkx as nx
 import pandas as pd
@@ -270,6 +271,72 @@ class TestComputeOverlaps(unittest.TestCase):
                 ('EXON00000000014', 'EXON00000000015'): -1
             }
         )
+
+
+class TestBuildSplicegraph(unittest.TestCase):
+
+    def test_empty(self):
+        exons = {}
+        self.assertTrue(
+            nx.is_isomorphic(
+                build_splicegraph(exons),
+                nx.DiGraph()
+            )
+        )
+
+    def test_simple(self):
+        exons = SeqIO.index(
+            filename="exfi/tests/files/exons_to_splicegraph/single.fa",
+            format="fasta"
+        )
+        expected = nx.DiGraph()
+        expected.add_nodes_from(['EXON00000000001'])
+        self.assertTrue(
+            nx.is_isomorphic(
+                build_splicegraph(exons),
+                expected
+            )
+        )
+
+    def test_multiple(self):
+        exons = SeqIO.index(
+            filename="exfi/tests/files/exons_to_splicegraph/different_transcripts.fa",
+            format="fasta"
+        )
+        expected = nx.DiGraph()
+        expected.add_nodes_from(
+            [
+                "EXON00000000001", "EXON00000000002", "EXON00000000003"
+            ] + \
+            [
+                "EXON00000000004", "EXON00000000005", "EXON00000000006",
+                "EXON00000000007", "EXON00000000008", "EXON00000000009",
+                "EXON00000000010", "EXON00000000011", "EXON00000000012",
+                "EXON00000000013", "EXON00000000014", "EXON00000000015"
+            ]
+        )
+        paths = [
+            [
+                "EXON00000000001", "EXON00000000002", "EXON00000000003"
+            ],
+            [
+                "EXON00000000004", "EXON00000000005", "EXON00000000006",
+                "EXON00000000007", "EXON00000000008", "EXON00000000009",
+                "EXON00000000010", "EXON00000000011", "EXON00000000012",
+                "EXON00000000013", "EXON00000000014", "EXON00000000015"
+            ]
+        ]
+
+        for path in paths:
+            expected.add_path(path)
+
+        self.assertTrue(
+            nx.is_isomorphic(
+                build_splicegraph(exons),
+                expected
+            )
+        )
+
 
 
 if __name__ == '__main__':

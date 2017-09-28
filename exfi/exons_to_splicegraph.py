@@ -102,3 +102,53 @@ def compute_edge_overlaps(splice_graph):
         edge_overlaps[edge] = overlap
 
     return edge_overlaps
+
+def build_splicegraph(exons):
+    """Build the splicegraph from a dict of SeqRecords
+
+    Splicegraph is a directed graph, whose nodes
+        - are exon_ids,
+        - attributes are
+            - coordinates [(transcript1, start, end), ..., (transcriptN, start, end)]
+            - sequence in str format
+    and whose edges
+        - are connected exons in any way
+        - attributes are the overlap between them:
+            - positive means there is an overlap of that number of bases
+            - zero means no overlap
+            - negative means a gap of that number of bases
+    """
+    # Precompute interesting data
+    exon_df = exons_to_df(exons)
+    exon2coord = exon_to_coordinates(exons)
+    transcript2path = transcript_to_path(exon_df).to_dict()["path"]
+
+    # Initialize grpah
+    splice_graph = nx.DiGraph()
+
+    # Add nodes
+    splice_graph.add_nodes_from(exon2coord.keys())
+
+    nx.set_node_attributes(
+        G=splice_graph,
+        name='coordinates',
+        values = exon2coord
+    )
+
+    nx.set_node_attributes(
+        G=splice_graph,
+        name='sequence',
+        values = {exon_id : str(exons[exon_id].seq) for exon_id in exons}
+    )
+
+    # Edges
+    for path in transcript2path.values():
+        splice_graph.add_path(path)
+
+    nx.set_edge_attributes(
+        G=splice_graph,
+        name='overlap',
+        values = compute_edge_overlaps(splice_graph)
+    )
+
+    return splice_graph

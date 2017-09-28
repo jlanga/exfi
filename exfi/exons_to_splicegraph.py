@@ -49,3 +49,13 @@ def exon_to_coordinates(exons_index):
                 exon_to_coord[exon_id] = []
             exon_to_coord[exon_id].append((transcript_id, start, end))
     return exon_to_coord
+
+
+def transcript_to_path(exon_df):
+    """Get a Df containing transcript_id to list of exons, indicating the path"""
+    return exon_df\
+        .sort_values(['transcript_id', 'start', 'end'])\
+        .drop(['start','end','score','strand'], axis=1)\
+        .groupby('transcript_id')\
+        .agg(lambda exon: exon.tolist())\
+        .rename(columns={'exon_id':'path'})

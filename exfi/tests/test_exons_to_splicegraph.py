@@ -3,16 +3,18 @@
 import unittest
 from exfi.exons_to_splicegraph import \
     exons_to_df, \
-    exon_to_coordinates
+    exon_to_coordinates, \
+    transcript_to_path
 
 import pandas as pd
+import numpy as np
 from Bio import SeqIO
 
 
 class TestExonsToDF(unittest.TestCase):
 
     def test_empty_index(self):
-        """exons_to_splicegraph.py,  check if an empty exome generates an empty
+        """exons_to_splicegraph.py:  check if an empty exome generates an empty
         DataFrame"""
         self.assertTrue(
             exons_to_df({})\
@@ -24,7 +26,7 @@ class TestExonsToDF(unittest.TestCase):
         )
 
     def test_one_entry(self):
-        """exons_to_splicegraph.py,  single exon file to DataFrame."""
+        """exons_to_splicegraph.py:  single exon file to DataFrame"""
         self.assertTrue(
             exons_to_df(
                 SeqIO.index(
@@ -42,6 +44,7 @@ class TestExonsToDF(unittest.TestCase):
         )
 
     def test_multiple(self):
+        """exons_to_splicegraph.py: multiple transcript - multiple exon file to DataFrame."""
         self.assertTrue(
             exons_to_df(
                 SeqIO.index(
@@ -77,14 +80,14 @@ class TestExonsToDF(unittest.TestCase):
 class TestExonsToCoordinates(unittest.TestCase):
 
     def test_empty(self):
-        """Get coordinates of an empty file"""
+        """exons_to_splicegraph.py: Get coordinates of an empty file"""
         self.assertEqual(
             exon_to_coordinates({}),
             {}
         )
 
     def test_single(self):
-        """Get coordinates of a single exon"""
+        """exons_to_splicegraph.py: Get coordinates of a single exon"""
         self.assertEqual(
             exon_to_coordinates(
                 SeqIO.index(
@@ -96,7 +99,7 @@ class TestExonsToCoordinates(unittest.TestCase):
         )
 
     def test_multiple(self):
-        """Get coordinates of a single exon"""
+        """exons_to_splicegraph.py: Get coordinates of a single exon"""
         self.assertEqual(
             exon_to_coordinates(
                 SeqIO.index(
@@ -105,7 +108,6 @@ class TestExonsToCoordinates(unittest.TestCase):
                 )
             ),
             {
-                "EXON00000000001": [("ENSDART00000161035.1", 0, 326)],
                 "EXON00000000002": [("ENSDART00000161035.1", 397, 472)],
                 "EXON00000000015": [("ENSDART00000165342.1", 1176, 1324)],
                 "EXON00000000001": [("ENSDART00000161035.1", 0, 326)],
@@ -123,3 +125,76 @@ class TestExonsToCoordinates(unittest.TestCase):
                 "EXON00000000003": [("ENSDART00000161035.1", 477, 523)]
             }
         )
+
+
+class TestTranscriptToPath(unittest.TestCase):
+
+    def test_empty(self):
+        """exons_to_splicegraph.py: convert an empty exome to path"""
+        self.assertTrue(
+            transcript_to_path(
+                exons_to_df({})
+            )\
+            .equals(
+                pd.DataFrame(
+                    data= np.empty((0,2), dtype=np.float64),
+                    columns=['transcript_id', 'path']
+                )\
+                .set_index('transcript_id')
+            )
+        )
+
+
+    def test_single(self):
+        """exons_to_splicegraph.py: convert an single exon transcript to path"""
+        self.assertTrue(
+            transcript_to_path(
+                exons_to_df(
+                    SeqIO.index(
+                        filename="exfi/tests/files/exons_to_splicegraph/single.fa",
+                        format="fasta"
+                    )
+                )
+            )\
+            .equals(
+                pd.DataFrame(
+                    data=[["ENSDART00000161035.1", ["EXON00000000001"]]],
+                    columns=['transcript_id', 'path']
+                )\
+                .set_index('transcript_id')
+            )
+        )
+
+    def test_multiple(self):
+        """exons_to_splicegraph.py: convert an single exon transcript to path"""
+        self.assertTrue(
+            transcript_to_path(
+                exons_to_df(
+                    SeqIO.index(
+                        filename="exfi/tests/files/exons_to_splicegraph/different_transcripts.fa",
+                        format="fasta"
+                    )
+                )
+            )\
+            .equals(
+                pd.DataFrame(
+                    data=[
+                        ["ENSDART00000161035.1",
+                            ["EXON00000000001", "EXON00000000002", "EXON00000000003"]
+                        ],
+                        ["ENSDART00000165342.1",
+                            ["EXON00000000004", "EXON00000000005", "EXON00000000006",
+                            "EXON00000000007", "EXON00000000008", "EXON00000000009",
+                            "EXON00000000010", "EXON00000000011", "EXON00000000012",
+                            "EXON00000000013", "EXON00000000014", "EXON00000000015"]
+                        ]
+                    ],
+                    columns=['transcript_id', 'path']
+                )\
+                .set_index('transcript_id')
+            )
+        )
+
+
+if __name__ == '__main__':
+    unittest.main()

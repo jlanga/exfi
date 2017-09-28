@@ -2,7 +2,9 @@
 
 import unittest
 from exfi.exons_to_splicegraph import \
-    exons_to_df
+    exons_to_df, \
+    exon_to_coordinates
+
 import pandas as pd
 from Bio import SeqIO
 
@@ -70,4 +72,54 @@ class TestExonsToDF(unittest.TestCase):
                 )\
                 .sort_values(['transcript_id', 'start', 'end'])
             )
+        )
+
+class TestExonsToCoordinates(unittest.TestCase):
+
+    def test_empty(self):
+        """Get coordinates of an empty file"""
+        self.assertEqual(
+            exon_to_coordinates({}),
+            {}
+        )
+
+    def test_single(self):
+        """Get coordinates of a single exon"""
+        self.assertEqual(
+            exon_to_coordinates(
+                SeqIO.index(
+                    filename="exfi/tests/files/exons_to_splicegraph/single.fa",
+                    format="fasta"
+                )
+            ),
+            {"EXON00000000001": [("ENSDART00000161035.1", 0, 326)]}
+        )
+
+    def test_multiple(self):
+        """Get coordinates of a single exon"""
+        self.assertEqual(
+            exon_to_coordinates(
+                SeqIO.index(
+                    filename="exfi/tests/files/exons_to_splicegraph/different_transcripts.fa",
+                    format="fasta"
+                )
+            ),
+            {
+                "EXON00000000001": [("ENSDART00000161035.1", 0, 326)],
+                "EXON00000000002": [("ENSDART00000161035.1", 397, 472)],
+                "EXON00000000015": [("ENSDART00000165342.1", 1176, 1324)],
+                "EXON00000000001": [("ENSDART00000161035.1", 0, 326)],
+                "EXON00000000005": [("ENSDART00000165342.1", 125, 304)],
+                "EXON00000000010": [("ENSDART00000165342.1", 746, 851)],
+                "EXON00000000013": [("ENSDART00000165342.1", 974, 1097)],
+                "EXON00000000011": [("ENSDART00000165342.1", 854, 886)],
+                "EXON00000000014": [("ENSDART00000165342.1", 1098, 1175)],
+                "EXON00000000004": [("ENSDART00000165342.1", 5, 127)],
+                "EXON00000000009": [("ENSDART00000165342.1", 645, 746)],
+                "EXON00000000006": [("ENSDART00000165342.1", 317, 460)],
+                "EXON00000000008": [("ENSDART00000165342.1", 591, 650)],
+                "EXON00000000007": [("ENSDART00000165342.1", 459, 592)],
+                "EXON00000000012": [("ENSDART00000165342.1", 899, 953)],
+                "EXON00000000003": [("ENSDART00000161035.1", 477, 523)]
+            }
         )

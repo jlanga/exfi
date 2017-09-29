@@ -314,12 +314,9 @@ class TestWriteGFA1(unittest.TestCase):
     def test_empty(self):
         """Write an empty GFA1 (just header)"""
         tmp_file = tempfile.mkstemp()[1]
-        exons = SeqIO.index(filename="/dev/null", format="fasta")
-        splice_graph = build_splicegraph(exons)
-        paths = transcript_to_path(exons_to_df(exons)).to_dict()['path']
         splicegraph_to_gfa1(
-            splice_graph=splice_graph,
-            paths=paths,
+            splice_graph=build_splicegraph({}),
+            paths=transcript_to_path(exons_to_df({})).to_dict()['path'],
             filename=tmp_file
         )
         self.assertTrue(filecmp.cmp(
@@ -331,12 +328,9 @@ class TestWriteGFA1(unittest.TestCase):
     def test_simple(self):
         """Write a single exon GFA"""
         tmp_file = tempfile.mkstemp()[1]
-        exons = index_simple
-        splice_graph = build_splicegraph(exons)
-        paths = transcript_to_path(exons_to_df(exons)).to_dict()['path']
         splicegraph_to_gfa1(
-            splice_graph=splice_graph,
-            paths=paths,
+            splice_graph=build_splicegraph(index_simple),
+            paths=transcript_to_path(exons_to_df(index_simple)).to_dict()['path'],
             filename=tmp_file
         )
         self.assertTrue(filecmp.cmp(
@@ -348,12 +342,9 @@ class TestWriteGFA1(unittest.TestCase):
     def test_multiple(self):
         """Write a more complex GFA"""
         tmp_file = tempfile.mkstemp()[1]
-        exons = index_different
-        splice_graph = build_splicegraph(exons)
-        paths = transcript_to_path(exons_to_df(exons)).to_dict()['path']
         splicegraph_to_gfa1(
-            splice_graph=splice_graph,
-            paths=paths,
+            splice_graph= build_splicegraph(index_different),
+            paths=transcript_to_path(exons_to_df(index_different)).to_dict()['path'],
             filename=tmp_file
         )
         self.assertTrue(filecmp.cmp(

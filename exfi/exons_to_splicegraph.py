@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-from exfi.exons_to_gapped_transcript import \
-    build_transcript_to_exon_dict
-from Bio import SeqIO
 import networkx as nx
 import pandas as pd
 

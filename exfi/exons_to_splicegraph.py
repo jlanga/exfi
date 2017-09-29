@@ -3,11 +3,12 @@
 import networkx as nx
 import pandas as pd
 
+def _process_index(exons_index):
+    """(dict of SeqRecords) -> list
 
-def exons_to_df(exons):
-    """Convert an indexed fasta (exons) into a dataframe (~BED6)"""
-    results = []
-    for exon in exons.values():
+    Convert a indexed_exons to a list of tuples with the info in the header
+    """
+    for exon in exons_index.values():
         exon_id = exon.id
         transcript_coords = exon.description.split(" ")[1:]
         for transcript_coord in transcript_coords:
@@ -15,9 +16,13 @@ def exons_to_df(exons):
             start, end = coords.split("-")
             start = int(start)
             end = int(end)
-            results.append(
-                (transcript_id, start, end, exon_id, 0, "+")
-            )
+            yield [transcript_id, start, end, exon_id]
+
+
+def exons_to_df(exons):
+    """Convert an indexed fasta (exons) into a dataframe (~BED6)"""
+    # Add mock values
+    results = (line + ["+", 0] for line in _process_index(exons))
     return pd.DataFrame(
             data=results,
             columns=['transcript_id', 'start', 'end', 'exon_id', 'score', 'strand']
@@ -31,20 +36,12 @@ def exon_to_coordinates(exons_index):
     """Convert an indexed fasta (SeqIO.index) into a dict {exon_id : (transcript_id, start,
     end)} (str, int, int)"""
     exon_to_coord = {}
-    for exon in exons_index.values():
-        exon_id = exon.id
-        # Drop id from desc
-        transcript_coords = exon.description.split(" ")[1:]
-        for transcript_coord in transcript_coords:
-            # Compute values
-            transcript_id, coords = transcript_coord.split(":")
-            start, end = coords.split("-")
-            start = int(start)
-            end = int(end)
-            # Add data
-            if exon_id not in exon_to_coord:
-                exon_to_coord[exon_id] = []
-            exon_to_coord[exon_id].append((transcript_id, start, end))
+    results = _process_index(exons_index)
+    for line in results:
+        transcript_id, start, end, exon_id = line
+        if exon_id not in exon_to_coord:
+            exon_to_coord[exon_id] = []
+        exon_to_coord[exon_id].append((transcript_id, start, end))
     return exon_to_coord
 
 

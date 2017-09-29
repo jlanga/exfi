@@ -46,6 +46,24 @@ path_different = [
     ]
 ]
 
+def _prepare_overlaps(exons):
+    """Compute splicegraph prior the computation of overlaps"""
+    splice_graph = nx.DiGraph()
+    exon_df = exons_to_df(exons)
+    exon2coord = exon_to_coordinates(exons)
+    splice_graph.add_nodes_from(exon2coord.keys())
+    nx.set_node_attributes(
+        G=splice_graph,
+        name='coordinates',
+        values = exon2coord
+    )
+    transcript2path = transcript_to_path(exon_df).to_dict()["path"]
+    for path in transcript2path.values():
+        splice_graph.add_path(path)
+    return splice_graph
+
+
+
 
 class TestExonsToDF(unittest.TestCase):
 
@@ -208,49 +226,19 @@ class TestComputeOverlaps(unittest.TestCase):
 
     def test_empty_exome(self):
         """exons_to_splicegraph.py: compute the overlaps of an empty exome"""
-        splice_graph = nx.DiGraph()
+        splice_graph = _prepare_overlaps({})
         overlaps = compute_edge_overlaps(splice_graph)
-        self.assertEqual(
-            overlaps,
-            {}
-        )
+        self.assertEqual(overlaps, {})
 
     def test_single_exon(self):
         """exons_to_splicegraph.py: compute the overlaps of a single exon exome"""
-        splice_graph = nx.DiGraph()
-        exons = index_simple
-        exon_df = exons_to_df(exons)
-        exon2coord = exon_to_coordinates(exons)
-        splice_graph.add_nodes_from(exon2coord.keys())
-        nx.set_node_attributes(
-            G=splice_graph,
-            name='coordinates',
-            values = exon2coord
-        )
-        transcript2path = transcript_to_path(exon_df).to_dict()["path"]
-        for path in transcript2path.values():
-            splice_graph.add_path(path)
+        splice_graph =  _prepare_overlaps(index_simple)
         overlaps = compute_edge_overlaps(splice_graph)
-        self.assertEqual(
-            overlaps,
-            {}
-        )
+        self.assertEqual(overlaps, {})
 
     def test_multiple_exons(self):
         """build_splicegraph.py: compute the overlaps of a simple exome"""
-        splice_graph = nx.DiGraph()
-        exons = index_different
-        exon_df = exons_to_df(exons)
-        exon2coord = exon_to_coordinates(exons)
-        splice_graph.add_nodes_from(exon2coord.keys())
-        nx.set_node_attributes(
-            G=splice_graph,
-            name='coordinates',
-            values = exon2coord
-        )
-        transcript2path = transcript_to_path(exon_df).to_dict()["path"]
-        for path in transcript2path.values():
-            splice_graph.add_path(path)
+        splice_graph =  _prepare_overlaps(index_different)
         overlaps = compute_edge_overlaps(splice_graph)
         self.assertEqual(
             overlaps,

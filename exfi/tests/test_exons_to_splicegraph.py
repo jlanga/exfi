@@ -46,6 +46,9 @@ path_different = [
     ]
 ]
 
+def _prebuild_graph():
+
+
 
 class TestExonsToDF(unittest.TestCase):
 
@@ -196,7 +199,7 @@ class TestTranscriptToPath(unittest.TestCase):
             )\
             .equals(
                 pd.DataFrame(
-                    data=path_different
+                    data=path_different,
                     columns=['transcript_id', 'path']
                 )\
                 .set_index('transcript_id')

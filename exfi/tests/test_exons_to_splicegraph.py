@@ -46,9 +46,6 @@ path_different = [
     ]
 ]
 
-def _prebuild_graph():
-
-
 
 class TestExonsToDF(unittest.TestCase):
 
@@ -311,7 +308,7 @@ class TestBuildSplicegraph(unittest.TestCase):
                 "EXON00000000013", "EXON00000000014", "EXON00000000015"
             ]
         )
-        paths = path_different
+        paths = [value for key, value in path_different]
 
         for path in paths:
             expected.add_path(path)

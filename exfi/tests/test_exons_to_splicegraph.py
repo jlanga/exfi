@@ -28,6 +28,24 @@ index_different = SeqIO.index(
     format="fasta"
 )
 
+path_simple = [
+    ["ENSDART00000161035.1",
+        ["EXON00000000001"]
+    ]
+]
+
+path_different = [
+    ["ENSDART00000161035.1",
+        ["EXON00000000001", "EXON00000000002", "EXON00000000003"]
+    ],
+    ["ENSDART00000165342.1",
+        ["EXON00000000004", "EXON00000000005", "EXON00000000006",
+        "EXON00000000007", "EXON00000000008", "EXON00000000009",
+        "EXON00000000010", "EXON00000000011", "EXON00000000012",
+        "EXON00000000013", "EXON00000000014", "EXON00000000015"]
+    ]
+]
+
 
 class TestExonsToDF(unittest.TestCase):
 
@@ -163,7 +181,7 @@ class TestTranscriptToPath(unittest.TestCase):
             )\
             .equals(
                 pd.DataFrame(
-                    data=[["ENSDART00000161035.1", ["EXON00000000001"]]],
+                    data=path_simple,
                     columns=['transcript_id', 'path']
                 )\
                 .set_index('transcript_id')
@@ -178,17 +196,7 @@ class TestTranscriptToPath(unittest.TestCase):
             )\
             .equals(
                 pd.DataFrame(
-                    data=[
-                        ["ENSDART00000161035.1",
-                            ["EXON00000000001", "EXON00000000002", "EXON00000000003"]
-                        ],
-                        ["ENSDART00000165342.1",
-                            ["EXON00000000004", "EXON00000000005", "EXON00000000006",
-                            "EXON00000000007", "EXON00000000008", "EXON00000000009",
-                            "EXON00000000010", "EXON00000000011", "EXON00000000012",
-                            "EXON00000000013", "EXON00000000014", "EXON00000000015"]
-                        ]
-                    ],
+                    data=path_different
                     columns=['transcript_id', 'path']
                 )\
                 .set_index('transcript_id')
@@ -300,17 +308,7 @@ class TestBuildSplicegraph(unittest.TestCase):
                 "EXON00000000013", "EXON00000000014", "EXON00000000015"
             ]
         )
-        paths = [
-            [
-                "EXON00000000001", "EXON00000000002", "EXON00000000003"
-            ],
-            [
-                "EXON00000000004", "EXON00000000005", "EXON00000000006",
-                "EXON00000000007", "EXON00000000008", "EXON00000000009",
-                "EXON00000000010", "EXON00000000011", "EXON00000000012",
-                "EXON00000000013", "EXON00000000014", "EXON00000000015"
-            ]
-        ]
+        paths = path_different
 
         for path in paths:
             expected.add_path(path)

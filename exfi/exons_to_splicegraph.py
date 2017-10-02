@@ -200,6 +200,6 @@ def splicegraph_to_gfa1(splice_graph, paths, filename):
             gfa.write(
                 "P\t{transcript_id}\t{path}\n".format(
                     transcript_id=transcript_id,
-                    path=",".join(paths[transcript_id])
+                    path=",".join([exon+"+" for exon in paths[transcript_id]])
                 )
             )

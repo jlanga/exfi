@@ -181,10 +181,10 @@ def splicegraph_to_gfa1(splice_graph, paths, filename):
             node1, node2 = edge
             overlap = edge2overlap[edge]
             # is an overlap or a gap
-            if overlap > 0:
+            if overlap >= 0:
                 overlap = "{}M".format(overlap)
             else:
-                overlap = "{}D".format(-overlap)
+                overlap = "{}N".format(-overlap)
             gfa.write(
                 "L\t{node1}\t{orientation1}\t{node2}\t{orientation2}\t{overlap}\n".format(
                     node1=node1,

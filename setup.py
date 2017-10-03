@@ -18,10 +18,8 @@ setup(
     tests_require=['nose'],
     scripts=[
         "bin/build_baited_bloom_filter",
-        "bin/find_exons",
-        "bin/reduce_exons",
-        "bin/exons_to_gapped_transcript",
-        "bin/exons_to_splicegraph"
+        "bin/build_splicegraph",
+        "bin/exons_to_gapped_transcript"
     ],
     include_package_data=True,
     zip_safe=False

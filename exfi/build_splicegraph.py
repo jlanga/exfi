@@ -46,13 +46,14 @@ def exon_to_coordinates(exons_index):
 
 
 def transcript_to_path(exon_df):
-    """Get a Df containing transcript_id to list of exons, indicating the path"""
+    """Get a dict containing transcript_id to list of exons, indicating the path"""
     return exon_df\
         .sort_values(['transcript_id', 'start', 'end'])\
         .drop(['start','end','score','strand'], axis=1)\
         .groupby('transcript_id')\
         .agg(lambda exon: exon.tolist())\
-        .rename(columns={'exon_id':'path'})
+        .rename(columns={'exon_id':'path'})\
+        .to_dict()["path"]
 
 
 def compute_edge_overlaps(splice_graph):
@@ -97,6 +98,8 @@ def compute_edge_overlaps(splice_graph):
 
     return edge_overlaps
 
+
+
 def build_splicegraph(exons):
     """Build the splicegraph from a dict of SeqRecords
 
@@ -115,7 +118,7 @@ def build_splicegraph(exons):
     # Precompute interesting data
     exon_df = exons_to_df(exons)
     exon2coord = exon_to_coordinates(exons)
-    transcript2path = transcript_to_path(exon_df).to_dict()["path"]
+    transcript2path = transcript_to_path(exon_df)
 
     # Initialize grpah
     splice_graph = nx.DiGraph()
@@ -148,16 +151,29 @@ def build_splicegraph(exons):
     return splice_graph
 
 
-def splicegraph_to_gfa1(splice_graph, paths, filename):
-    """(nx.Digraph, transcript_to_path_dict, fileout) -> None
+def write_gfa1(splice_graph, transcript_index, exons, filename):
+    """(dict_of_seqrecords, dict_of_seqrecords, str) -> None
 
     Write splice graph to filename in GFA 1 format
     """
     with open(filename, "w") as gfa:
+
         # Header
         gfa.write("H\tVN:Z:1.0\n")
 
         # Nodes
+        ## Transcripts (commented)
+        for transcript_id in sorted(transcript_index.keys()):
+            transcript = transcript_index[transcript_id]
+            gfa.write(
+                "#S\t{identifier}\t{sequence}\t{length}\n".format(
+                    identifier=transcript.id,
+                    sequence=str(transcript.seq),
+                    length=len(transcript.seq)
+                )
+            )
+
+        ## Exons
         node2seq = nx.get_node_attributes(
             G=splice_graph,
             name='sequence'
@@ -165,12 +181,33 @@ def splicegraph_to_gfa1(splice_graph, paths, filename):
         for node in sorted(splice_graph.nodes()):
             gfa.write(
                 "S\t{node}\t{sequence}\t{length}\n".format(
-                node=node,
-                sequence=node2seq[node],
-                length=len(node2seq[node])
+                    node=node,
+                    sequence=node2seq[node],
+                    length=len(node2seq[node])
             )
         )
-        del node2seq
+
+        # Add coordinates as containments
+        exon2coordinates = nx.get_node_attributes(
+            G=splice_graph,
+            name='coordinates'
+        )
+        for exon_id in sorted(exon2coordinates.keys()):
+            coordinates = exon2coordinates[exon_id]
+            for coordinate in coordinates:
+                transcript_id, start, end = coordinate
+                gfa.write(
+                    "C\t{container_id}\t{container_orient}\t"
+                    "{contained_id}\t{contained_orient}\t"
+                    "{position}\t{overlap}\n".format(
+                        container_id=transcript_id,
+                        container_orient="+",
+                        contained_id=exon_id,
+                        contained_orient="+",
+                        position=start,
+                        overlap=str(len(node2seq[exon_id])) + "M"
+                    )
+                )
 
         # Edges
         edge2overlap = nx.get_edge_attributes(
@@ -196,6 +233,8 @@ def splicegraph_to_gfa1(splice_graph, paths, filename):
             )
 
         # Paths
+        exon_df = exons_to_df(exons)
+        paths = transcript_to_path(exon_df)
         for transcript_id in sorted(paths.keys()):
             gfa.write(
                 "P\t{transcript_id}\t{path}\n".format(

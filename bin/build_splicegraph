@@ -1,19 +1,31 @@
 #!/usr/bin/env python3
 
 import argparse
-import sys
 from exfi.find_exons import \
     _get_fasta, \
     _find_exons_pipeline
-from exfi.reduce_exons import reduce_exons
+
+from exfi.reduce_exons import \
+    reduce_exons
+
+from exfi.build_splicegraph import \
+    _process_index, \
+    exons_to_df, \
+    exon_to_coordinates, \
+    transcript_to_path, \
+    compute_edge_overlaps, \
+    build_splicegraph, \
+    write_gfa1
+
+
+
 from Bio import SeqIO
 from os.path import isfile
 from exfi import __version__
 
 parser = argparse.ArgumentParser(
-    usage='find_exons -i transcriptome.fa -b bloom.filter -k 27 -o exons.fa',
-    description='Find exons in a transcriptome with WGS reads and a Bloom '
-                'filter',
+    usage='build_splicegraph -i transcriptome.fa -b bloom_filter.bf -k 30 1-o exome.gfa',
+    description='Store the predicted exome in GFA format',
     epilog='Jorge Langa. Send issues and pull requests to github.com/jlanga/'
            'exfi',
 )
@@ -41,7 +53,8 @@ parser.add_argument(
     '-b',
     type=str,
     required=True,
-    help='Bloom filter with genomic sequences (from abyss-bloom)',
+    help='Bloom filter with genomic sequences (from build_baited_bloom_filter or'
+        'abyss-bloom)',
     dest='bloom_filter',
     metavar='BLOOM'
 )
@@ -58,16 +71,6 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    '--output-fasta',
-    '-o',
-    type=str,
-    required=True,
-    help='Path to output fasta file',
-    dest="output_fasta",
-    metavar="FILE"
-)
-
-parser.add_argument(
     '--max-fp-bases',
     '-m',
     type=int,
@@ -78,31 +81,47 @@ parser.add_argument(
     default=5
 )
 
+parser.add_argument(
+    '--output-gfa',
+    '-o',
+    type=str,
+    required=True,
+    help='Path to output GFA1 file (the splice graph)',
+    dest="output_gfa",
+    metavar="FILE"
+)
+
 args = parser.parse_args()
 
 if __name__ == "__main__":
-
     args = vars(parser.parse_args())
     transcriptome = args["input_fasta"]
     bloom_filter = args["bloom_filter"]
     kmer = args["kmer"]
-    output_fasta = args["output_fasta"]
+    output_gfa = args["output_gfa"]
     max_fp_bases = args["max_fp_bases"]
-
-    # check inputs
-    assert isfile(transcriptome), "ERROR!: input_fasta not found"
-    assert isfile(bloom_filter), "ERROR!: Bloom filter not found"
-    assert kmer > 0, "ERROR!: kmer is not a positive integer"
-    assert max_fp_bases >= 0, "ERROR!: max_fp_bases is not a positive integer"
 
     # Get predicted exons in bed format
     positive_exons_bed = _find_exons_pipeline(
         kmer, bloom_filter, transcriptome, max_fp_bases
     )
     # Bed -> fasta
-    transcriptome_dict = SeqIO.index(filename=transcriptome, format="fasta")
-    positive_exons_fasta = _get_fasta(transcriptome_dict, positive_exons_bed)
-    # Reduce
-    exons = reduce_exons(positive_exons_fasta)  # Collapse identical exons into one
-    # Write
-    SeqIO.write(sequences=exons, handle=output_fasta, format="fasta")
+    transcriptome_index = SeqIO.index(filename=transcriptome, format="fasta")
+    #print([x for x in transcriptome_index.keys()])
+    positive_exons_fasta = _get_fasta(transcriptome_index, positive_exons_bed)
+
+    # Reduce and convert to list since we will use it twice
+    reduced_exons = reduce_exons(positive_exons_fasta)
+    exons = {exon.id: exon for exon in reduced_exons}
+
+    # Build splice graph
+    splice_graph = build_splicegraph(exons)
+    #print([x for x in transcriptome_index.keys()])
+    # Write to GFA1
+    write_gfa1(
+        splice_graph=splice_graph,
+        transcript_index=transcriptome_index,
+        exons=exons,
+        filename=output_gfa
+    )
+    #print([x for x in transcriptome_index.keys()])

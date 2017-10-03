@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
 import unittest
-from exfi.exons_to_splicegraph import \
+from exfi.build_splicegraph import \
     exons_to_df, \
     exon_to_coordinates, \
     transcript_to_path, \
     compute_edge_overlaps, \
     build_splicegraph, \
-    splicegraph_to_gfa1
+    write_gfa1
 
 import networkx as nx
 import pandas as pd
@@ -19,32 +19,37 @@ import os
 
 
 index_simple = SeqIO.index(
-    filename="exfi/tests/files/exons_to_splicegraph/single.fa",
+    filename="exfi/tests/files/build_splicegraph/single.fa",
     format="fasta"
 )
 
 index_different = SeqIO.index(
-    filename="exfi/tests/files/exons_to_splicegraph/different_transcripts.fa",
+    filename="exfi/tests/files/build_splicegraph/different_transcripts.fa",
     format="fasta"
 )
 
-path_simple = [
-    ["ENSDART00000161035.1",
-        ["EXON00000000001"]
-    ]
-]
+path_simple = {"ENSDART00000161035.1": ["EXON00000000001"]}
 
-path_different = [
-    ["ENSDART00000161035.1",
+path_different = {
+    "ENSDART00000161035.1":
         ["EXON00000000001", "EXON00000000002", "EXON00000000003"]
-    ],
-    ["ENSDART00000165342.1",
+    ,
+    "ENSDART00000165342.1":
         ["EXON00000000004", "EXON00000000005", "EXON00000000006",
         "EXON00000000007", "EXON00000000008", "EXON00000000009",
         "EXON00000000010", "EXON00000000011", "EXON00000000012",
         "EXON00000000013", "EXON00000000014", "EXON00000000015"]
-    ]
-]
+}
+
+transcriptome_simple = SeqIO.index(
+    filename="exfi/tests/files/build_splicegraph/transcriptome_simple.fa",
+    format="fasta"
+)
+
+transcriptome_different = SeqIO.index(
+    filename="exfi/tests/files/build_splicegraph/transcriptome_different.fa",
+    format="fasta"
+)
 
 def _prepare_overlaps(exons):
     """Compute splicegraph prior the computation of overlaps"""
@@ -57,7 +62,7 @@ def _prepare_overlaps(exons):
         name='coordinates',
         values = exon2coord
     )
-    transcript2path = transcript_to_path(exon_df).to_dict()["path"]
+    transcript2path = transcript_to_path(exon_df)
     for path in transcript2path.values():
         splice_graph.add_path(path)
     return splice_graph
@@ -84,7 +89,7 @@ class TestExonsToDF(unittest.TestCase):
         self.assertTrue(
             exons_to_df(
                 SeqIO.index(
-                    filename="exfi/tests/files/exons_to_splicegraph/single.fa",
+                    filename="exfi/tests/files/build_splicegraph/single.fa",
                     format="fasta"
                 )
             )\
@@ -94,7 +99,6 @@ class TestExonsToDF(unittest.TestCase):
                     columns=['transcript_id', 'start', 'end', 'exon_id', 'score', 'strand']
                 )
             )
-
         )
 
     def test_multiple(self):
@@ -147,12 +151,7 @@ class TestExonsToCoordinates(unittest.TestCase):
     def test_multiple(self):
         """exons_to_splicegraph.py: Get coordinates of a single exon"""
         self.assertEqual(
-            exon_to_coordinates(
-                SeqIO.index(
-                    filename="exfi/tests/files/exons_to_splicegraph/different_transcripts.fa",
-                    format="fasta"
-                )
-            ),
+            exon_to_coordinates(index_different),
             {
                 "EXON00000000002": [("ENSDART00000161035.1", 397, 472)],
                 "EXON00000000015": [("ENSDART00000165342.1", 1176, 1324)],
@@ -177,48 +176,24 @@ class TestTranscriptToPath(unittest.TestCase):
 
     def test_empty(self):
         """exons_to_splicegraph.py: convert an empty exome to path"""
-        self.assertTrue(
-            transcript_to_path(
-                exons_to_df({})
-            )\
-            .equals(
-                pd.DataFrame(
-                    data= np.empty((0,2), dtype=np.float64),
-                    columns=['transcript_id', 'path']
-                )\
-                .set_index('transcript_id')
-            )
+        self.assertEqual(
+            transcript_to_path(exons_to_df({})),
+            {}
         )
 
 
     def test_single(self):
         """exons_to_splicegraph.py: convert an single exon transcript to path"""
-        self.assertTrue(
-            transcript_to_path(
-                exons_to_df(index_simple)
-            )\
-            .equals(
-                pd.DataFrame(
-                    data=path_simple,
-                    columns=['transcript_id', 'path']
-                )\
-                .set_index('transcript_id')
-            )
+        self.assertEqual(
+            transcript_to_path(exons_to_df(index_simple)),
+            path_simple
         )
 
     def test_multiple(self):
         """exons_to_splicegraph.py: convert an single exon transcript to path"""
-        self.assertTrue(
-            transcript_to_path(
-                exons_to_df(index_different)
-            )\
-            .equals(
-                pd.DataFrame(
-                    data=path_different,
-                    columns=['transcript_id', 'path']
-                )\
-                .set_index('transcript_id')
-            )
+        self.assertEqual(
+            transcript_to_path(exons_to_df(index_different)),
+            path_different
         )
 
 
@@ -296,9 +271,9 @@ class TestBuildSplicegraph(unittest.TestCase):
                 "EXON00000000013", "EXON00000000014", "EXON00000000015"
             ]
         )
-        paths = [value for key, value in path_different]
+        #paths = [value for key, value in path_different]
 
-        for path in paths:
+        for path in path_different.values():
             expected.add_path(path)
 
         self.assertTrue(
@@ -314,42 +289,45 @@ class TestWriteGFA1(unittest.TestCase):
     def test_empty(self):
         """Write an empty GFA1 (just header)"""
         tmp_file = tempfile.mkstemp()[1]
-        splicegraph_to_gfa1(
+        write_gfa1(
             splice_graph=build_splicegraph({}),
-            paths=transcript_to_path(exons_to_df({})).to_dict()['path'],
+            transcript_index={},
+            exons={},
             filename=tmp_file
         )
         self.assertTrue(filecmp.cmp(
             tmp_file,
-            "exfi/tests/files/exons_to_splicegraph/empty.gfa"
+            "exfi/tests/files/build_splicegraph/empty.gfa"
         ))
         os.remove(tmp_file)
 
     def test_simple(self):
         """Write a single exon GFA"""
         tmp_file = tempfile.mkstemp()[1]
-        splicegraph_to_gfa1(
+        write_gfa1(
             splice_graph=build_splicegraph(index_simple),
-            paths=transcript_to_path(exons_to_df(index_simple)).to_dict()['path'],
-            filename=tmp_file
+            transcript_index=transcriptome_simple,
+            exons=index_simple,
+            filename=tmp_file #tmp_file
         )
         self.assertTrue(filecmp.cmp(
             tmp_file,
-            "exfi/tests/files/exons_to_splicegraph/single.gfa"
+            "exfi/tests/files/build_splicegraph/single.gfa"
         ))
         os.remove(tmp_file)
 
     def test_multiple(self):
         """Write a more complex GFA"""
         tmp_file = tempfile.mkstemp()[1]
-        splicegraph_to_gfa1(
+        write_gfa1(
             splice_graph= build_splicegraph(index_different),
-            paths=transcript_to_path(exons_to_df(index_different)).to_dict()['path'],
+            transcript_index=transcriptome_different,
+            exons=index_different,
             filename=tmp_file
         )
         self.assertTrue(filecmp.cmp(
             tmp_file,
-            "exfi/tests/files/exons_to_splicegraph/different.gfa"
+            "exfi/tests/files/build_splicegraph/different.gfa"
         ))
         os.remove(tmp_file)
 

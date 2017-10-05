@@ -51,15 +51,16 @@ script:
     --threads 2
     --output-bloom genome_k27_m500M_l1.bloom
     data/genome.fa.gz
-  - find_exons
+  - build_splicegraph
     --input-fasta data/transcript.fa
     --input-bloom genome_k27_m500M_l1.bloom
     --kmer 27
-    --output-fasta test_exons_raw.fa
-  - exons_to_gapped_transcript
-    --input-fasta test_exons_raw.fa
-    --output-fasta gapped_transcripts.fa
-    --number-of-ns 100
-  - exons_to_splicegraph
-    --input-fasta test_exons_raw.fa
+    --max-fp-bases 5
     --output-gfa test_exons_raw.gfa
+  # - exons_to_gapped_transcript
+  #   --input-fasta test_exons_raw.fa
+  #   --output-fasta gapped_transcripts.fa
+  #   --number-of-ns 100
+  # - exons_to_splicegraph
+  #   --input-fasta test_exons_raw.fa
+  #   --output-gfa test_exons_raw.gfa

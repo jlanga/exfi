@@ -13,7 +13,7 @@ conda install --yes abyss biopython bedtools pandas networkx
 # https://hub.docker.com/r/adamnovak/sequence-graphs/~/dockerfile/
 git clone https://github.com/simongog/sdsl-lite.git && \
 pushd sdsl-lite && \
-./install.sh /usr && \
+sudo ./install.sh /usr && \
 popd && \
 rm -Rf sdsl-lite
 
@@ -25,6 +25,6 @@ git submodule update --init && \
 ./autogen.sh && \
 ./configure && \
 make -j 2 && \
-make install && \
+sudo make install && \
 popd && \
-rm -rf biobloom/ 
+rm -rf biobloom/

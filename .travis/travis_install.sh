@@ -8,12 +8,7 @@ conda config --add channels r
 conda config --add channels bioconda
 conda install --yes abyss biopython bedtools pandas networkx
 
+brew tap homebrew/science
 brew update
 brew update
-git clone https://github.com/bcgsc/biobloom ~/download/biobloom
-pushd ~/download/biobloom
-./autogen.sh
-./configure
-make -j
-sudo make install
-popd
+brew install biobloomtools

@@ -24,9 +24,8 @@ matrix:
           - libboost-dev
           - gcc
           - autoconf
-          - libsparse
           - bzip2
-          - zlib
+          - zlib1g
           - libsparsehash-dev
 
 # commands to install dependencies

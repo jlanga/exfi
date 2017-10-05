@@ -22,8 +22,6 @@ matrix:
           - libboost-dev
           - gcc
           - autoconf
-          - zlib1g-dev
-          - linuxbrew-wrapper
 
 
 # commands to install dependencies

@@ -25,3 +25,21 @@ else
         -b \
         -p $HOME/miniconda3_$TRAVIS_OS_NAME
 fi
+
+
+# Install brew
+## https://gist.github.com/njlr/ac278ee448dc18002763092724d4e4d4
+if test -e $HOME/.linuxbrew ; then
+    echo "linubrew already installed"
+else
+    echo "Installing linuxbrew from GitHub"
+    rm -rf $HOME/.linuxbrewbefore_install:
+    git clone https://github.com/Linuxbrew/brew.git $HOME/.linuxbrew
+    export PATH="$HOME/.linuxbrew/bin:$PATH"
+    echo 'export PATH="$HOME/.linuxbrew/bin:$PATH"' >>~/.bash_profile
+    export MANPATH="$(brew --prefix)/share/man:$MANPATH"
+    export INFOPATH="$(brew --prefix)/share/info:$INFOPATH"
+fi
+brew --version
+brew tap homebrew/science
+brew install biobloomtools

@@ -124,7 +124,7 @@ def build_splicegraph(exons):
     splice_graph = nx.DiGraph()
 
     # Add nodes
-    splice_graph.add_nodes_from(exon2coord.keys())
+    splice_graph.add_nodes_from(exons.keys())
 
     nx.set_node_attributes(
         G=splice_graph,
@@ -135,8 +135,9 @@ def build_splicegraph(exons):
     nx.set_node_attributes(
         G=splice_graph,
         name='sequence',
-        values = {exon_id : str(exons[exon_id].seq) for exon_id in exons}
+        values = {exon.id : str(exon.seq) for exon in exons.values()}
     )
+
 
     # Edges
     for path in transcript2path.values():
@@ -166,7 +167,7 @@ def write_gfa1(splice_graph, transcript_index, exons, filename):
         for transcript_id in sorted(transcript_index.keys()):
             transcript = transcript_index[transcript_id]
             gfa.write(
-                "#S\t{identifier}\t{sequence}\t{length}\n".format(
+                "#S\t{identifier}\t{sequence}\tLN:i:{length}\n".format(
                     identifier=transcript.id,
                     sequence=str(transcript.seq),
                     length=len(transcript.seq)
@@ -180,7 +181,7 @@ def write_gfa1(splice_graph, transcript_index, exons, filename):
         )
         for node in sorted(splice_graph.nodes()):
             gfa.write(
-                "S\t{node}\t{sequence}\t{length}\n".format(
+                "S\t{node}\t{sequence}\tLN:i:{length}\n".format(
                     node=node,
                     sequence=node2seq[node],
                     length=len(node2seq[node])
@@ -221,7 +222,7 @@ def write_gfa1(splice_graph, transcript_index, exons, filename):
             if overlap >= 0:
                 overlap = "{}M".format(overlap)
             else:
-                overlap = "{}N".format(-overlap)
+                overlap = "{}G".format(-overlap)
             gfa.write(
                 "L\t{node1}\t{orientation1}\t{node2}\t{orientation2}\t{overlap}\n".format(
                     node1=node1,

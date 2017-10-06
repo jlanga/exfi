@@ -5,11 +5,12 @@ from exfi.build_splicegraph import \
     build_splicegraph
 
 from exfi.io import \
-    write_gfa1
+    write_gfa1, \
+    gfa1_to_exons, \
+    gfa1_to_gapped_transcript
 
 import networkx as nx
 import pandas as pd
-import numpy as np
 from Bio import SeqIO
 import filecmp
 import tempfile
@@ -25,19 +26,6 @@ index_different = SeqIO.index(
     format="fasta"
 )
 
-path_simple = {"ENSDART00000161035.1": ["EXON00000000001"]}
-
-path_different = {
-    "ENSDART00000161035.1":
-        ["EXON00000000001", "EXON00000000002", "EXON00000000003"]
-    ,
-    "ENSDART00000165342.1":
-        ["EXON00000000004", "EXON00000000005", "EXON00000000006",
-        "EXON00000000007", "EXON00000000008", "EXON00000000009",
-        "EXON00000000010", "EXON00000000011", "EXON00000000012",
-        "EXON00000000013", "EXON00000000014", "EXON00000000015"]
-}
-
 transcriptome_simple = SeqIO.index(
     filename="exfi/tests/files/build_splicegraph/transcriptome_simple.fa",
     format="fasta"
@@ -47,6 +35,21 @@ transcriptome_different = SeqIO.index(
     filename="exfi/tests/files/build_splicegraph/transcriptome_different.fa",
     format="fasta"
 )
+
+
+empty_gfa = "exfi/tests/files/io/empty.gfa"
+single_gfa = "exfi/tests/files/io/single.gfa"
+different_gfa = "exfi/tests/files/io/different.gfa"
+
+empty_exons = "exfi/tests/files/io/empty_exons.fa"
+single_exons = "exfi/tests/files/io/single_exons.fa"
+different_exons = "exfi/tests/files/io/different_exons.fa"
+different_exons_masked = "exfi/tests/files/io/different_exons_masked.fa"
+
+empty_gapped = "exfi/tests/files/io/empty_gapped.fa"
+single_gapped = "exfi/tests/files/io/single_gapped.fa"
+different_gapped = "exfi/tests/files/io/different_gapped.fa"
+different_gapped_masked = "exfi/tests/files/io/different_gapped_masked.fa"
 
 
 class TestWriteGFA1(unittest.TestCase):
@@ -62,7 +65,7 @@ class TestWriteGFA1(unittest.TestCase):
         )
         self.assertTrue(filecmp.cmp(
             tmp_file,
-            "exfi/tests/files/io/empty.gfa"
+            empty_gfa
         ))
         os.remove(tmp_file)
 
@@ -77,7 +80,7 @@ class TestWriteGFA1(unittest.TestCase):
         )
         self.assertTrue(filecmp.cmp(
             tmp_file,
-            "exfi/tests/files/io/single.gfa"
+            single_gfa
         ))
         os.remove(tmp_file)
 
@@ -92,10 +95,70 @@ class TestWriteGFA1(unittest.TestCase):
         )
         self.assertTrue(filecmp.cmp(
             tmp_file,
-            "exfi/tests/files/io/different.gfa"
+            different_gfa
         ))
         os.remove(tmp_file)
 
+
+
+class TestGFA1ToExons(unittest.TestCase):
+
+    def test_empty(self):
+        """Convert an empty GFA1 to an empty FASTA"""
+        tmp_file = tempfile.mkstemp()[1]
+        gfa1_to_exons(
+            gfa_in_fn=empty_gfa,
+            fasta_out_fn=tmp_file,
+            soft_mask_overlaps=False
+        )
+        self.assertTrue(filecmp.cmp(
+            tmp_file,
+            empty_exons
+        ))
+        os.remove(tmp_file)
+
+
+    def test_simple(self):
+        """Convert a simple GFA1 to a single exon FASTA"""
+        tmp_file = tempfile.mkstemp()[1]
+        gfa1_to_exons(
+            gfa_in_fn=single_gfa,
+            fasta_out_fn=tmp_file,
+            soft_mask_overlaps=False
+        )
+        self.assertTrue(filecmp.cmp(
+            tmp_file,
+            single_exons
+        ))
+        os.remove(tmp_file)
+
+    def test_multiple(self):
+        """Convert a more complex GFA1 to multiple exon FASTA"""
+        tmp_file = tempfile.mkstemp()[1]
+        gfa1_to_exons(
+            gfa_in_fn=different_gfa,
+            fasta_out_fn=tmp_file,
+            soft_mask_overlaps=False
+        )
+        self.assertTrue(filecmp.cmp(
+            tmp_file,
+            different_exons
+        ))
+        os.remove(tmp_file)
+
+    def test_multiple_masked(self):
+        """Convert a more complex GFA1 to multiple masked exon FASTA"""
+        tmp_file = tempfile.mkstemp()[1]
+        gfa1_to_exons(
+            gfa_in_fn=different_gfa,
+            fasta_out_fn=tmp_file,
+            soft_mask_overlaps=True
+        )
+        self.assertTrue(filecmp.cmp(
+            tmp_file,
+            different_exons_masked
+        ))
+        os.remove(tmp_file)
 
 class TestGFA1ToGappedTranscript(unittest.TestCase):
 
@@ -108,15 +171,5 @@ class TestGFA1ToGappedTranscript(unittest.TestCase):
     def test_multiple(self):
         pass
 
-
-
-class TestGFA1ToExons(unittest.TestCase):
-
-    def test_empty(self):
-        pass
-
-    def test_simple(self):
-        pass
-
-    def test_multiple(self):
+    def test_multiple_masked(self):
         pass

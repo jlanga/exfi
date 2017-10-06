@@ -10,8 +10,9 @@ conda install --yes \
     abyss \
     biopython \
     bedtools \
+    networkx \
     pandas \
-    networkx
+    pip
 conda clean --all --yes
 
 pushd $HOME/opt/

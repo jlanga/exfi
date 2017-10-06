@@ -15,10 +15,8 @@ conda install --yes \
 conda clean --all --yes
 
 # SDSL-lite
-
-
 # https://hub.docker.com/r/adamnovak/sequence-graphs/~/dockerfile/
-if [[ ! test -e $HOME/sdsl-lite ]]; then
+if [[ ! -d $HOME/sdsl-lite ]]; then
     git clone https://github.com/simongog/sdsl-lite.git
 fi
 pushd sdsl-lite && \
@@ -27,7 +25,7 @@ popd
 
 # biobloomtools
 # as in https://github.com/bcgsc/biobloom
-if [[! test -e $HOME/biobloom ]]; then
+if [[ ! -d $HOME/biobloom ]]; then
     git clone https://github.com/bcgsc/biobloom.git && \
 fi
 pushd biobloom/ && \

@@ -1,9 +1,10 @@
 language: bash
 
 cache:
+  apt: true
   pip: true
   directories:
-    - $HOME/miniconda3_$TRAVIS_OS_PATH # Add the installation to TRAVIS cache.
+    - $HOME/miniconda3_$TRAVIS_OS_NAME # Add the installation to TRAVIS cache.
     #- $HOME/miniconda3_osx # Add the installation to TRAVIS cache.
     #- $HOME/download # Sufficient to add miniconda.sh to TRAVIS cache.
     - $HOME/.bash_profile  # Paths and everything

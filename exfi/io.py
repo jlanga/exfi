@@ -5,10 +5,11 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 import networkx as nx
+import pandas as pd
 
 from exfi.build_splicegraph import \
     exons_to_df, \
-    transcript_to_path 
+    transcript_to_path
 
 
 def write_gfa1(splice_graph, transcript_index, exons, filename):

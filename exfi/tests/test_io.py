@@ -95,3 +95,28 @@ class TestWriteGFA1(unittest.TestCase):
             "exfi/tests/files/build_splicegraph/different.gfa"
         ))
         os.remove(tmp_file)
+
+
+class TestGFA1ToGappedTranscript(unittest.TestCase):
+
+    def test_empty(self):
+        pass
+
+    def test_simple(self):
+        pass
+
+    def test_multiple(self):
+        pass
+
+
+
+class TestGFA1ToExons(unittest.TestCase):
+
+    def test_empty(self):
+        pass
+
+    def test_simple(self):
+        pass
+
+    def test_multiple(self):
+        pass

@@ -6,8 +6,8 @@ from exfi.build_splicegraph import \
     exon_to_coordinates, \
     transcript_to_path, \
     compute_edge_overlaps, \
-    build_splicegraph, \
-    write_gfa1
+    build_splicegraph #, \
+    #write_gfa1
 
 import networkx as nx
 import pandas as pd
@@ -284,52 +284,6 @@ class TestBuildSplicegraph(unittest.TestCase):
         )
 
 
-class TestWriteGFA1(unittest.TestCase):
-
-    def test_empty(self):
-        """Write an empty GFA1 (just header)"""
-        tmp_file = tempfile.mkstemp()[1]
-        write_gfa1(
-            splice_graph=build_splicegraph({}),
-            transcript_index={},
-            exons={},
-            filename=tmp_file
-        )
-        self.assertTrue(filecmp.cmp(
-            tmp_file,
-            "exfi/tests/files/build_splicegraph/empty.gfa"
-        ))
-        os.remove(tmp_file)
-
-    def test_simple(self):
-        """Write a single exon GFA"""
-        tmp_file = tempfile.mkstemp()[1]
-        write_gfa1(
-            splice_graph=build_splicegraph(index_simple),
-            transcript_index=transcriptome_simple,
-            exons=index_simple,
-            filename=tmp_file #tmp_file
-        )
-        self.assertTrue(filecmp.cmp(
-            tmp_file,
-            "exfi/tests/files/build_splicegraph/single.gfa"
-        ))
-        os.remove(tmp_file)
-
-    def test_multiple(self):
-        """Write a more complex GFA"""
-        tmp_file = tempfile.mkstemp()[1]
-        write_gfa1(
-            splice_graph= build_splicegraph(index_different),
-            transcript_index=transcriptome_different,
-            exons=index_different,
-            filename=tmp_file
-        )
-        self.assertTrue(filecmp.cmp(
-            tmp_file,
-            "exfi/tests/files/build_splicegraph/different.gfa"
-        ))
-        os.remove(tmp_file)
 
 
 

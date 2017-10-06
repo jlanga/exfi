@@ -2,7 +2,7 @@
 
 # Install miniconda
 
-if [[ -d $HOME/miniconda3_$TRAVIS_OS_NAME ]]; then
+if [[ -d $HOME/miniconda3_$TRAVIS_OS_NAME/bin ]]; then
     echo "miniconda already installed."
 else
     echo "Installing miniconda."

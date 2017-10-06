@@ -10,8 +10,7 @@ cache:
     - $HOME/.bash_profile  # Paths and everything
     #- $HOME/Library/Caches/Homebrew  # osx local
     #- /usr/local/Homebrew/Library/Caches/Homebrew  # osx main
-    - $HOME/sdsl-lite
-    - $HOME/biobloom
+    - $HOME/opt
 
 matrix:
   include:

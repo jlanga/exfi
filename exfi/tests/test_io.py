@@ -62,7 +62,7 @@ class TestWriteGFA1(unittest.TestCase):
         )
         self.assertTrue(filecmp.cmp(
             tmp_file,
-            "exfi/tests/files/build_splicegraph/empty.gfa"
+            "exfi/tests/files/io/empty.gfa"
         ))
         os.remove(tmp_file)
 
@@ -77,7 +77,7 @@ class TestWriteGFA1(unittest.TestCase):
         )
         self.assertTrue(filecmp.cmp(
             tmp_file,
-            "exfi/tests/files/build_splicegraph/single.gfa"
+            "exfi/tests/files/io/single.gfa"
         ))
         os.remove(tmp_file)
 
@@ -92,7 +92,7 @@ class TestWriteGFA1(unittest.TestCase):
         )
         self.assertTrue(filecmp.cmp(
             tmp_file,
-            "exfi/tests/files/build_splicegraph/different.gfa"
+            "exfi/tests/files/io/different.gfa"
         ))
         os.remove(tmp_file)
 

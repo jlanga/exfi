@@ -20,5 +20,5 @@ else
     $HOME/download/miniconda_$TRAVIS_OS_NAME.sh \
         -b \
         -p $HOME/miniconda3_$TRAVIS_OS_NAME
-    $HOME/miniconda_$TRAVIS_OS_NAME/bin/conda clean --all --yes
+    $HOME/miniconda3_$TRAVIS_OS_NAME/bin/conda clean --all --yes
 fi

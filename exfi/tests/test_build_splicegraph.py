@@ -6,8 +6,7 @@ from exfi.build_splicegraph import \
     exon_to_coordinates, \
     transcript_to_path, \
     compute_edge_overlaps, \
-    build_splicegraph #, \
-    #write_gfa1
+    build_splicegraph
 
 import networkx as nx
 import pandas as pd

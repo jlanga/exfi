@@ -26,7 +26,7 @@ popd
 # biobloomtools
 # as in https://github.com/bcgsc/biobloom
 if [[ ! -d $HOME/biobloom ]]; then
-    git clone https://github.com/bcgsc/biobloom.git && \
+    git clone https://github.com/bcgsc/biobloom.git
 fi
 pushd $HOME/biobloom/ && \
 git submodule update --init && \

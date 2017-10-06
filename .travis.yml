@@ -6,7 +6,6 @@ cache:
     - $HOME/miniconda3_$TRAVIS_OS_PATH # Add the installation to TRAVIS cache.
     #- $HOME/miniconda3_osx # Add the installation to TRAVIS cache.
     - $HOME/download # Sufficient to add miniconda.sh to TRAVIS cache.
-    - $HOME/.linuxbrew  # Linuxbrew
     - $HOME/.bash_profile  # Paths and everything
     #- $HOME/Library/Caches/Homebrew  # osx local
     #- /usr/local/Homebrew/Library/Caches/Homebrew  # osx main

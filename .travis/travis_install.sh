@@ -7,7 +7,7 @@ conda config --add channels defaults
 conda config --add channels r
 conda config --add channels bioconda
 conda install --yes abyss biopython bedtools pandas networkx
-
+conda clean --all --yes
 
 # SDSL-lite
 # https://hub.docker.com/r/adamnovak/sequence-graphs/~/dockerfile/

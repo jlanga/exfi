@@ -18,6 +18,7 @@ else
         $url
     chmod +x $HOME/download/miniconda_$TRAVIS_OS_NAME.sh
     $HOME/download/miniconda_$TRAVIS_OS_NAME.sh \
+        -u \
         -b \
         -p $HOME/miniconda3_$TRAVIS_OS_NAME
     $HOME/miniconda3_$TRAVIS_OS_NAME/bin/conda clean --all --yes

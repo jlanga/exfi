@@ -2,15 +2,11 @@
 
 # Install miniconda
 
-if test -e $HOME/miniconda3_$TRAVIS_OS_NAME ; then
+if [[ -d $HOME/miniconda3_$TRAVIS_OS_NAME ]]; then
     echo "miniconda already installed."
 else
     echo "Installing miniconda."
-    rm -rf $HOME/miniconda3
     mkdir -p $HOME/download
-    if [[ -d $HOME/download/miniconda_$TRAVIS_OS_NAME.sh ]] ; then
-        rm -rf $HOME/download/miniconda_$TRAVIS_OS_NAME.sh
-    fi
     if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
         url="https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh"
     else
@@ -24,4 +20,5 @@ else
     $HOME/download/miniconda_$TRAVIS_OS_NAME.sh \
         -b \
         -p $HOME/miniconda3_$TRAVIS_OS_NAME
+    $HOME/miniconda_$TRAVIS_OS_NAME/bin/conda clean --all --yes
 fi

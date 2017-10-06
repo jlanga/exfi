@@ -19,7 +19,7 @@ conda clean --all --yes
 if [[ ! -d $HOME/sdsl-lite ]]; then
     git clone https://github.com/simongog/sdsl-lite.git
 fi
-pushd sdsl-lite && \
+pushd $HOME/sdsl-lite && \
 sudo ./install.sh /usr/local && \
 popd
 
@@ -28,7 +28,7 @@ popd
 if [[ ! -d $HOME/biobloom ]]; then
     git clone https://github.com/bcgsc/biobloom.git && \
 fi
-pushd biobloom/ && \
+pushd $HOME/biobloom/ && \
 git submodule update --init && \
 ./autogen.sh && \
 ./configure --prefix=/usr/local && \

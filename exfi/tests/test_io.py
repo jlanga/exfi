@@ -163,13 +163,61 @@ class TestGFA1ToExons(unittest.TestCase):
 class TestGFA1ToGappedTranscript(unittest.TestCase):
 
     def test_empty(self):
-        pass
+        """Convert an empty GFA1 to an empty FASTA"""
+        tmp_file = tempfile.mkstemp()[1]
+        gfa1_to_gapped_transcript(
+            gfa_in=empty_gfa,
+            fasta_out=tmp_file,
+            number_of_ns=100,
+            soft_mask_overlaps=False
+        )
+        self.assertTrue(filecmp.cmp(
+            tmp_file,
+            empty_gapped
+        ))
+        os.remove(tmp_file)
 
     def test_simple(self):
-        pass
+        """Convert a simple GFA1 to an one seq FASTA"""
+        tmp_file = tempfile.mkstemp()[1]
+        gfa1_to_gapped_transcript(
+            gfa_in=single_gfa,
+            fasta_out=tmp_file,
+            number_of_ns=100,
+            soft_mask_overlaps=False
+        )
+        self.assertTrue(filecmp.cmp(
+            tmp_file,
+            single_gapped
+        ))
+        os.remove(tmp_file)
 
     def test_multiple(self):
-        pass
+        """Convert an more complex GFA1 to a mutli seq FASTA"""
+        tmp_file = tempfile.mkstemp()[1]
+        gfa1_to_gapped_transcript(
+            gfa_in=different_gfa,
+            fasta_out=tmp_file,
+            number_of_ns=100,
+            soft_mask_overlaps=False
+        )
+        self.assertTrue(filecmp.cmp(
+            tmp_file,
+            different_gapped
+        ))
+        os.remove(tmp_file)
 
     def test_multiple_masked(self):
-        pass
+        """Convert an more complex GFA1 to a mutli seq FASTA with overlaps masked"""
+        tmp_file = tempfile.mkstemp()[1]
+        gfa1_to_gapped_transcript(
+            gfa_in=different_gfa,
+            fasta_out=tmp_file,
+            number_of_ns=100,
+            soft_mask_overlaps=True
+        )
+        self.assertTrue(filecmp.cmp(
+            tmp_file,
+            different_gapped_masked
+        ))
+        os.remove(tmp_file)

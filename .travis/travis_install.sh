@@ -14,6 +14,7 @@ conda install --yes \
     networkx
 conda clean --all --yes
 
+pushd $HOME
 # SDSL-lite
 # https://hub.docker.com/r/adamnovak/sequence-graphs/~/dockerfile/
 if [[ ! -d $HOME/sdsl-lite ]]; then

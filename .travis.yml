@@ -36,13 +36,13 @@ before_install:
 
 install:
   - bash .travis/travis_install.sh
-  - export PATH="$HOME/miniconda3_$TRAVIS_OS_NAME:$PATH"
+  - export PATH="$HOME/miniconda3_$TRAVIS_OS_NAME/bin:$PATH"
   - pip --version
   - pip install . --no-deps --upgrade --user
 
 # command to run tests
 script:
-  - export PATH="$HOME/miniconda3_$TRAVIS_OS_NAME:$PATH"
+  - export PATH="$HOME/miniconda3_$TRAVIS_OS_NAME/bin:$PATH"
   - echo $PATH
   - python3 --version
   - build_baited_bloom_filter

@@ -15,23 +15,23 @@ conda install --yes \
     pip
 conda clean --all --yes
 
-pushd $HOME/opt/
+pushd /opt/
 
 # SDSL-lite
 # https://hub.docker.com/r/adamnovak/sequence-graphs/~/dockerfile/
-if [[ ! -d $HOME/opt/sdsl-lite/ ]]; then
+if [[ ! -d sdsl-lite/ ]]; then
     git clone https://github.com/simongog/sdsl-lite.git
 fi
-pushd $HOME/opt/sdsl-lite/ && \
+pushd sdsl-lite/ && \
 sudo ./install.sh /usr/local/ && \
 popd
 
 # biobloomtools
 # as in https://github.com/bcgsc/biobloom
-if [[ ! -d $HOME/opt/biobloom/ ]]; then
+if [[ ! -d biobloom/ ]]; then
     git clone https://github.com/bcgsc/biobloom.git
 fi
-pushd $HOME/opt/biobloom/ && \
+pushd biobloom/ && \
 git submodule update --init && \
 ./autogen.sh && \
 ./configure --prefix=/usr/local/ && \

@@ -9,8 +9,7 @@ from exfi import __version__
 
 
 parser = argparse.ArgumentParser(
-    usage='gfa_to_exons -i splice_graph.gfa -o gapped_transcripts.fa'
-        '-n 100',
+    usage='gfa_to_exons -i splice_graph.gfa -o exons.fa',
     description='Extract the exons from a splice graph in GFA format. '
         'Optionally mask overlaps between consecutive exons',
     epilog='Jorge Langa. Send issues and pull requests to github.com/jlanga/'
@@ -50,7 +49,7 @@ parser.add_argument(
     '-s',
     type=bool,
     required=False,
-    help='Mask overlaps as lowercase nucleotides',
+    help='Mask overlaps as lowercase nucleotides [False]',
     dest="soft_mask_overlaps",
     metavar="BOOL",
     default=False

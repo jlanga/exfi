@@ -58,9 +58,9 @@ script:
     --max-fp-bases 5
     --output-gfa test_exons_raw.gfa
   - gfa_to_exons
-      --input-gfa test_exons_raw.gfa
-      --output-fasta exons.fa
-      --soft-mask-overlaps
+    --input-gfa test_exons_raw.gfa
+    --output-fasta exons.fa
+    --soft-mask-overlaps
   # - exons_to_gapped_transcript
   #   --input-fasta test_exons_raw.fa
   #   --output-fasta gapped_transcripts.fa

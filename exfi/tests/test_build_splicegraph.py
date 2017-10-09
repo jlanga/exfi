@@ -10,10 +10,6 @@ from exfi.build_splicegraph import \
 
 import networkx as nx
 import pandas as pd
-from Bio import SeqIO
-
-from exfi.io import \
-    _clean_index
 
 from exfi.tests.test_data import *
 

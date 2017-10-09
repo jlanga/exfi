@@ -7,10 +7,8 @@ from exfi.build_splicegraph import \
 from exfi.io import \
     write_gfa1, \
     gfa1_to_exons, \
-    gfa1_to_gapped_transcript, \
-    _clean_index
+    gfa1_to_gapped_transcript
 
-from Bio import SeqIO
 import filecmp
 import tempfile
 import os

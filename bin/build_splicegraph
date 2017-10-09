@@ -112,16 +112,16 @@ if __name__ == "__main__":
 
     # Reduce and convert to list since we will use it twice
     reduced_exons = reduce_exons(positive_exons_fasta)
-    exons = {exon.id: exon for exon in reduced_exons}
+    exon_index = {exon.id: exon for exon in reduced_exons}
 
     # Build splice graph
-    splice_graph = build_splicegraph(exons)
-    #print([x for x in transcriptome_index.keys()])
+    splice_graph = build_splicegraph(exon_index)
+
     # Write to GFA1
     write_gfa1(
         splice_graph=splice_graph,
         transcript_index=transcriptome_index,
-        exons=exons,
+        exons=exon_index,
         filename=output_gfa
     )
     #print([x for x in transcriptome_index.keys()])

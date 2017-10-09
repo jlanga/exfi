@@ -7,10 +7,12 @@ def _process_index(exons_index):
     """(dict of SeqRecords) -> list
 
     Convert a indexed_exons to a list of tuples with the info in the header
+    Note: assumes that the description is clean (the id is removed. By default
+    biopython doesn't)
     """
     for exon in exons_index.values():
         exon_id = exon.id
-        transcript_coords = exon.description.split(" ")[1:]
+        transcript_coords = exon.description.split(" ")
         for transcript_coord in transcript_coords:
             transcript_id, coords = transcript_coord.split(":")
             start, end = coords.split("-")
@@ -19,10 +21,10 @@ def _process_index(exons_index):
             yield [transcript_id, start, end, exon_id]
 
 
-def exons_to_df(exons):
+def exons_to_df(exons_index):
     """Convert an indexed fasta (exons) into a dataframe (~BED6)"""
     # Add mock values
-    results = (line + ["+", 0] for line in _process_index(exons))
+    results = (line + ["+", 0] for line in _process_index(exons_index))
     return pd.DataFrame(
             data=results,
             columns=['transcript_id', 'start', 'end', 'exon_id', 'score', 'strand']
@@ -100,7 +102,7 @@ def compute_edge_overlaps(splice_graph):
 
 
 
-def build_splicegraph(exons):
+def build_splicegraph(exon_index):
     """Build the splicegraph from a dict of SeqRecords
 
     Splicegraph is a directed graph, whose nodes
@@ -116,26 +118,26 @@ def build_splicegraph(exons):
             - negative means a gap of that number of bases
     """
     # Precompute interesting data
-    exon_df = exons_to_df(exons)
-    exon2coord = exon_to_coordinates(exons)
+    exon_df = exons_to_df(exon_index)
+    exon2coord = exon_to_coordinates(exon_index)
     transcript2path = transcript_to_path(exon_df)
 
     # Initialize grpah
     splice_graph = nx.DiGraph()
 
     # Add nodes
-    splice_graph.add_nodes_from(exons.keys())
+    splice_graph.add_nodes_from(exon_index.keys())
 
     nx.set_node_attributes(
         G=splice_graph,
         name='coordinates',
-        values = exon2coord
+        values=exon2coord
     )
 
     nx.set_node_attributes(
         G=splice_graph,
         name='sequence',
-        values = {exon.id : str(exon.seq) for exon in exons.values()}
+        values={exon.id : str(exon.seq) for exon in exon_index.values()}
     )
 
 

@@ -16,16 +16,19 @@ import filecmp
 import tempfile
 import os
 
+from exfi.io import \
+    _clean_index
 
-index_simple = SeqIO.index(
+
+index_simple = _clean_index(SeqIO.index(
     filename="exfi/tests/files/build_splicegraph/single.fa",
     format="fasta"
-)
+))
 
-index_different = SeqIO.index(
+index_different = _clean_index(SeqIO.index(
     filename="exfi/tests/files/build_splicegraph/different_transcripts.fa",
     format="fasta"
-)
+))
 
 path_simple = {"ENSDART00000161035.1": ["EXON00000000001"]}
 
@@ -40,15 +43,15 @@ path_different = {
         "EXON00000000013", "EXON00000000014", "EXON00000000015"]
 }
 
-transcriptome_simple = SeqIO.index(
+transcriptome_simple = _clean_index(SeqIO.index(
     filename="exfi/tests/files/build_splicegraph/transcriptome_simple.fa",
     format="fasta"
-)
+))
 
-transcriptome_different = SeqIO.index(
+transcriptome_different = _clean_index(SeqIO.index(
     filename="exfi/tests/files/build_splicegraph/transcriptome_different.fa",
     format="fasta"
-)
+))
 
 def _prepare_overlaps(exons):
     """Compute splicegraph prior the computation of overlaps"""
@@ -72,7 +75,7 @@ def _prepare_overlaps(exons):
 class TestExonsToDF(unittest.TestCase):
 
     def test_empty_index(self):
-        """exons_to_splicegraph.py:  check if an empty exome generates an empty
+        """build_splicegraph.py:  check if an empty exome generates an empty
         DataFrame"""
         self.assertTrue(
             exons_to_df({})\
@@ -84,13 +87,10 @@ class TestExonsToDF(unittest.TestCase):
         )
 
     def test_one_entry(self):
-        """exons_to_splicegraph.py:  single exon file to DataFrame"""
+        """build_splicegraph.py:  single exon file to DataFrame"""
         self.assertTrue(
             exons_to_df(
-                SeqIO.index(
-                    filename="exfi/tests/files/build_splicegraph/single.fa",
-                    format="fasta"
-                )
+                index_simple
             )\
             .equals(
                 pd.DataFrame(
@@ -101,7 +101,7 @@ class TestExonsToDF(unittest.TestCase):
         )
 
     def test_multiple(self):
-        """exons_to_splicegraph.py: multiple transcript - multiple exon file to DataFrame."""
+        """build_splicegraph.py: multiple transcript - multiple exon file to DataFrame."""
         self.assertTrue(
             exons_to_df(index_different)\
             .equals(
@@ -132,14 +132,14 @@ class TestExonsToDF(unittest.TestCase):
 class TestExonsToCoordinates(unittest.TestCase):
 
     def test_empty(self):
-        """exons_to_splicegraph.py: Get coordinates of an empty file"""
+        """build_splicegraph.py: Get coordinates of an empty file"""
         self.assertEqual(
             exon_to_coordinates({}),
             {}
         )
 
     def test_single(self):
-        """exons_to_splicegraph.py: Get coordinates of a single exon"""
+        """build_splicegraph.py: Get coordinates of a single exon"""
         self.assertEqual(
             exon_to_coordinates(
                 index_simple
@@ -148,7 +148,7 @@ class TestExonsToCoordinates(unittest.TestCase):
         )
 
     def test_multiple(self):
-        """exons_to_splicegraph.py: Get coordinates of a single exon"""
+        """build_splicegraph.py: Get coordinates of a single exon"""
         self.assertEqual(
             exon_to_coordinates(index_different),
             {
@@ -174,7 +174,7 @@ class TestExonsToCoordinates(unittest.TestCase):
 class TestTranscriptToPath(unittest.TestCase):
 
     def test_empty(self):
-        """exons_to_splicegraph.py: convert an empty exome to path"""
+        """build_splicegraph.py: convert an empty exome to path"""
         self.assertEqual(
             transcript_to_path(exons_to_df({})),
             {}
@@ -182,14 +182,14 @@ class TestTranscriptToPath(unittest.TestCase):
 
 
     def test_single(self):
-        """exons_to_splicegraph.py: convert an single exon transcript to path"""
+        """build_splicegraph.py: convert an single exon transcript to path"""
         self.assertEqual(
             transcript_to_path(exons_to_df(index_simple)),
             path_simple
         )
 
     def test_multiple(self):
-        """exons_to_splicegraph.py: convert an single exon transcript to path"""
+        """build_splicegraph.py: convert an single exon transcript to path"""
         self.assertEqual(
             transcript_to_path(exons_to_df(index_different)),
             path_different
@@ -199,13 +199,13 @@ class TestTranscriptToPath(unittest.TestCase):
 class TestComputeOverlaps(unittest.TestCase):
 
     def test_empty_exome(self):
-        """exons_to_splicegraph.py: compute the overlaps of an empty exome"""
+        """build_splicegraph.py: compute the overlaps of an empty exome"""
         splice_graph = _prepare_overlaps({})
         overlaps = compute_edge_overlaps(splice_graph)
         self.assertEqual(overlaps, {})
 
     def test_single_exon(self):
-        """exons_to_splicegraph.py: compute the overlaps of a single exon exome"""
+        """build_splicegraph.py: compute the overlaps of a single exon exome"""
         splice_graph =  _prepare_overlaps(index_simple)
         overlaps = compute_edge_overlaps(splice_graph)
         self.assertEqual(overlaps, {})

@@ -7,7 +7,8 @@ from exfi.build_splicegraph import \
 from exfi.io import \
     write_gfa1, \
     gfa1_to_exons, \
-    gfa1_to_gapped_transcript
+    gfa1_to_gapped_transcript, \
+    _clean_index
 
 import networkx as nx
 import pandas as pd
@@ -16,25 +17,27 @@ import filecmp
 import tempfile
 import os
 
-index_simple = SeqIO.index(
+
+
+index_simple = _clean_index(SeqIO.index(
     filename="exfi/tests/files/build_splicegraph/single.fa",
     format="fasta"
-)
+))
 
-index_different = SeqIO.index(
+index_different = _clean_index(SeqIO.index(
     filename="exfi/tests/files/build_splicegraph/different_transcripts.fa",
     format="fasta"
-)
+))
 
-transcriptome_simple = SeqIO.index(
+transcriptome_simple = _clean_index(SeqIO.index(
     filename="exfi/tests/files/build_splicegraph/transcriptome_simple.fa",
     format="fasta"
-)
+))
 
-transcriptome_different = SeqIO.index(
+transcriptome_different = _clean_index(SeqIO.index(
     filename="exfi/tests/files/build_splicegraph/transcriptome_different.fa",
     format="fasta"
-)
+))
 
 
 empty_gfa = "exfi/tests/files/io/empty.gfa"

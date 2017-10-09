@@ -19,7 +19,8 @@ setup(
     scripts=[
         "bin/build_baited_bloom_filter",
         "bin/build_splicegraph",
-        "bin/gfa_to_exons"
+        "bin/gfa_to_exons",
+        "bin/gfa_to_gapped_transcripts"
     ],
     include_package_data=True,
     zip_safe=False

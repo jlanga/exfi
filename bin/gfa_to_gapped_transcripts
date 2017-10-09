@@ -2,16 +2,16 @@
 
 import argparse
 from exfi.io import \
-    gfa1_to_exons
+    gfa1_to_gapped_transcript
 
 from os.path import isfile
 from exfi import __version__
 
-
 parser = argparse.ArgumentParser(
-    usage='gfa_to_exons -i splice_graph.gfa -o exons.fa',
-    description='Extract the exons from a splice graph in GFA format. '
-        'Optionally mask overlaps between consecutive exons',
+    usage='gfa1_to_gapped_transcript -i splice_graph.gfa -o gapped_transcripts.fa'
+        '-n 100',
+    description='Compose the transcriptome as a set of exons separated with '
+        'gaps',
     epilog='Jorge Langa. Send issues and pull requests to github.com/jlanga/'
            'exfi',
 )
@@ -39,9 +39,20 @@ parser.add_argument(
     '-o',
     type=str,
     required=True,
-    help='Path to output fasta file (the exons)',
+    help='Path to output fasta file (the gapped transcripts)',
     dest="output_fasta",
     metavar="FILE"
+)
+
+parser.add_argument(
+    '--number-of-ns',
+    '-n',
+    type=int,
+    required=False,
+    help='Put this number of N between exons [100]',
+    dest="number_of_ns",
+    metavar="INT",
+    default=100
 )
 
 parser.add_argument(
@@ -63,9 +74,11 @@ if __name__ == "__main__":
     input_gfa = args["input_gfa"]
     output_fasta = args["output_fasta"]
     soft_mask_overlaps = args["soft_mask_overlaps"]
+    number_of_ns = args["number_of_ns"]
 
-    gfa1_to_exons(
+    gfa1_to_gapped_transcript(
         gfa_in_fn=input_gfa,
         fasta_out_fn=output_fasta,
-        soft_mask_overlaps=soft_mask_overlaps
+        soft_mask_overlaps=soft_mask_overlaps,
+        number_of_ns=number_of_ns
     )

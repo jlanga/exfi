@@ -15,42 +15,7 @@ import filecmp
 import tempfile
 import os
 
-
-
-index_simple = _clean_index(SeqIO.index(
-    filename="exfi/tests/files/build_splicegraph/single.fa",
-    format="fasta"
-))
-
-index_different = _clean_index(SeqIO.index(
-    filename="exfi/tests/files/build_splicegraph/different_transcripts.fa",
-    format="fasta"
-))
-
-transcriptome_simple = _clean_index(SeqIO.index(
-    filename="exfi/tests/files/build_splicegraph/transcriptome_simple.fa",
-    format="fasta"
-))
-
-transcriptome_different = _clean_index(SeqIO.index(
-    filename="exfi/tests/files/build_splicegraph/transcriptome_different.fa",
-    format="fasta"
-))
-
-
-empty_gfa = "exfi/tests/files/io/empty.gfa"
-single_gfa = "exfi/tests/files/io/single.gfa"
-different_gfa = "exfi/tests/files/io/different.gfa"
-
-empty_exons = "exfi/tests/files/io/empty_exons.fa"
-single_exons = "exfi/tests/files/io/single_exons.fa"
-different_exons = "exfi/tests/files/io/different_exons.fa"
-different_exons_masked = "exfi/tests/files/io/different_exons_masked.fa"
-
-empty_gapped = "exfi/tests/files/io/empty_gapped.fa"
-single_gapped = "exfi/tests/files/io/single_gapped.fa"
-different_gapped = "exfi/tests/files/io/different_gapped.fa"
-different_gapped_masked = "exfi/tests/files/io/different_gapped_masked.fa"
+from exfi.tests.test_data import *
 
 
 class TestWriteGFA1(unittest.TestCase):

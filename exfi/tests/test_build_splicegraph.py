@@ -15,39 +15,8 @@ from Bio import SeqIO
 from exfi.io import \
     _clean_index
 
+from exfi.tests.test_data import *
 
-index_simple = _clean_index(SeqIO.index(
-    filename="exfi/tests/files/build_splicegraph/single.fa",
-    format="fasta"
-))
-
-index_different = _clean_index(SeqIO.index(
-    filename="exfi/tests/files/build_splicegraph/different_transcripts.fa",
-    format="fasta"
-))
-
-path_simple = {"ENSDART00000161035.1": ["EXON00000000001"]}
-
-path_different = {
-    "ENSDART00000161035.1":
-        ["EXON00000000001", "EXON00000000002", "EXON00000000003"]
-    ,
-    "ENSDART00000165342.1":
-        ["EXON00000000004", "EXON00000000005", "EXON00000000006",
-        "EXON00000000007", "EXON00000000008", "EXON00000000009",
-        "EXON00000000010", "EXON00000000011", "EXON00000000012",
-        "EXON00000000013", "EXON00000000014", "EXON00000000015"]
-}
-
-transcriptome_simple = _clean_index(SeqIO.index(
-    filename="exfi/tests/files/build_splicegraph/transcriptome_simple.fa",
-    format="fasta"
-))
-
-transcriptome_different = _clean_index(SeqIO.index(
-    filename="exfi/tests/files/build_splicegraph/transcriptome_different.fa",
-    format="fasta"
-))
 
 def _prepare_overlaps(exons):
     """Compute splicegraph prior the computation of overlaps"""

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from exfi.io import \
-    _clean_index
+    index_fasta
 
 from Bio import SeqIO
 
@@ -18,25 +18,21 @@ path_different = {
         "EXON00000000013", "EXON00000000014", "EXON00000000015"]
 }
 
-index_simple = _clean_index(SeqIO.index(
+index_simple = index_fasta(
     filename="exfi/tests/files/build_splicegraph/single.fa",
-    format="fasta"
-))
+)
 
-index_different = _clean_index(SeqIO.index(
+index_different = index_fasta(
     filename="exfi/tests/files/build_splicegraph/different_transcripts.fa",
-    format="fasta"
-))
+)
 
-transcriptome_simple = _clean_index(SeqIO.index(
+transcriptome_simple = index_fasta(
     filename="exfi/tests/files/build_splicegraph/transcriptome_simple.fa",
-    format="fasta"
-))
+)
 
-transcriptome_different = _clean_index(SeqIO.index(
+transcriptome_different = index_fasta(
     filename="exfi/tests/files/build_splicegraph/transcriptome_different.fa",
-    format="fasta"
-))
+)
 
 
 empty_gfa = "exfi/tests/files/io/empty.gfa"

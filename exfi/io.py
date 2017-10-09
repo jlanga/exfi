@@ -22,6 +22,13 @@ def _clean_index(index):
         index_clean[key] = _clean_seqrecord(value)
     return index_clean
 
+def index_fasta(filename):
+    """Create a fasta dict, with clean descriptions, key=id, value=seqrecord"""
+    index = SeqIO.index(
+        filename=filename,
+        format="fasta"
+    )
+    return _clean_index(index)
 
 def write_gfa1(splice_graph, transcript_index, exons, filename):
     """(dict_of_seqrecords, dict_of_seqrecords, str) -> None

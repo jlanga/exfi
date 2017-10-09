@@ -77,8 +77,8 @@ if __name__ == "__main__":
     number_of_ns = args["number_of_ns"]
 
     gfa1_to_gapped_transcript(
-        gfa_in_fn=input_gfa,
-        fasta_out_fn=output_fasta,
+        gfa_in=input_gfa,
+        fasta_out=output_fasta,
         soft_mask_overlaps=soft_mask_overlaps,
         number_of_ns=number_of_ns
     )

@@ -3,8 +3,6 @@
 from exfi.io import \
     index_fasta
 
-from Bio import SeqIO
-
 path_simple = {"ENSDART00000161035.1": ["EXON00000000001"]}
 
 path_different = {

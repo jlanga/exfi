@@ -10,11 +10,7 @@ from exfi.build_splicegraph import \
 
 import networkx as nx
 import pandas as pd
-import numpy as np
 from Bio import SeqIO
-import filecmp
-import tempfile
-import os
 
 from exfi.io import \
     _clean_index

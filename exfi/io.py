@@ -5,7 +5,6 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 import networkx as nx
-import pandas as pd
 
 from exfi.build_splicegraph import \
     exons_to_df, \
@@ -69,7 +68,7 @@ def write_gfa1(splice_graph, transcript_index, exons, filename):
         for exon_id in sorted(exon2coordinates.keys()):
             coordinates = exon2coordinates[exon_id]
             for coordinate in coordinates:
-                transcript_id, start, end = coordinate
+                transcript_id, start, _ = coordinate
                 gfa.write(
                     "C\t{container_id}\t{container_orient}\t"
                     "{contained_id}\t{contained_orient}\t"
@@ -125,7 +124,7 @@ def gfa1_to_exons(gfa_in_fn, fasta_out_fn, soft_mask_overlaps=False):
         # Get the seqrecord
         exon_dict = {}
         coordinate_dict = {}
-        overlap_dict = {}
+        # overlap_dict = {}  # TODO: use it
 
         for line in gfa_in:
             line = line.strip()
@@ -142,7 +141,7 @@ def gfa1_to_exons(gfa_in_fn, fasta_out_fn, soft_mask_overlaps=False):
 
             # Containments (coordinates)
             elif line[0] == 'C':
-                _, transcript_id, transcript_orientation, exon_id, exon_orientation, position, overlap = line
+                _, transcript_id, _, exon_id, _, position, overlap = line
                 if exon_id not in coordinate_dict.keys():
                     coordinate_dict[exon_id] = []
                 coordinate_dict[exon_id].append(

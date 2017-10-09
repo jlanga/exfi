@@ -10,8 +10,6 @@ from exfi.io import \
     gfa1_to_gapped_transcript, \
     _clean_index
 
-import networkx as nx
-import pandas as pd
 from Bio import SeqIO
 import filecmp
 import tempfile

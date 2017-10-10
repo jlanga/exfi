@@ -153,6 +153,12 @@ def read_gfa1(filename):
 
 
 
+def _process_overlap_cigar(cigar_string):
+    """Process a simple CIGAR string (number, letter)"""
+    return [cigar_string[-1], int(cigar_string[:-1])]
+
+
+
 def _soft_mask_right(string, n):
     """Soft mask the rightmost n bases"""
     return string[:-n] + string[-n:].lower()
@@ -167,17 +173,12 @@ def _soft_mask_left(string, n):
 
 def _soft_mask(exon_dict, overlap_dict):
     """Soft mask all overlaps in the exon_dict"""
-
     for edge, overlap in overlap_dict.items():
-
-        overlap_letter = overlap[-1]
-        overlap = int(overlap[:-1])
-
-        if overlap_letter == "M" and overlap > 0:
+        letter, overlap = _process_overlap_cigar(overlap)
+        if letter == "M" and overlap > 0:
             start, end = edge
             exon_dict[start] = _soft_mask_right(exon_dict[start], overlap)
             exon_dict[end] = _soft_mask_left(exon_dict[end], overlap)
-
     return exon_dict
 
 
@@ -196,17 +197,12 @@ def _hard_mask_left(string, n):
 
 def _hard_mask(exon_dict, overlap_dict):
     """Hard mask all overlaps in the exon_dict"""
-
     for edge, overlap in overlap_dict.items():
-
-        overlap_letter = overlap[-1]
-        overlap = int(overlap[:-1])
-
-        if overlap_letter == "M" and overlap > 0:
+        letter, overlap = _process_overlap_cigar(overlap)
+        if letter == "M" and overlap > 0:
             start, end = edge
             exon_dict[start] = _hard_mask_right(exon_dict[start], overlap)
             exon_dict[end] = _hard_mask_left(exon_dict[end], overlap)
-
     return exon_dict
 
 

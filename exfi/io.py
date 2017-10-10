@@ -151,6 +151,13 @@ def read_gfa1(filename):
         "path_dict": path_dict
     }
 
+def _soft_mask_right(string, n):
+    """Soft mask the rightmost n bases"""
+    return string[:-n] + string[-n:].lower()
+
+def _soft_mask_left(string, n):
+    """Soft mask the leftmost n bases"""
+    return string[:n].lower() + string[n:]
 
 
 def _soft_mask(exon_dict, overlap_dict):
@@ -163,19 +170,19 @@ def _soft_mask(exon_dict, overlap_dict):
 
         if overlap_letter == "M" and overlap > 0:
             start, end = edge
-
-            # node1
-            start_seq = exon_dict[start]
-            start_seq = start_seq[:-overlap] + start_seq[-overlap:].lower()
-            exon_dict[start] = start_seq
-
-            # node2
-            end_seq = exon_dict[end]
-            end_seq = end_seq[:overlap].lower() + end_seq[overlap:]
-            exon_dict[end] = end_seq
+            exon_dict[start] = _soft_mask_right(exon_dict[start], overlap)
+            exon_dict[end] = _soft_mask_left(exon_dict[end], overlap)
 
     return exon_dict
 
+
+def _hard_mask_right(string, n):
+    """Hard mask the rightmost n bases"""
+    return string[:-n] + "N" * n
+
+def _hard_mask_left(string, n):
+    """Hard mask the leftmost n bases"""
+    return "N" * n + string[n:]
 
 
 def _hard_mask(exon_dict, overlap_dict):
@@ -188,16 +195,8 @@ def _hard_mask(exon_dict, overlap_dict):
 
         if overlap_letter == "M" and overlap > 0:
             start, end = edge
-
-            # node1
-            start_seq = exon_dict[start]
-            start_seq = start_seq[:-overlap] + "N" * overlap
-            exon_dict[start] = start_seq
-
-            # node2
-            end_seq = exon_dict[end]
-            end_seq = "N" * overlap + end_seq[overlap:]
-            exon_dict[end] = end_seq
+            exon_dict[start] = _hard_mask_right(exon_dict[start], overlap)
+            exon_dict[end] = _hard_mask_left(exon_dict[end], overlap)
 
     return exon_dict
 

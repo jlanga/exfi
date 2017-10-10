@@ -37,12 +37,10 @@ def exons_to_df(exons_index):
 def exon_to_coordinates(exons_index):
     """Convert an indexed fasta (SeqIO.index) into a dict {exon_id : (transcript_id, start,
     end)} (str, int, int)"""
-    exon_to_coord = {}
+    exon_to_coord = {exon_id: [] for exon_id in exons_index.keys()}  # Fill
     results = _process_index(exons_index)
     for line in results:
         transcript_id, start, end, exon_id = line
-        if exon_id not in exon_to_coord:
-            exon_to_coord[exon_id] = []
         exon_to_coord[exon_id].append((transcript_id, start, end))
     return exon_to_coord
 
@@ -67,16 +65,13 @@ def compute_edge_overlaps(splice_graph):
     Note: the splice graph must have already the nodes written with coordinates, and the edges alredy entered too.
     """
     #Init
-    edge_overlaps = {}
+    edge_overlaps = {edge: None for edge in splice_graph.edges()}
     exon2coord = nx.get_node_attributes(
         G=splice_graph,
         name='coordinates'
     )
 
-    for edge in splice_graph.edges():
-
-        # Get involved nodes
-        node1, node2 = edge
+    for (node1, node2) in sorted(edge_overlaps.keys()):
 
         # Get the list of transcripts that they belong
         node1_transcripts = set(coordinate[0] for coordinate  in exon2coord[node1])
@@ -96,7 +91,7 @@ def compute_edge_overlaps(splice_graph):
 
         # Overlap in bases, 0 means one next to the other, negative numbers a gap
         overlap = node1_end - node2_start
-        edge_overlaps[edge] = overlap
+        edge_overlaps[(node1, node2)] = overlap
 
     return edge_overlaps
 

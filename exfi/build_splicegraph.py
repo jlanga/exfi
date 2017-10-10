@@ -112,31 +112,24 @@ def build_splicegraph(exon_index):
             - zero means no overlap
             - negative means a gap of that number of bases
     """
-    # Precompute interesting data
-    exon_df = exons_to_df(exon_index)
-    exon2coord = exon_to_coordinates(exon_index)
-    transcript2path = transcript_to_path(exon_df)
-
     # Initialize grpah
     splice_graph = nx.DiGraph()
 
     # Add nodes
     splice_graph.add_nodes_from(exon_index.keys())
-
     nx.set_node_attributes(
         G=splice_graph,
         name='coordinates',
-        values=exon2coord
+        values= exon_to_coordinates(exon_index)
     )
-
     nx.set_node_attributes(
         G=splice_graph,
         name='sequence',
         values={exon.id : str(exon.seq) for exon in exon_index.values()}
     )
 
-
     # Edges
+    transcript2path = transcript_to_path(exons_to_df(exon_index))
     for path in transcript2path.values():
         splice_graph.add_path(path)
 

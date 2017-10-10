@@ -11,14 +11,13 @@ def _process_index(exons_index):
     biopython doesn't)
     """
     for exon in exons_index.values():
-        exon_id = exon.id
         transcript_coords = exon.description.split(" ")
         for transcript_coord in transcript_coords:
             transcript_id, coords = transcript_coord.split(":")
             start, end = coords.split("-")
             start = int(start)
             end = int(end)
-            yield [transcript_id, start, end, exon_id]
+            yield [transcript_id, start, end, exon.id]
 
 
 def exons_to_df(exons_index):
@@ -39,8 +38,7 @@ def exon_to_coordinates(exons_index):
     end)} (str, int, int)"""
     exon_to_coord = {exon_id: [] for exon_id in exons_index.keys()}  # Fill
     results = _process_index(exons_index)
-    for line in results:
-        transcript_id, start, end, exon_id = line
+    for (transcript_id, start, end, exon_id) in results:
         exon_to_coord[exon_id].append((transcript_id, start, end))
     return exon_to_coord
 

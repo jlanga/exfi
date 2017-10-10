@@ -8,5 +8,5 @@ exfi.egg-info
 .ipynb_checkpoints
 data/
 .coverage
-.coverage.xml
+coverage.xml
 

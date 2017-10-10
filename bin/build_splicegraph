@@ -95,19 +95,14 @@ args = parser.parse_args()
 
 if __name__ == "__main__":
     args = vars(parser.parse_args())
-    transcriptome = args["input_fasta"]
-    bloom_filter = args["bloom_filter"]
-    kmer = args["kmer"]
-    output_gfa = args["output_gfa"]
-    max_fp_bases = args["max_fp_bases"]
 
     # Get predicted exons in bed format
     positive_exons_bed = _find_exons_pipeline(
-        kmer, bloom_filter, transcriptome, max_fp_bases
+        args["kmer"], args["bloom_filter"], args["input_fasta"], args["max_fp_bases"]
     )
+
     # Bed -> fasta
-    transcriptome_index = SeqIO.index(filename=transcriptome, format="fasta")
-    #print([x for x in transcriptome_index.keys()])
+    transcriptome_index = SeqIO.index(filename=args["input_fasta"], format="fasta")
     positive_exons_fasta = _get_fasta(transcriptome_index, positive_exons_bed)
 
     # Reduce and convert to list since we will use it twice
@@ -121,6 +116,6 @@ if __name__ == "__main__":
     write_gfa1(
         splice_graph=splice_graph,
         exons=exon_index,
-        filename=output_gfa
+        filename=args["output_gfa"]
     )
     #print([x for x in transcriptome_index.keys()])

@@ -98,8 +98,6 @@ args = parser.parse_args()
 
 if __name__ == '__main__':
 
-    # sys.stderr.write("")
-
     # Store arguments
     args = vars(parser.parse_args())
     transcriptome = args['input_fasta']

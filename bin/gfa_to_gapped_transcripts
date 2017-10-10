@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+
+import argparse
+from exfi.io import \
+    gfa1_to_gapped_transcript
+
+from os.path import isfile
+from exfi import __version__
+
+parser = argparse.ArgumentParser(
+    usage='gfa1_to_gapped_transcript -i splice_graph.gfa -o '
+        'gapped_transcripts.fa',
+    description='Compose the transcriptome as a set of exons separated with '
+        'gaps',
+    epilog='Jorge Langa. Send issues and pull requests to github.com/jlanga/'
+           'exfi',
+)
+
+parser.add_argument(
+    '--version',
+    action='version',
+    version='%(prog)s {version}'.format(
+        version=__version__
+    )
+)
+
+parser.add_argument(
+    '--input-gfa',
+    '-i',
+    type=str,
+    required=True,
+    help='Input splice graph in GFA1 format (the results from build_splicegraph)',
+    dest='input_gfa',
+    metavar='FILE'
+)
+
+parser.add_argument(
+    '--output-fasta',
+    '-o',
+    type=str,
+    required=True,
+    help='Path to output fasta file (the gapped transcripts)',
+    dest="output_fasta",
+    metavar="FILE"
+)
+
+parser.add_argument(
+    '--number-of-ns',
+    '-n',
+    type=int,
+    required=False,
+    help='Put this number of N between exons [100]',
+    dest="number_of_ns",
+    metavar="INT",
+    default=100
+)
+
+parser.add_argument(
+    '--soft-mask-overlaps',
+    '-s',
+    action='store_true',
+    required=False,
+    help='Mask overlaps as lowercase nucleotides [False]',
+    dest="soft_mask_overlaps",
+    default=False
+)
+
+parser.add_argument(
+    '--hard-mask-overlaps',
+    '-m',
+    action='store_true',
+    required=False,
+    help='Mask overlaps as Ns [False]',
+    dest="hard_mask_overlaps",
+    default=False
+)
+
+args = parser.parse_args()
+
+if __name__ == "__main__":
+
+    # Parse
+    args = vars(parser.parse_args())
+
+    gfa1_to_gapped_transcript(
+        gfa_in=args["input_gfa"],
+        fasta_out=args["output_fasta"],
+        number_of_ns=args["number_of_ns"],
+        soft_mask_overlaps=args["soft_mask_overlaps"],
+        hard_mask_overlaps=args["hard_mask_overlaps"]
+    )

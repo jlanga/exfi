@@ -271,19 +271,19 @@ def _compute_containments(splice_graph):
     for exon_id, coordinates in sorted(exon2coordinates.items()):
         for coordinate in coordinates:
             transcript_id, start, _ = coordinate
-            yield "C\t{container_id}\t{container_orient}\t{contained_id}\t{contained_orient}\t{position}\t{overlap}\n".format(
-                    container_id=transcript_id,
-                    container_orient="+",
-                    contained_id=exon_id,
-                    contained_orient="+",
-                    position=start,
-                    overlap=str(len(node2seq[exon_id])) + "M"
+            yield "C\t{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format(
+                transcript_id, "+",
+                exon_id, "+",
+                start, str(len(node2seq[exon_id])) + "M"
             )
 
 
 
 def _compute_paths(exons):
+    """Compute the path lines
 
+    P transcript_id list_of_exons
+    """
     exon_df = exons_to_df(exons)
     paths = transcript_to_path(exon_df)
 
@@ -367,8 +367,4 @@ def gfa1_to_gapped_transcript(
     composed_paths = _compose_paths(exon_dict, path_dict, number_of_ns)
 
     # Write
-    SeqIO.write(
-        format="fasta",
-        sequences=composed_paths,
-        handle=fasta_out
-    )
+    SeqIO.write(format="fasta", sequences=composed_paths, handle=fasta_out)

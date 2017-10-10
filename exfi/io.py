@@ -255,7 +255,6 @@ def _compute_links(splice_graph):
         G=splice_graph,
         name="overlap"
     )
-    results = []
 
     for edge in sorted(splice_graph.edges()):
         node1, node2 = edge

@@ -11,7 +11,7 @@ from exfi.build_splicegraph import \
 import networkx as nx
 import pandas as pd
 
-from exfi.tests.test_data import *
+from tests.test_data import *
 
 
 def _prepare_overlaps(exons):

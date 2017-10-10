@@ -27,8 +27,8 @@ class TestBuildBaitedBloomFilter(TestCase):
 
         Note: biobloommaker fails
         '''
-        transcriptome = "exfi/tests/files/empty.txt"
-        reads = "exfi/tests/files/empty.txt"
+        transcriptome = "tests/files/empty.txt"
+        reads = "tests/files/empty.txt"
         tmp_dir = tempfile.mkdtemp()
         tmp_bf = tmp_dir + "/empty_transcriptome.bf"
         _simple_build_baited(transcriptome, reads, tmp_dir, tmp_bf)
@@ -36,8 +36,8 @@ class TestBuildBaitedBloomFilter(TestCase):
     @classmethod
     def test_build_empty_library(self):
         '''build_baited_bloom_filter.py: build a BF without reads'''
-        transcriptome = "exfi/tests/files/build_baited_bloom_filter/small_transcriptome.fa"
-        reads = ["exfi/tests/files/empty.txt"]
+        transcriptome = "tests/files/build_baited_bloom_filter/small_transcriptome.fa"
+        reads = ["tests/files/empty.txt"]
         tmp_dir = tempfile.mkdtemp()
         tmp_bf = tmp_dir + "/empty_library.bf"
         _simple_build_baited(transcriptome, reads, tmp_dir, tmp_bf)
@@ -45,8 +45,8 @@ class TestBuildBaitedBloomFilter(TestCase):
     @classmethod
     def test_build_one_library(self):
         '''build_baited_bloom_filter.py: build the BF with one library'''
-        transcriptome = "exfi/tests/files/build_baited_bloom_filter/small_transcriptome.fa"
-        reads = ["exfi/tests/files/build_baited_bloom_filter/reads_1.fq"]
+        transcriptome = "tests/files/build_baited_bloom_filter/small_transcriptome.fa"
+        reads = ["tests/files/build_baited_bloom_filter/reads_1.fq"]
         tmp_dir = tempfile.mkdtemp()
         tmp_bf = tmp_dir + "/one_library.bf"
         _simple_build_baited(transcriptome, reads, tmp_dir, tmp_bf)
@@ -54,10 +54,10 @@ class TestBuildBaitedBloomFilter(TestCase):
     @classmethod
     def test_build_two_libraries(self):
         '''build_baited_bloom_filter.py: build the BF with two libraries'''
-        transcriptome = "exfi/tests/files/build_baited_bloom_filter/small_transcriptome.fa"
+        transcriptome = "tests/files/build_baited_bloom_filter/small_transcriptome.fa"
         reads = [
-            "exfi/tests/files/build_baited_bloom_filter/reads_1.fq",
-            "exfi/tests/files/build_baited_bloom_filter/reads_2.fq"
+            "tests/files/build_baited_bloom_filter/reads_1.fq",
+            "tests/files/build_baited_bloom_filter/reads_2.fq"
         ]
         tmp_dir = tempfile.mkdtemp()
         tmp_bf = tmp_dir + "/two_libraries.bf"

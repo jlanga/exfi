@@ -13,7 +13,7 @@ import filecmp
 import tempfile
 import os
 
-from exfi.tests.test_data import *
+from tests.test_data import *
 
 
 class TestWriteGFA1(unittest.TestCase):

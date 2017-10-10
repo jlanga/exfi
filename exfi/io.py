@@ -10,10 +10,14 @@ from exfi.build_splicegraph import \
     exons_to_df, \
     transcript_to_path
 
+from itertools import chain
+
 def _clean_seqrecord(seqrecord):
     """Delete the identifier from the description"""
     seqrecord.description = " ".join(seqrecord.description.split(" ")[1:])
     return seqrecord
+
+
 
 def _clean_index(index):
     """Clean all elements from an indexed fasta"""
@@ -21,6 +25,8 @@ def _clean_index(index):
     for key, value in index.items():
         index_clean[key] = _clean_seqrecord(value)
     return index_clean
+
+
 
 def index_fasta(filename):
     """Create a fasta dict, with clean descriptions, key=id, value=seqrecord"""
@@ -30,197 +36,134 @@ def index_fasta(filename):
     )
     return _clean_index(index)
 
-def write_gfa1(splice_graph, transcript_index, exons, filename):
-    """(dict_of_seqrecords, dict_of_seqrecords, str) -> None
 
-    Write splice graph to filename in GFA 1 format
+
+def _segments_to_exon_dict(segments):
+    """(list of lists) -> dict
+
+    Conver a list of ["S", "ident", "seq", *whatever] to a dict {ident: SeqRecord}
     """
-    with open(filename, "w") as gfa:
-
-        # Header
-        gfa.write("H\tVN:Z:1.0\n")
-
-        # Nodes
-        ## Transcripts (commented)
-        for transcript_id in sorted(transcript_index.keys()):
-            transcript = transcript_index[transcript_id]
-            gfa.write(
-                "#S\t{identifier}\t{sequence}\tLN:i:{length}\n".format(
-                    identifier=transcript.id,
-                    sequence=str(transcript.seq),
-                    length=len(transcript.seq)
-                )
-            )
-
-        ## Exons
-        node2seq = nx.get_node_attributes(
-            G=splice_graph,
-            name='sequence'
+    exon_dict = {}
+    for segment in segments:
+        exon_id, sequence = segment[1:3]
+        exon_dict[exon_id] = SeqRecord(
+            id=exon_id,
+            description="",
+            seq=Seq(sequence)
         )
-        for node in sorted(splice_graph.nodes()):
-            gfa.write(
-                "S\t{node}\t{sequence}\tLN:i:{length}\n".format(
-                    node=node,
-                    sequence=node2seq[node],
-                    length=len(node2seq[node])
-            )
-        )
+    return exon_dict
 
-        # Add coordinates as containments
-        exon2coordinates = nx.get_node_attributes(
-            G=splice_graph,
-            name='coordinates'
+
+
+def _containments_to_coordinate_dict(containments):
+    """(list of lists) -> dict
+
+    Convert a list of ["C", transcript_id, +, exon_id, +, position, overlap ] to a dict of
+    {exon_id: [coordinates wrt transcriptome]}
+    """
+    coordinate_dict = {}  # {exon: [(tr_id1:start-end),..., (id2:start-end)]}
+
+    for containment in containments:
+
+        # Take what is needed
+        _, transcript_id, _, exon_id, _, position, overlap = containment
+        if exon_id not in coordinate_dict.keys():
+            coordinate_dict[exon_id] = []
+
+        coordinate_dict[exon_id].append(
+            "{transcript_id}:{start}-{end}".format(
+                transcript_id=transcript_id,
+                start=position,
+                end=int(position) + int(overlap[:-1])
+            )
         )
 
-        for exon_id in sorted(exon2coordinates.keys()):
-            coordinates = exon2coordinates[exon_id]
-            for coordinate in coordinates:
-                transcript_id, start, _ = coordinate
-                gfa.write(
-                    "C\t{container_id}\t{container_orient}\t"
-                    "{contained_id}\t{contained_orient}\t"
-                    "{position}\t{overlap}\n".format(
-                        container_id=transcript_id,
-                        container_orient="+",
-                        contained_id=exon_id,
-                        contained_orient="+",
-                        position=start,
-                        overlap=str(len(node2seq[exon_id])) + "M"
-                    )
-                )
-
-        # Edges
-        edge2overlap = nx.get_edge_attributes(
-            G=splice_graph,
-            name="overlap"
-        )
-        for edge in sorted(splice_graph.edges()):
-            node1, node2 = edge
-            overlap = edge2overlap[edge]
-            # is an overlap or a gap
-            if overlap >= 0:
-                overlap = "{}M".format(overlap)
-            else:
-                overlap = "{}G".format(-overlap)
-            gfa.write(
-                "L\t{node1}\t{orientation1}\t{node2}\t{orientation2}\t{overlap}\n".format(
-                    node1=node1,
-                    orientation1="+",
-                    node2=node2,
-                    orientation2="+",
-                    overlap = overlap
-                )
-            )
-
-        # Paths
-        exon_df = exons_to_df(exons)
-        paths = transcript_to_path(exon_df)
-        for transcript_id in sorted(paths.keys()):
-            gfa.write(
-                "P\t{transcript_id}\t{path}\n".format(
-                    transcript_id=transcript_id,
-                    path=",".join([exon+"+" for exon in paths[transcript_id]])
-                )
-            )
-
-
-def gfa1_to_exons(gfa_in_fn, fasta_out_fn, soft_mask_overlaps=False):
-
-    with open(gfa_in_fn, "r") as gfa_in:
-
-        # Get the seqrecord
-        exon_dict = {}
-        coordinate_dict = {}
-        # overlap_dict = {}  # TODO: use it
-
-        for line in gfa_in:
-            line = line.strip()
-            line = line.split("\t")
-
-            # Nodes
-            if line[0] == 'S':
-                _, exon_id, sequence, _ = line
-                exon_dict[exon_id] = SeqRecord(
-                    id=exon_id,
-                    description="",
-                    seq=Seq(sequence)
-                )
-
-            # Containments (coordinates)
-            elif line[0] == 'C':
-                _, transcript_id, _, exon_id, _, position, overlap = line
-                if exon_id not in coordinate_dict.keys():
-                    coordinate_dict[exon_id] = []
-                coordinate_dict[exon_id].append(
-                    "{transcript_id}:{start}-{end}".format(
-                        transcript_id=transcript_id,
-                        start=position,
-                        end=int(position) + int(overlap[:-1])
-                    )
-                )
-
-            # Overlaps
-            elif line[0] == 'L' and soft_mask_overlaps:
-                _, start, _, end, _, overlap = line
-                letter = overlap[-1]
-                overlap = int(overlap[:-1])
-                if overlap > 0 and letter == "M":
-                    # node1
-                    start_seq = exon_dict[start]
-                    start_seq = start_seq[:-overlap] + start_seq[-overlap:].lower()
-                    exon_dict[start] = start_seq
-
-                    # node2
-                    end_seq = exon_dict[end]
-                    end_seq = end_seq[:overlap].lower() + end_seq[overlap:]
-                    exon_dict[end] = end_seq
-
-
-        # Join sequence and coordinates
-        for exon_id, exon_record in exon_dict.items():
-            exon_record.description = " ".join(coordinate_dict[exon_id])
-
-        # Write to fasta
-        SeqIO.write(format="fasta", handle=fasta_out_fn, sequences=exon_dict.values())
+    return coordinate_dict
 
 
 
-def gfa1_to_gapped_transcript(gfa_in, fasta_out, number_of_ns=100, soft_mask_overlaps=False):
+def _links_to_overlap_dict(links):
+    """(list of lists) -> dict
 
-    # Process gfa
-    with open(gfa_in, "r") as gfa_in:
-        exon_dict = {}  # exon_id: sequence as str
-        path_dict = {}  # transcript_id : [exon_id1, exon_idN]
-        overlap_dict = {}  # (start, end): int
+    Convert a list of ["L", transcript_id, +, exon_id, +, position, overlap ] to a dict of
+    {exon_id: [coordinates wrt transcriptome]}
+    """
+    overlap_dict = {}
 
-        for line in gfa_in:
+    for link in links:
+        _, start, _, end, _, overlap = link
+        overlap_dict[(start, end)] = overlap
+    return overlap_dict
 
-            line = line.strip()
 
-            # Process Segments
-            if line.startswith("S"):
-                _, exon_id, sequence = line.split("\t")[0:3]
-                exon_dict[exon_id] = sequence
 
-            # Process links
-            elif line.startswith("L") and soft_mask_overlaps:
-                _, start, _, end, _, overlap = line.split("\t")
-                letter = overlap[-1]
-                overlap = int(overlap[:-1])
-                if letter == "M" and overlap > 0:
-                    overlap_dict[(start, end)] = overlap
+def _paths_to_path_dict(paths):
+    """(list_of_lists) -> dict
 
-            # Process paths
-            elif line.startswith("P"):
-                _, path_id, path = line.split("\t")[0:3]
-                path_list = path.split(",")
-                path_list = [exon_id[0:-1] for exon_id in path_list]
-                path_dict[path_id] = path_list
+    Convert a list of ["P", transcript_id, [exon], overlap ] to a dict of
+    {exon_id: [coordinates wrt transcriptome]}
+    """
+    path_dict = {}
 
-    # Mask all overlaps in the exon_dict
-    if soft_mask_overlaps:
-        for edge, overlap in overlap_dict.items():
+    for path in paths:
+        _, path_id, path, *_ = path
+        path_list = path.split(",")
+        path_list = [exon_id[0:-1] for exon_id in path_list]  # Delete the +s
+        path_dict[path_id] = path_list
+
+    return path_dict
+
+
+
+def read_gfa1(filename):
+
+    with open(filename, "r") as gfain:
+
+        header = []
+        segments = []
+        links = []
+        containments = []
+        paths = []
+        misc = []
+
+
+        for line in gfain:
+
+            line = line.strip().split("\t")
+
+            if line[0] == "H": header.append(line)
+            elif line[0] == "S": segments.append(line)
+            elif line[0] == "L": links.append(line)
+            elif line[0] == "C": containments.append(line)
+            elif line[0] == "P": paths.append(line)
+            else: misc.append(line)
+
+        exon_dict = _segments_to_exon_dict(segments)
+        coordinate_dict = _containments_to_coordinate_dict(containments)
+        overlap_dict = _links_to_overlap_dict(links)
+        path_dict = _paths_to_path_dict(paths)
+
+    return {
+        "header": header,
+        "exon_dict": exon_dict,
+        "coordinate_dict": coordinate_dict,
+        "overlap_dict": overlap_dict,
+        "path_dict": path_dict
+    }
+
+
+
+def _soft_mask(exon_dict, overlap_dict):
+    """Soft mask all overlaps in the exon_dict"""
+
+    for edge, overlap in overlap_dict.items():
+
+        overlap_letter = overlap[-1]
+        overlap = int(overlap[:-1])
+
+        if overlap_letter == "M" and overlap > 0:
             start, end = edge
+
             # node1
             start_seq = exon_dict[start]
             start_seq = start_seq[:-overlap] + start_seq[-overlap:].lower()
@@ -231,20 +174,204 @@ def gfa1_to_gapped_transcript(gfa_in, fasta_out, number_of_ns=100, soft_mask_ove
             end_seq = end_seq[:overlap].lower() + end_seq[overlap:]
             exon_dict[end] = end_seq
 
-    # Compose path as seq
+    return exon_dict
+
+
+
+def _hard_mask(exon_dict, overlap_dict):
+    """Hard mask all overlaps in the exon_dict"""
+
+    for edge, overlap in overlap_dict.items():
+
+        overlap_letter = overlap[-1]
+        overlap = int(overlap[:-1])
+
+        if overlap_letter == "M" and overlap > 0:
+            start, end = edge
+
+            # node1
+            start_seq = exon_dict[start]
+            start_seq = start_seq[:-overlap] + "N" * overlap
+            exon_dict[start] = start_seq
+
+            # node2
+            end_seq = exon_dict[end]
+            end_seq = "N" * overlap + end_seq[overlap:]
+            exon_dict[end] = end_seq
+
+    return exon_dict
+
+
+
+def _compute_segment_lines(splice_graph):
+
+    node2seq = nx.get_node_attributes(
+        G=splice_graph,
+        name='sequence'
+    )
+
+    for node in sorted(splice_graph.nodes()):
+
+        yield "S\t{node}\t{sequence}\tLN:i:{length}\n".format(
+            node=node,
+            sequence=node2seq[node],
+            length=len(node2seq[node])
+        )
+
+
+
+def _compute_containments(splice_graph):
+
+    # Extract from the graph necessary data
+    node2seq = nx.get_node_attributes(
+        G=splice_graph,
+        name='sequence'
+    )
+
+    exon2coordinates = nx.get_node_attributes(
+        G=splice_graph,
+        name='coordinates'
+    )
+
+    # Go exon by exon
+    for exon_id in sorted(exon2coordinates.keys()):
+        coordinates = exon2coordinates[exon_id]
+        for coordinate in coordinates:
+            transcript_id, start, _ = coordinate
+            yield "C\t{container_id}\t{container_orient}\t{contained_id}\t{contained_orient}\t{position}\t{overlap}\n".format(
+                    container_id=transcript_id,
+                    container_orient="+",
+                    contained_id=exon_id,
+                    contained_orient="+",
+                    position=start,
+                    overlap=str(len(node2seq[exon_id])) + "M"
+            )
+
+
+def _compute_links(splice_graph):
+
+    # Edges
+    edge2overlap = nx.get_edge_attributes(
+        G=splice_graph,
+        name="overlap"
+    )
+    results = []
+
+    for edge in sorted(splice_graph.edges()):
+        node1, node2 = edge
+        overlap = edge2overlap[edge]
+        # is an overlap or a gap
+        if overlap >= 0:
+            overlap = "{}M".format(overlap)
+        else:
+            overlap = "{}G".format(-overlap)
+
+        yield "L\t{node1}\t{orientation1}\t{node2}\t{orientation2}\t{overlap}\n".format(
+            node1=node1,
+            orientation1="+",
+            node2=node2,
+            orientation2="+",
+            overlap = overlap
+        )
+
+
+
+def _compute_paths(exons):
+    # Paths
+    exon_df = exons_to_df(exons)
+    paths = transcript_to_path(exon_df)
+
+    for transcript_id in sorted(paths.keys()):
+        yield "P\t{transcript_id}\t{path}\n".format(
+            transcript_id=transcript_id,
+            path=",".join([exon + "+" for exon in paths[transcript_id]])
+        )
+
+
+def write_gfa1(splice_graph, exons, filename):
+    """(dict_of_seqrecords, dict_of_seqrecords, str) -> None
+
+    Write splice graph to filename in GFA 1 format
+    """
+    results = []
+    header = ["H\tVN:Z:1.0\n"]
+
+    segments = _compute_segment_lines(splice_graph)
+    links = _compute_links(splice_graph)
+    containments = _compute_containments(splice_graph)
+    paths = _compute_paths(exons)
+
+    with open(filename, "w") as gfa1_out:
+        gfa1_out.writelines(chain(
+            header, segments, links, containments, paths
+        ))
+        #gfa1_out.write("\n")
+
+
+
+def gfa1_to_exons(gfa_in_fn, fasta_out_fn, soft_mask_overlaps=False, hard_mask_overlaps=False):
+
+    if soft_mask_overlaps == True and hard_mask_overlaps == True:
+        raise Exception("I can't soft mask and hard mask at the same time, dude!")
+
+    gfa1 = read_gfa1(gfa_in_fn)
+
+    exon_dict = gfa1["exon_dict"]
+    coordinate_dict = gfa1["coordinate_dict"]
+    overlap_dict = gfa1["overlap_dict"]
+
+    # Join sequence and coordinates
+    if soft_mask_overlaps:
+        exon_dict = _soft_mask(exon_dict, overlap_dict)
+
+    if hard_mask_overlaps:
+        exon_dict = _hard_mask(exon_dict, overlap_dict)
+
+    # Add coordinate information to description
+    for exon_id, exon_record in exon_dict.items():
+        exon_record.description = " ".join(coordinate_dict[exon_id])
+
+    # Write to fasta
+    SeqIO.write(format="fasta", handle=fasta_out_fn, sequences=exon_dict.values())
+
+
+
+def _compose_paths(exon_dict, path_dict, number_of_ns):
     ns = "N" * number_of_ns
-    records = []
     for transcript_id, exon_list in path_dict.items():
-        exon_seqs = [exon_dict[exon_id] for exon_id in exon_list]
-        records.append(SeqRecord(
+        exon_seqs = [str(exon_dict[exon_id].seq) for exon_id in exon_list]
+        yield SeqRecord(
             id=transcript_id,
             description=",".join(exon_list),
             seq=Seq(ns.join(exon_seqs))
-        ))
+        )
+
+
+def gfa1_to_gapped_transcript(
+    gfa_in, fasta_out, number_of_ns=100, soft_mask_overlaps=False, hard_mask_overlaps=False):
+
+    if soft_mask_overlaps == True and hard_mask_overlaps == True:
+        raise Exception("I can't soft mask and hard mask at the same time, dude!")
+
+    # Process
+    gfa = read_gfa1(gfa_in)
+    exon_dict = gfa["exon_dict"]
+    #coordinate_dict = gfa["coordinate_dict"]
+    overlap_dict = gfa["overlap_dict"]
+    path_dict = gfa["path_dict"]
+
+    # Mask
+    if soft_mask_overlaps:
+        exon_dict = _soft_mask(exon_dict, overlap_dict)
+
+    if hard_mask_overlaps:
+        exon_dict = _hard_mask(exon_dict, overlap_dict)
+
+    composed_paths = _compose_paths(exon_dict, path_dict, number_of_ns)
 
     # Write
     SeqIO.write(
         format="fasta",
-        sequences=records,
+        sequences=composed_paths,
         handle=fasta_out
     )

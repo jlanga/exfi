@@ -23,7 +23,6 @@ class TestWriteGFA1(unittest.TestCase):
         tmp_file = tempfile.mkstemp()[1]
         write_gfa1(
             splice_graph=build_splicegraph({}),
-            transcript_index={},
             exons={},
             filename=tmp_file
         )
@@ -38,7 +37,6 @@ class TestWriteGFA1(unittest.TestCase):
         tmp_file = tempfile.mkstemp()[1]
         write_gfa1(
             splice_graph=build_splicegraph(index_simple),
-            transcript_index=transcriptome_simple,
             exons=index_simple,
             filename=tmp_file #tmp_file
         )
@@ -53,7 +51,6 @@ class TestWriteGFA1(unittest.TestCase):
         tmp_file = tempfile.mkstemp()[1]
         write_gfa1(
             splice_graph= build_splicegraph(index_different),
-            transcript_index=transcriptome_different,
             exons=index_different,
             filename=tmp_file
         )
@@ -123,6 +120,8 @@ class TestGFA1ToExons(unittest.TestCase):
             different_exons_masked
         ))
         os.remove(tmp_file)
+
+
 
 class TestGFA1ToGappedTranscript(unittest.TestCase):
 

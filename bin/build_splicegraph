@@ -120,7 +120,6 @@ if __name__ == "__main__":
     # Write to GFA1
     write_gfa1(
         splice_graph=splice_graph,
-        transcript_index=transcriptome_index,
         exons=exon_index,
         filename=output_gfa
     )

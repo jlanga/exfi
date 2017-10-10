@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 # Import everything
 from subprocess import Popen, PIPE
 from Bio.SeqRecord import SeqRecord

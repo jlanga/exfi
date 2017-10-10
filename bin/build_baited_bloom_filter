@@ -94,7 +94,7 @@ parser.add_argument(
     dest='reads'
 )
 
-args = parser.parse_args()
+
 
 if __name__ == '__main__':
 
@@ -107,7 +107,6 @@ if __name__ == '__main__':
     output_bloom = args['output_bloom']
     threads = args["threads"],
     reads = args["reads"]
-
     threads = int(*threads)  # I don't know why it is parsed as tuple
 
     # Check inputs
@@ -136,7 +135,6 @@ if __name__ == '__main__':
         makedirs(output_dir)
 
     # Run the program
-
     build_baited_bloom_filter(
         transcriptome=transcriptome,
         kmer=kmer,

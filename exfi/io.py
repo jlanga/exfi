@@ -151,13 +151,18 @@ def read_gfa1(filename):
         "path_dict": path_dict
     }
 
+
+
 def _soft_mask_right(string, n):
     """Soft mask the rightmost n bases"""
     return string[:-n] + string[-n:].lower()
 
+
+
 def _soft_mask_left(string, n):
     """Soft mask the leftmost n bases"""
     return string[:n].lower() + string[n:]
+
 
 
 def _soft_mask(exon_dict, overlap_dict):
@@ -176,13 +181,17 @@ def _soft_mask(exon_dict, overlap_dict):
     return exon_dict
 
 
+
 def _hard_mask_right(string, n):
     """Hard mask the rightmost n bases"""
     return string[:-n] + "N" * n
 
+
+
 def _hard_mask_left(string, n):
     """Hard mask the leftmost n bases"""
     return "N" * n + string[n:]
+
 
 
 def _hard_mask(exon_dict, overlap_dict):

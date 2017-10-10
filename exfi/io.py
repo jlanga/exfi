@@ -292,7 +292,6 @@ def write_gfa1(splice_graph, exons, filename):
 
     Write splice graph to filename in GFA 1 format
     """
-    results = []
     header = ["H\tVN:Z:1.0\n"]
 
     segments = _compute_segment_lines(splice_graph)

@@ -206,6 +206,14 @@ def _hard_mask(exon_dict, overlap_dict):
 
 
 
+def _mask(exon_dict, overlap_dict, soft_mask_overlaps=False, hard_mask_overlaps=False):
+    """If any of the soft mask or hard mask are activated, mask"""
+    if soft_mask_overlaps == True and hard_mask_overlaps == True:
+        raise Exception("I can't soft mask and hard mask at the same time, dude!")
+    if soft_mask_overlaps: exon_dict = _soft_mask(exon_dict, overlap_dict)
+    if hard_mask_overlaps: exon_dict = _hard_mask(exon_dict, overlap_dict)
+
+
 def _compute_segment_lines(splice_graph):
     """Compute the segment lines
 
@@ -315,18 +323,14 @@ def write_gfa1(splice_graph, exons, filename):
 
 def gfa1_to_exons(gfa_in_fn, fasta_out_fn, soft_mask_overlaps=False, hard_mask_overlaps=False):
 
-    if soft_mask_overlaps == True and hard_mask_overlaps == True:
-        raise Exception("I can't soft mask and hard mask at the same time, dude!")
-
     gfa1 = read_gfa1(gfa_in_fn)
 
     exon_dict = gfa1["exon_dict"]
     coordinate_dict = gfa1["coordinate_dict"]
     overlap_dict = gfa1["overlap_dict"]
 
-    # Join sequence and coordinates
-    if soft_mask_overlaps: exon_dict = _soft_mask(exon_dict, overlap_dict)
-    if hard_mask_overlaps: exon_dict = _hard_mask(exon_dict, overlap_dict)
+    # Mask if necessary
+    _mask(exon_dict, overlap_dict, soft_mask_overlaps, hard_mask_overlaps)
 
     # Add coordinate information to description
     for exon_id, exon_record in exon_dict.items():
@@ -360,9 +364,8 @@ def gfa1_to_gapped_transcript(
     overlap_dict = gfa["overlap_dict"]
     path_dict = gfa["path_dict"]
 
-    # Mask
-    if soft_mask_overlaps: exon_dict = _soft_mask(exon_dict, overlap_dict)
-    if hard_mask_overlaps: exon_dict = _hard_mask(exon_dict, overlap_dict)
+    # Mask if necessary
+    _mask(exon_dict, overlap_dict, soft_mask_overlaps, hard_mask_overlaps)
 
     composed_paths = _compose_paths(exon_dict, path_dict, number_of_ns)
 

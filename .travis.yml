@@ -65,4 +65,4 @@ script:
     --input-gfa test_exons_raw.gfa
     --output-fasta gapped_transcripts.fa
     --number-of-ns 100
-    --soft-mask-overlaps
+    --hard-mask-overlaps

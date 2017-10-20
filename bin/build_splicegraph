@@ -105,9 +105,9 @@ if __name__ == "__main__":
     transcriptome_index = SeqIO.index(filename=args["input_fasta"], format="fasta")
     positive_exons_fasta = _get_fasta(transcriptome_index, positive_exons_bed)
 
-    # Reduce and convert to list since we will use it twice
-    reduced_exons = reduce_exons(positive_exons_fasta)
-    exon_index = {exon.id: exon for exon in reduced_exons}
+    # Reduce and convert to dict
+    # positive_exons_fasta = reduce_exons(positive_exons_fasta)
+    exon_index = {exon.id: exon for exon in positive_exons_fasta}
 
     # Build splice graph
     splice_graph = build_splicegraph(exon_index)

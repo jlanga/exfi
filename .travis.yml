@@ -28,6 +28,7 @@ matrix:
           - bzip2
           - zlib1g
           - libsparsehash-dev
+          - cmake
 
 # commands to install dependencies
 before_install:
@@ -66,3 +67,5 @@ script:
     --output-fasta gapped_transcripts.fa
     --number-of-ns 100
     --hard-mask-overlaps
+
+after_failure:

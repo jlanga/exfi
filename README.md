@@ -240,4 +240,3 @@ Written by Jorge Langa
 - [sphinx](www.sphinx-doc.org)
 
 - [unittest](https://docs.python.org/3/library/unittest.html)
-

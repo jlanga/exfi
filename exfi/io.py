@@ -358,6 +358,7 @@ def gfa1_to_gapped_transcript(
     overlap_dict = _links_to_overlap_dict(gfa1["links"])
     path_dict = _paths_to_path_dict(gfa1["paths"])
 
+
     # Mask if necessary
     _mask(exon_dict, overlap_dict, soft_mask_overlaps, hard_mask_overlaps)
 

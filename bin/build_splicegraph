@@ -108,6 +108,8 @@ if __name__ == "__main__":
     # Reduce and convert to dict
     # positive_exons_fasta = reduce_exons(positive_exons_fasta)
     exon_index = {exon.id: exon for exon in positive_exons_fasta}
+    # reduced_exons = reduce_exons(positive_exons_fasta)
+    # exon_index = {exon.id: exon for exon in reduced_exons}
 
     # Build splice graph
     splice_graph = build_splicegraph(exon_index)

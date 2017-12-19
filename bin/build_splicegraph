@@ -82,6 +82,17 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    '--max-overlap',
+    '-l',
+    type=int,
+    required=False,
+    help='Maximum overlap in bp between pconsecutive exons (0 <= l <= k)',
+    dest='max_overlap',
+    metavar='INT',
+    default=10
+)
+
+parser.add_argument(
     '--output-gfa',
     '-o',
     type=str,
@@ -94,15 +105,23 @@ parser.add_argument(
 args = parser.parse_args()
 
 if __name__ == "__main__":
+    
     args = vars(parser.parse_args())
 
     # Get predicted exons in bed format
     positive_exons_bed = _find_exons_pipeline(
-        args["kmer"], args["bloom_filter"], args["input_fasta"], args["max_fp_bases"]
+        kmer=args["kmer"],
+        bloom_filter_fn=args["bloom_filter"],
+        transcriptome_fn=args["input_fasta"],
+        max_fp_bases=args["max_fp_bases"],
+        max_overlap=args["max_overlap"]
     )
 
     # Bed -> fasta
-    transcriptome_index = SeqIO.index(filename=args["input_fasta"], format="fasta")
+    transcriptome_index = SeqIO.index(
+        filename=args["input_fasta"],
+        format="fasta"
+    )
     positive_exons_fasta = _get_fasta(transcriptome_index, positive_exons_bed)
 
     # Reduce and convert to dict

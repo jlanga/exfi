@@ -28,13 +28,15 @@ def _get_fasta(transcriptome_dict, iterable_of_bed):
             yield SeqRecord(id=identifier, seq=seq, description=description)
 
 
-def _find_exons_pipeline(kmer, bloom_filter_fn, transcriptome_fn, max_fp_bases=5):
+def _find_exons_pipeline(
+    kmer, bloom_filter_fn, transcriptome_fn, max_fp_bases=5, max_overlap=10
+    ):
     """Find exons according to the Bloom filter -> BED
     Main pipeline:
     - Check every kmer,
-    - merge if there is an overlap of k-1 bases
-    - Throw away too short exons (k + max_fp_bases)
-    - merge consecutive exons if they have an ovelap of 2*max_fp_bases
+    - merge if there is an overlap of k-1 bases,
+    - Throw away too short exons (k + max_fp_bases; FP of the BF),
+    - merge consecutive exons if they have an ovelap of max_fp_bases
     """
     # Prepare the commands
     c_kmers = ["abyss-bloom", "kmers", "--kmer", str(kmer), "--verbose",
@@ -43,10 +45,10 @@ def _find_exons_pipeline(kmer, bloom_filter_fn, transcriptome_fn, max_fp_bases=5
     c_filter = ["awk", "$3 - $2 >= {min_length}".format(
         min_length=kmer + max_fp_bases
     )]
-    c_merge2 = ["bedtools", "merge", "-d", str(-10 + 2)]
+    c_merge2 = ["bedtools", "merge", "-d", str(-max_overlap)]
     # Run all of them streamlined
     p_kmers = Popen(c_kmers, stdout=PIPE)
-    p_merge1 = Popen(c_merge1, stdin=p_kmers.stdout, stdout=PIPE)
+    p_merge1 = Popen(c_merge1, stdin=p_kmers.stdout,  stdout=PIPE)
     p_filter = Popen(c_filter, stdin=p_merge1.stdout, stdout=PIPE)
     p_merge2 = Popen(c_merge2, stdin=p_filter.stdout, stdout=PIPE)
     p_kmers.stdout.close()

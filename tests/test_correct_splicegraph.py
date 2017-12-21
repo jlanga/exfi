@@ -158,8 +158,8 @@ class TestRunSealer(TestCase, CustomAssertions):
                 sealer_out_fn, "fasta"
             ))
         )
-        remove(sealer_input_fn)
-        remove(sealer_output_fn)
+        remove(sealer_in_fn)
+        remove(sealer_out_fn)
 
 
 
@@ -168,11 +168,28 @@ class TestCollectSealerResults(TestCase):
     (str) -> dict
     """
     def test_collect_empty(self):
-        pass
+        """Sealer returns an empty file"""
+        empty_file = mkstemp()
+        sealer_output_fn = _run_sealer(
+            sealer_input_fn=empty_file[1],
+            args=args
+        )
+        # Collect sealer results
+        edge2fill = _collect_sealer_results(handle=sealer_output_fn)
+        self.assertEqual(edge2fill, {})
 
     def test_collect_somedata(self):
-        pass
-
+        """Correct gaps with sealer"""
+        edge2fill = _collect_sealer_results(
+            handle="tests/files/correct_splicegraph/sealed.fa"
+        )
+        self.assertEqual(
+            edge2fill,
+            {
+                'ENSDART00000149335.2:1717-2286': 'ENSDART00000149335.2:2288-3379',
+                'ENSDART00000149335.2:485-1715': 'ENSDART00000149335.2:1717-2286'
+            }
+        )
 
 
 class TestSculptGraph(TestCase):
@@ -180,11 +197,29 @@ class TestSculptGraph(TestCase):
     (nx.DiGraph, dict) -> nx.DiGraph
     """
     def test_sculpt_empty_data(self):
-        pass
-    def test_sculpt_wrong_data(self):
-        pass
+        """Test sealer wasn't able to merge exons"""
+        sealed_graph = _sculpt_graph(splice_graph, {}, transcriptome_index)
+        self.assertTrue(nx.is_isomorphic(
+            sealed_graph,
+            splice_graph
+        ))
+
+
     def test_scuplt_real_data(self):
-        pass
+        """Check the graph changes"""
+        test_graph = nx.DiGraph()
+        test_graph.add_edge(
+            u="ENSDART00000149335.2:0-486",
+            v="ENSDART00000149335.2:1717-2286"
+        )
+        edge2fill = _collect_sealer_results(
+            handle="tests/files/correct_splicegraph/sealed.fa"
+        )
+        sealed_graph = _sculpt_graph(splice_graph, edge2fill, transcriptome_index)
+        self.assertTrue(nx.is_isomorphic(
+            sealed_graph,
+            test_graph
+        ))
 
 
 
@@ -193,7 +228,17 @@ class TestCorrectSpliceGraph(TestCase):
     (nx.DiGraph, int) -> nx.DiGraph
     """
     def test_correct_splice_graph(self):
-        pass
+        """Check the final step makes the desired graph"""
+        test_graph = nx.DiGraph()
+        test_graph.add_edge(
+            u="ENSDART00000149335.2:0-486",
+            v="ENSDART00000149335.2:1717-2286"
+        )
+        sealed_graph = correct_splice_graph(splice_graph, args)
+        self.assertTrue(nx.is_isomorphic(
+            sealed_graph,
+            test_graph
+        ))
 
 
 if __name__ == '__main__':

@@ -1,4 +1,5 @@
 from unittest import TestCase
+
 from exfi.correct_splicegraph import \
     _coordinates_to_variables, \
     _prepare_sealer, \
@@ -7,7 +8,83 @@ from exfi.correct_splicegraph import \
     _sculpt_graph, \
     correct_splice_graph
 
-import tempfile
+from exfi.build_baited_bloom_filter import \
+    build_baited_bloom_filter
+
+from exfi.find_exons import \
+    _find_exons_pipeline, \
+    _get_fasta
+
+from exfi.build_splicegraph import \
+    build_splicegraph
+
+from Bio import \
+    SeqIO
+
+import networkx as nx
+
+from tempfile import \
+    mkstemp
+
+from tests.auxiliary_functions import \
+    CustomAssertions
+
+from os import remove
+
+temp_bloom = mkstemp()
+temp_gfa = mkstemp()
+
+
+args = {
+    "kmer": 30,
+    "bloom_filter": temp_bloom[1],
+    "bloom_size": "500M",
+    "levels": 1,
+    "input_fasta": "tests/files/correct_splicegraph/transcript.fa",
+    "max_fp_bases": 5,
+    "max_overlap": 10,
+    "output_gfa": temp_gfa[1],
+    "threads": 4,
+    "max_gap_size": 10,
+    "reads": ["tests/files/correct_splicegraph/reads.fa"]
+}
+
+build_baited_bloom_filter(
+    transcriptome=args["input_fasta"],
+    kmer=args["kmer"],
+    bloom_size=args["bloom_size"],
+    levels=args["levels"],
+    output_bloom=args["bloom_filter"],
+    threads=args["threads"],
+    reads=args["reads"]
+)
+
+# Get predicted exons in bed format
+positive_exons_bed = _find_exons_pipeline(
+    kmer=args["kmer"],
+    bloom_filter_fn=args["bloom_filter"],
+    transcriptome_fn=args["input_fasta"],
+    max_fp_bases=args["max_fp_bases"],
+    max_overlap=args["max_overlap"]
+)
+
+# Bed -> fasta
+transcriptome_index = SeqIO.index(
+    filename=args["input_fasta"],
+    format="fasta"
+)
+positive_exons_fasta = _get_fasta(transcriptome_index, positive_exons_bed)
+
+# Reduce and convert to dict
+# positive_exons_fasta = reduce_exons(positive_exons_fasta)
+exon_index = {exon.id: exon for exon in positive_exons_fasta}
+# reduced_exons = reduce_exons(positive_exons_fasta)
+# exon_index = {exon.id: exon for exon in reduced_exons}
+
+# Build splice graph
+splice_graph = build_splicegraph(exon_index)
+
+
 
 
 class TestCoordinatesToVariables(TestCase):
@@ -40,21 +117,49 @@ class TestCoordinatesToVariables(TestCase):
 
 
 
-class TestPrepareSealer(TestCase):
+class TestPrepareSealer(TestCase, CustomAssertions):
     """_prepare_sealer(splicegraph, args)
     (nx.DiGraph, dict_of_parameters) -> str
     """
     def test_file_creation(self):
-        pass
+        """Create the fasta file for sealer"""
+        sealer_input_fn = _prepare_sealer(splice_graph, args)
+        self.assertEqualListOfSeqrecords(
+            list(SeqIO.parse(
+                sealer_input_fn,
+                format="fasta"
+            )),
+            list(SeqIO.parse(
+                "tests/files/correct_splicegraph/to_seal.fa",
+                format="fasta"
+            ))
+        )
+        remove(sealer_input_fn)
 
 
 
-class TestRunSealer(TestCase):
+class TestRunSealer(TestCase, CustomAssertions):
     """_run_sealer(sealer_input_fn, args):
     (str, dict) -> str
     """
     def test_run(self):
-        pass
+        """Run sealer"""
+        sealer_in_fn = _prepare_sealer(splice_graph, args)
+        sealer_out_fn = _run_sealer(
+            sealer_input_fn=sealer_in_fn,
+            args=args
+        )
+        self.assertEqualListOfSeqrecords(
+            list(SeqIO.parse(
+                "tests/files/correct_splicegraph/sealed.fa",
+                format="fasta"
+            )),
+            list(SeqIO.parse(
+                sealer_out_fn, "fasta"
+            ))
+        )
+        remove(sealer_input_fn)
+        remove(sealer_output_fn)
 
 
 
@@ -89,3 +194,18 @@ class TestCorrectSpliceGraph(TestCase):
     """
     def test_correct_splice_graph(self):
         pass
+
+
+if __name__ == '__main__':
+
+
+
+    # write_gfa1(
+    #     splice_graph=splice_graph,
+    #     exons=exon_index,
+    #     filename=args["output_gfa"]
+    # )
+
+    unittest.main()
+    # Remove BF
+    remove(temp_bloom, temp_gfa)

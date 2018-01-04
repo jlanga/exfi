@@ -148,7 +148,6 @@ def _sculpt_graph(splice_graph, edge2fill_tmp, transcriptome_index):
         transcript1, start1, _ = _coordinates_to_variables(u)
         _, _, end2 = _coordinates_to_variables(v)
         new_node = transcript1 + ":" + str(start1) + "-" + str(end2)
-        print(new_node)
 
         # Merge nodes
         splice_graph = nx.contracted_nodes( # It is collapsed into u!!
@@ -166,7 +165,7 @@ def _sculpt_graph(splice_graph, edge2fill_tmp, transcriptome_index):
         # Update node2seq
         splice_graph.node[new_node]["sequence"] = str(transcriptome_index[transcript1][start1:end2].seq)
         # Update node2coord
-        splice_graph.node[new_node]["coordinates"] = (transcript1, start1, end2)
+        splice_graph.node[new_node]["coordinates"] = [(transcript1, start1, end2)]
 
         # Update edge2overlap
         #print(nx.get_edge_attributes(splice_graph, "overlap"))

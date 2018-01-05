@@ -6,9 +6,9 @@ from Bio.SeqRecord import SeqRecord
 
 import networkx as nx
 
-from exfi.build_splicegraph import \
-    exons_to_df, \
-    transcript_to_path
+from exfi.build_splice_graph import \
+    bed3_records_to_bed6df, \
+    bed6df_to_path2node
 
 from itertools import chain
 

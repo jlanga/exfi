@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import unittest
-from exfi.build_splicegraph import \
-    build_splicegraph
+from exfi.build_splice_graph import \
+    build_splice_graph
 
 from exfi.io import \
     write_gfa1, \
@@ -22,7 +22,7 @@ class TestWriteGFA1(unittest.TestCase):
         """Write an empty GFA1 (just header)"""
         tmp_file = tempfile.mkstemp()[1]
         write_gfa1(
-            splice_graph=build_splicegraph({}),
+            splice_graph=build_splice_graph({}),
             exons={},
             filename=tmp_file
         )
@@ -36,7 +36,7 @@ class TestWriteGFA1(unittest.TestCase):
         """Write a single exon GFA"""
         tmp_file = tempfile.mkstemp()[1]
         write_gfa1(
-            splice_graph=build_splicegraph(index_simple),
+            splice_graph=build_splice_graph(index_simple),
             exons=index_simple,
             filename=tmp_file #tmp_file
         )
@@ -50,7 +50,7 @@ class TestWriteGFA1(unittest.TestCase):
         """Write a more complex GFA"""
         tmp_file = tempfile.mkstemp()[1]
         write_gfa1(
-            splice_graph=build_splicegraph(index_different),
+            splice_graph=build_splice_graph(index_different),
             exons=index_different,
             filename=tmp_file
         )

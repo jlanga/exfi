@@ -155,11 +155,11 @@ nx.set_edge_attributes(
 
 
 index_simple = index_fasta(
-    filename="tests/files/build_splicegraph/single.fa",
+    filename="tests/files/build_splicegraph/simple.fa",
 )
 
-index_different = index_fasta(
-    filename="tests/files/build_splicegraph/different_transcripts.fa",
+index_complex = index_fasta(
+    filename="tests/files/build_splicegraph/complex_transcripts.fa",
 )
 
 transcriptome_empty = {}
@@ -168,7 +168,7 @@ transcriptome_simple = index_fasta(
 )
 
 transcriptome_complex = index_fasta(
-    filename="tests/files/build_splicegraph/transcriptome_different.fa",
+    filename="tests/files/build_splicegraph/transcriptome_complex.fa",
 )
 
 
@@ -244,17 +244,17 @@ paths_complex = [
 ]
 
 empty_gfa = "tests/files/io/empty.gfa"
-single_gfa = "tests/files/io/single.gfa"
-different_gfa = "tests/files/io/different.gfa"
+simple_gfa = "tests/files/io/simple.gfa"
+complex_gfa = "tests/files/io/complex.gfa"
 
 empty_exons = "tests/files/io/empty_exons.fa"
-single_exons = "tests/files/io/single_exons.fa"
-different_exons = "tests/files/io/different_exons.fa"
-different_exons_soft = "tests/files/io/different_exons_soft.fa"
-different_exons_hard = "tests/files/io/different_exons_hard.fa"
+simple_exons = "tests/files/io/simple_exons.fa"
+complex_exons = "tests/files/io/complex_exons.fa"
+complex_exons_soft = "tests/files/io/complex_exons_soft.fa"
+complex_exons_hard = "tests/files/io/complex_exons_hard.fa"
 
 empty_gapped = "tests/files/io/empty_gapped.fa"
-single_gapped = "tests/files/io/single_gapped.fa"
-different_gapped = "tests/files/io/different_gapped.fa"
-different_gapped_soft = "tests/files/io/different_gapped_soft.fa"
-different_gapped_hard = "tests/files/io/different_gapped_hard.fa"
+simple_gapped = "tests/files/io/simple_gapped.fa"
+complex_gapped = "tests/files/io/complex_gapped.fa"
+complex_gapped_soft = "tests/files/io/complex_gapped_soft.fa"
+complex_gapped_hard = "tests/files/io/complex_gapped_hard.fa"

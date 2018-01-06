@@ -276,22 +276,6 @@ def _compute_containments(splice_graph, transcriptome_dict):
 
 
 
-# def _compute_paths(exons):
-#     """Compute the path lines
-#
-#     P transcript_id list_of_exons
-#     """
-#     exon_df = bed3_records_to_bed6df(exons)
-#     paths = bed6df_to_path2node(exon_df)
-#
-#     for transcript_id, path in sorted(paths.items()):
-#         yield "P\t{transcript_id}\t{path}\n".format(
-#             transcript_id=transcript_id,
-#             path=",".join([exon + "+" for exon in path])
-#         )
-
-
-
 def _compute_paths(splice_graph):
     """(nx.DiGraph) -> lists
 
@@ -321,11 +305,10 @@ def write_gfa1(splice_graph, transcriptome_dict, filename):
     """
     header = ["H\tVN:Z:1.0\n"]
 
-    segments = _compute_segment_lines(splice_graph, transcriptome_dict)
-    links = _compute_links(splice_graph)
-    containments = _compute_containments(splice_graph)
-    paths = _compute_paths(exons)
-
+    segments = list(_compute_segments(splice_graph, transcriptome_dict))
+    links = list(_compute_links(splice_graph))
+    containments = list(_compute_containments(splice_graph, transcriptome_dict))
+    paths = list(_compute_paths(splice_graph))
     with open(filename, "w") as gfa1_out:
         gfa1_out.writelines(chain(
             header, segments, links, containments, paths

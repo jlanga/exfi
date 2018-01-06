@@ -112,7 +112,7 @@ class TestWriteGFA1(unittest.TestCase):
         tmp_file = tempfile.mkstemp()[1]
         write_gfa1(
             splice_graph=splice_graph_empty,
-            exons=bed3records_empty,
+            transcriptome_dict=transcriptome_empty,
             filename=tmp_file
         )
         self.assertTrue(filecmp.cmp(
@@ -125,13 +125,13 @@ class TestWriteGFA1(unittest.TestCase):
         """write_gfa1: simple case"""
         tmp_file = tempfile.mkstemp()[1]
         write_gfa1(
-            splice_graph=build_splice_graph(bed3records_simple),
-            exons=index_simple,
+            splice_graph=splice_graph_simple,
+            transcriptome_dict=transcriptome_simple,
             filename=tmp_file #tmp_file
         )
         self.assertTrue(filecmp.cmp(
             tmp_file,
-            single_gfa
+            simple_gfa
         ))
         os.remove(tmp_file)
 
@@ -139,13 +139,13 @@ class TestWriteGFA1(unittest.TestCase):
         """write_gfa1: complex case"""
         tmp_file = tempfile.mkstemp()[1]
         write_gfa1(
-            splice_graph=build_splice_graph(index_different),
-            exons=index_different,
+            splice_graph=splice_graph_complex,
+            transcriptome_dict=transcriptome_complex,
             filename=tmp_file
         )
         self.assertTrue(filecmp.cmp(
             tmp_file,
-            different_gfa
+            complex_gfa
         ))
         os.remove(tmp_file)
 
@@ -172,22 +172,22 @@ class TestGFA1ToExons(unittest.TestCase):
         """gfa1_to_exons: simple case"""
         tmp_file = tempfile.mkstemp()[1]
         gfa1_to_exons(
-            gfa_in_fn=single_gfa,
+            gfa_in_fn=simple_gfa,
             fasta_out_fn=tmp_file,
             soft_mask_overlaps=False
         )
         self.assertTrue(filecmp.cmp(
             tmp_file,
-            single_exons
+            simple_exons
         ))
         os.remove(tmp_file)
 
     def test_multiple(self):
         """gfa1_to_exons: complex case"""
         tmp_file = tempfile.mkstemp()[1]
-        gfa1_to_exons(gfa_in_fn=different_gfa, fasta_out_fn=tmp_file)
+        gfa1_to_exons(gfa_in_fn=complex_gfa, fasta_out_fn=tmp_file)
         self.assertTrue(
-            filecmp.cmp(tmp_file, different_exons)
+            filecmp.cmp(tmp_file, complex_exons)
         )
         os.remove(tmp_file)
 
@@ -195,12 +195,12 @@ class TestGFA1ToExons(unittest.TestCase):
         """gfa1_to_exons: complex case and soft masking"""
         tmp_file = tempfile.mkstemp()[1]
         gfa1_to_exons(
-            gfa_in_fn=different_gfa,
+            gfa_in_fn=complex_gfa,
             fasta_out_fn=tmp_file,
             soft_mask_overlaps=True
         )
         self.assertTrue(
-            filecmp.cmp(tmp_file, different_exons_soft)
+            filecmp.cmp(tmp_file, complex_exons_soft)
         )
         os.remove(tmp_file)
 
@@ -208,12 +208,12 @@ class TestGFA1ToExons(unittest.TestCase):
         """gfa1_to_exons: complex case and hard masking"""
         tmp_file = tempfile.mkstemp()[1]
         gfa1_to_exons(
-            gfa_in_fn=different_gfa,
+            gfa_in_fn=complex_gfa,
             fasta_out_fn=tmp_file,
             hard_mask_overlaps=True
         )
         self.assertTrue(
-            filecmp.cmp(tmp_file, different_exons_hard)
+            filecmp.cmp(tmp_file, complex_exons_hard)
         )
         os.remove(tmp_file)
 
@@ -233,30 +233,30 @@ class TestGFA1ToGappedTranscript(unittest.TestCase):
     def test_simple(self):
         """gfa1_to_gapped_transcript: simple case"""
         tmp_file = tempfile.mkstemp()[1]
-        gfa1_to_gapped_transcript(gfa_in=single_gfa, fasta_out=tmp_file)
+        gfa1_to_gapped_transcript(gfa_in=simple_gfa, fasta_out=tmp_file)
         self.assertTrue(
-            filecmp.cmp(tmp_file, single_gapped)
+            filecmp.cmp(tmp_file, simple_gapped)
         )
         os.remove(tmp_file)
 
     def test_multiple(self):
         """gfa1_to_gapped_transcript: complex case"""
         tmp_file = tempfile.mkstemp()[1]
-        gfa1_to_gapped_transcript(gfa_in=different_gfa, fasta_out=tmp_file)
+        gfa1_to_gapped_transcript(gfa_in=complex_gfa, fasta_out=tmp_file)
         self.assertTrue(filecmp.cmp(
             tmp_file,
-            different_gapped
+            complex_gapped
         ))
         os.remove(tmp_file)
 
     def test_multiple_soft(self):
         """gfa1_to_gapped_transcript: complex case and soft masking"""
         tmp_file = tempfile.mkstemp()[1]
-        gfa1_to_gapped_transcript(gfa_in=different_gfa, fasta_out=tmp_file,
+        gfa1_to_gapped_transcript(gfa_in=complex_gfa, fasta_out=tmp_file,
             soft_mask_overlaps=True
         )
         self.assertTrue(
-            filecmp.cmp(tmp_file, different_gapped_soft)
+            filecmp.cmp(tmp_file, complex_gapped_soft)
         )
         os.remove(tmp_file)
 
@@ -264,11 +264,11 @@ class TestGFA1ToGappedTranscript(unittest.TestCase):
     def test_multiple_hard(self):
         """gfa1_to_gapped_transcript: complex case and hard masking"""
         tmp_file = tempfile.mkstemp()[1]
-        gfa1_to_gapped_transcript(gfa_in=different_gfa, fasta_out=tmp_file,
+        gfa1_to_gapped_transcript(gfa_in=complex_gfa, fasta_out=tmp_file,
             hard_mask_overlaps=True
         )
         self.assertTrue(
-            filecmp.cmp(tmp_file, different_gapped_hard)
+            filecmp.cmp(tmp_file, complex_gapped_hard)
         )
         os.remove(tmp_file)
 

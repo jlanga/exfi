@@ -87,7 +87,7 @@ class TestBed3RecordsToBed6DF(unittest.TestCase):
         )
 
 
-class TestBed6DFToPath2node(unittest.TestCase):
+class TestBed6DFToPath2Node(unittest.TestCase):
 
     def test_empty(self):
         """bed6df_to_path2node: convert an empty exome to path"""

@@ -354,7 +354,6 @@ def gfa1_to_gapped_transcript(
     # Process
     gfa1 = read_gfa1(gfa_in)
     exon_dict = _segments_to_exon_dict(gfa1["segments"])
-    coordinate_dict = _containments_to_coordinate_dict(gfa1["containments"])
     overlap_dict = _links_to_overlap_dict(gfa1["links"])
     path_dict = _paths_to_path_dict(gfa1["paths"])
 

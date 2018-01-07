@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 import unittest
-from exfi.build_splice_graph import \
-    build_splice_graph
 
 from exfi.io import \
     _compute_segments, \

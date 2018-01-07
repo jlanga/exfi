@@ -12,7 +12,6 @@ def _bed3_to_str(bed3_record):
         return "{0}:{1}-{2}".format(*bed3_record)
     else:
         raise IndexError("Incorrect number of elements in record")
-        print(bed3_record)
 
 
 

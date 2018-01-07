@@ -10,7 +10,6 @@ from exfi.build_splice_graph import \
     build_splice_graph
 
 import networkx as nx
-import pandas as pd
 
 from tests.test_data import *
 

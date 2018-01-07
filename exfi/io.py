@@ -320,9 +320,7 @@ def gfa1_to_exons(gfa_in_fn, fasta_out_fn, soft_mask_overlaps=False, hard_mask_o
     gfa1 = read_gfa1(gfa_in_fn)
 
     exon_dict = _segments_to_exon_dict(gfa1["segments"])
-    coordinate_dict = _containments_to_coordinate_dict(gfa1["containments"])
     overlap_dict = _links_to_overlap_dict(gfa1["links"])
-    path_dict = _paths_to_path_dict(gfa1["paths"])
 
     # Mask if necessary
     _mask(exon_dict, overlap_dict, soft_mask_overlaps, hard_mask_overlaps)

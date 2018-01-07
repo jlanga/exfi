@@ -8,15 +8,11 @@ from exfi.find_exons import \
 from exfi.reduce_exons import \
     reduce_exons
 
-from exfi.build_splicegraph import \
-    _process_index, \
-    exons_to_df, \
-    exon_to_coordinates, \
-    transcript_to_path, \
-    compute_edge_overlaps, \
-    build_splicegraph
+from exfi.build_splice_graph import \
+    build_splice_graph
 
 from exfi.io import \
+    index_fasta, \
     write_gfa1
 
 from Bio import SeqIO
@@ -105,7 +101,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 if __name__ == "__main__":
-    
+
     args = vars(parser.parse_args())
 
     # Get predicted exons in bed format
@@ -117,26 +113,15 @@ if __name__ == "__main__":
         max_overlap=args["max_overlap"]
     )
 
-    # Bed -> fasta
-    transcriptome_index = SeqIO.index(
-        filename=args["input_fasta"],
-        format="fasta"
-    )
-    positive_exons_fasta = _get_fasta(transcriptome_index, positive_exons_bed)
-
-    # Reduce and convert to dict
-    # positive_exons_fasta = reduce_exons(positive_exons_fasta)
-    exon_index = {exon.id: exon for exon in positive_exons_fasta}
-    # reduced_exons = reduce_exons(positive_exons_fasta)
-    # exon_index = {exon.id: exon for exon in reduced_exons}
-
     # Build splice graph
-    splice_graph = build_splicegraph(exon_index)
+    splice_graph = build_splice_graph(positive_exons_bed)
+
+    # Transcriptome_dict
+    transcriptome_dict = index_fasta(args["input_fasta"])
 
     # Write to GFA1
     write_gfa1(
         splice_graph=splice_graph,
-        exons=exon_index,
+        transcriptome_dict=transcriptome_dict,
         filename=args["output_gfa"]
     )
-    #print([x for x in transcriptome_index.keys()])

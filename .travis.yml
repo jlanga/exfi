@@ -52,7 +52,7 @@ script:
     --threads 2
     --output-bloom genome_k27_m500M_l1.bloom
     data/genome.fa.gz
-  - build_splicegraph
+  - build_splice_graph
     --input-fasta data/transcript.fa
     --input-bloom genome_k27_m500M_l1.bloom
     --kmer 27

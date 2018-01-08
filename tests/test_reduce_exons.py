@@ -10,7 +10,7 @@ from tests.auxiliary_functions import \
 class TestReduceExons(TestCase, CustomAssertions):
 
     def test_empty_sequence(self):
-        """reduce_exons.py: test empty fasta"""
+        """reduce_exons: empty"""
         actual = list(reduce_exons(_fasta_to_list(
             "tests/files/reduce_exons/empty_sequence_input.fa"
         )))
@@ -20,7 +20,7 @@ class TestReduceExons(TestCase, CustomAssertions):
         self.assertEqualListOfSeqrecords(actual, expected)
 
     def test_one_exon(self):
-        """reduce_exons.py: test single exon"""
+        """reduce_exons: single exon"""
         actual = list(reduce_exons(_fasta_to_list(
             "tests/files/reduce_exons/one_exon_input.fa"
         )))
@@ -30,7 +30,7 @@ class TestReduceExons(TestCase, CustomAssertions):
         self.assertEqualListOfSeqrecords(actual, expected)
 
     def test_same_exon(self):
-        """reduce_exons.py: read the same exon twice"""
+        """reduce_exons: same exon twice"""
         actual = list(reduce_exons(_fasta_to_list(
             "tests/files/reduce_exons/same_exon_input.fa"
         )))
@@ -40,7 +40,7 @@ class TestReduceExons(TestCase, CustomAssertions):
         self.assertEqualListOfSeqrecords(actual, expected)
 
     def test_different_exons(self):
-        """reduce_exons.py: read the same exon twice"""
+        """reduce_exons: different exons"""
         actual = list(reduce_exons(_fasta_to_list(
             "tests/files/reduce_exons/different_exons_input.fa"
         )))

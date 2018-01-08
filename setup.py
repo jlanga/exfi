@@ -18,7 +18,7 @@ setup(
     tests_require=['nose'],
     scripts=[
         "bin/build_baited_bloom_filter",
-        "bin/build_splicegraph",
+        "bin/build_splice_graph",
         "bin/gfa_to_exons",
         "bin/gfa_to_gapped_transcripts"
     ],

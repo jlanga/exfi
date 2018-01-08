@@ -1,0 +1,188 @@
+#!/usr/bin/env python3
+
+import networkx as nx
+import pandas as pd
+
+def _bed3_to_str(bed3_record):
+    """(str, int, int) -> str
+
+    BED3 to string
+    """
+    if len(bed3_record) == 3:
+        return "{0}:{1}-{2}".format(*bed3_record)
+    else:
+        raise IndexError("Incorrect number of elements in record")
+
+
+
+def bed3_records_to_bed6df(iterable_of_bed3):
+    """(iterable of tuples) -> pd.dataframe
+
+    Convert an iterable of bed3 records to a bed6 as dataframe
+    bed6 =[seqid, start, end, name, strand, score]
+    """
+    bed6_cols = ['chrom', 'start', 'end', 'name', 'score', 'strand']
+    return pd.DataFrame(
+            data=(
+                bed3_record + (_bed3_to_str((bed3_record)), 0, '+')
+                for bed3_record in iterable_of_bed3
+            ),
+            columns=bed6_cols
+        )\
+        .sort_values(
+            by=bed6_cols[0:2]
+        )
+
+
+
+def bed6df_to_node2coordinates(bed6df):
+    """(pd.DataFrame) -> dict
+
+    Get from the BED6 dataframe the correspondece of name -> (chrom, start, end)
+    """
+    if bed6df.shape[0] > 0:
+        return bed6df\
+            .sort_values(['chrom', 'start', 'end'])\
+            .drop(["score", "strand"], axis=1)\
+            .assign(
+                coordinates=bed6df\
+                    [["chrom", "start", "end"]]\
+                    .apply(tuple, axis=1)
+            )\
+            .drop(["chrom", "start", "end"], axis=1)\
+            .set_index("name", "coordinates")\
+            .to_dict()["coordinates"]
+    else:
+        return {}
+
+
+
+def bed6df_to_path2node(bed6df):
+    """(pandas.df) -> {transcript_id: (coordinates1, ..., coordinatesN)}
+
+    Get a dict containing transcript_id to the tuple of node names that compose
+    it in order, indicating the path."""
+    if bed6df.shape[0] > 0:
+        return bed6df\
+            .sort_values(['chrom', 'start', 'end'])\
+            .drop(['start','end', 'strand', 'score'], axis=1)\
+            .rename(columns={'chrom':'path'})\
+            .groupby('path')\
+            .agg(lambda x: tuple(x.tolist()))\
+            .to_dict()["name"]
+    else:
+        return {}
+
+
+
+def compute_edge_overlaps(splice_graph):
+    """(nx.DiGraph) -> dict
+
+
+    Get the overlap between connected exons:
+    - Positive overlap means that they overlap that number of bases,
+    - Zero that they occur next to each other
+    - Negative that there is a gap in the transcriptome of that number of bases (one or multiple exons of length < kmer)
+    Return dict {(str, str): int} (node1, node2, and overlap)
+    Note: the splice graph must have already the nodes written with coordinates, and the edges alredy entered too.
+    """
+    #Init
+    node2coords = nx.get_node_attributes(
+        G=splice_graph,
+        name='coordinates'
+    )
+
+    edge_overlaps = {edge: None for edge in splice_graph.edges()}
+
+    for (node1, node2) in edge_overlaps.keys():
+        node1_end = node2coords[node1][2]
+        node2_start = node2coords[node2][1]
+
+        # Overlap in bases, 0 means one next to the other, negative numbers a gap
+        overlap = node1_end - node2_start
+        edge_overlaps[(node1, node2)] = overlap
+
+    return edge_overlaps
+
+# def compute_edge_overlaps_complex_case(splice_graph):
+#     """Get the overlap between connected exons:
+#     - Positive overlap means that they overlap that number of bases,
+#     - Zero that they occur next to each other
+#     - Negative that there is a gap in the transcriptome of that number of bases (one or multiple exons of length < kmer)
+#
+#     Note: the splice graph must have already the nodes written with coordinates, and the edges alredy entered too.
+#     """
+#     #Init
+#     edge_overlaps = {edge: None for edge in splice_graph.edges()}
+#     exon2coord = nx.get_node_attributes(
+#         G=splice_graph,
+#         name='coordinates'
+#     )
+#
+#     for (node1, node2) in sorted(edge_overlaps.keys()):
+#
+#         # Get the list of transcripts that they belong
+#         node1_transcripts = set(coordinate[0] for coordinate in exon2coord[node1])
+#         node2_transcripts = set(coordinate[0] for coordinate in exon2coord[node2])
+#         intersection = node1_transcripts & node2_transcripts
+#         a_common_transcript = intersection.pop()
+#
+#         # Get the end the first
+#         node1_coords = exon2coord[node1]
+#         node1_coords_in_transcript = [x for x in node1_coords if x[0] == a_common_transcript][0]
+#         node1_end = node1_coords_in_transcript[2]
+#
+#         # Get the start of the next
+#         node2_coords = exon2coord[node2]
+#         node2_coords_in_transcript = [x for x in node2_coords if x[0] == a_common_transcript][0]
+#         node2_start = node2_coords_in_transcript[1]
+#
+#         # Overlap in bases, 0 means one next to the other, negative numbers a gap
+#         overlap = node1_end - node2_start
+#         edge_overlaps[(node1, node2)] = overlap
+#
+#     return edge_overlaps
+
+
+
+def build_splice_graph(positive_exons_bed):
+    """(Iterable of (str, int, int)) -> Nx.DiGraph
+
+    Build the splice_graph from a list of bed records
+
+    splice_graph is a directed graph, whose nodes
+        - are an identifier, the tuple in string format
+        - whose attributes are
+            - the cooridnates in (str, int, int) format
+    and whose edges
+        - are connected exons in any way
+        - attributes are the overlap between them:
+            - positive means there is an overlap of that number of bases
+            - zero means no overlap
+            - negative means a gap of that number of bases
+    """
+    # Initialize grpah
+    splice_graph = nx.DiGraph()
+
+    # Process bed records
+    bed6df = bed3_records_to_bed6df(positive_exons_bed)
+
+    # Add nodes
+    splice_graph.add_nodes_from(bed6df["name"].tolist())
+    nx.set_node_attributes(  # Add coordinates
+        G=splice_graph,
+        name="coordinates",
+        values=bed6df_to_node2coordinates(bed6df)
+    )
+
+    # Edges
+    transcript2path = bed6df_to_path2node(bed6df)
+    for path in transcript2path.values():
+        splice_graph.add_path(path)
+    nx.set_edge_attributes(
+        G=splice_graph,
+        name='overlaps',
+        values=compute_edge_overlaps(splice_graph)
+    )
+
+    return splice_graph

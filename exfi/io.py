@@ -6,9 +6,9 @@ from Bio.SeqRecord import SeqRecord
 
 import networkx as nx
 
-from exfi.build_splicegraph import \
-    exons_to_df, \
-    transcript_to_path
+from exfi.build_splice_graph import \
+    bed3_records_to_bed6df, \
+    bed6df_to_path2node
 
 from itertools import chain
 
@@ -206,37 +206,38 @@ def _mask(exon_dict, overlap_dict, soft_mask_overlaps=False, hard_mask_overlaps=
     if hard_mask_overlaps: exon_dict = _hard_mask(exon_dict, overlap_dict)
 
 
-def _compute_segment_lines(splice_graph):
-    """Compute the segment lines
 
+def _compute_segments(splice_graph, transcriptome_dict):
+    """(nx.DiGraph, dict) -> list
+
+    Compute the segment lines:
     S node_id sequence length
     """
-    node2seq = nx.get_node_attributes(
-        G=splice_graph,
-        name='sequence'
-    )
-    for node in sorted(splice_graph.nodes()):
+    node2coords = nx.get_node_attributes(G=splice_graph, name="coordinates")
+    for node_id, coordinate in node2coords.items():
+        node, start, end = coordinate
+        sequence = str(transcriptome_dict[node].seq[start:end])
         yield "S\t{node}\t{sequence}\tLN:i:{length}\n".format(
-            node=node,
-            sequence=node2seq[node],
-            length=len(node2seq[node])
+            node=node_id,
+            sequence=sequence,
+            length=len(sequence)
         )
 
 
 
 def _compute_links(splice_graph):
-    """Compute the link lines
+    """(nx.DiGraph) -> list
 
+    Compute the link lines:
     L start orientation end orientation overlap
     """
     # Edges
     edge2overlap = nx.get_edge_attributes(
         G=splice_graph,
-        name="overlap"
+        name="overlaps"
     )
 
-    for (node1, node2) in sorted(splice_graph.edges()):
-        overlap = edge2overlap[(node1, node2)]
+    for (node1, node2), overlap in edge2overlap.items():
         # is an overlap or a gap
         if overlap >= 0:
             overlap = "{}M".format(overlap)
@@ -253,64 +254,65 @@ def _compute_links(splice_graph):
 
 
 
-def _compute_containments(splice_graph):
-    """Compute the containment lines (w.r.t. transcriptome)
+def _compute_containments(splice_graph, transcriptome_dict):
+    """(nx.DiGraph, dict of SeqRecords) -> list
 
+    Compute the containment lines (w.r.t. transcriptome):
     C container orientation contained orientation position overlap
     """
     # Extract from the graph necessary data
-    node2seq = nx.get_node_attributes(
-        G=splice_graph,
-        name='sequence'
-    )
-    exon2coordinates = nx.get_node_attributes(
+    node2coordinates = nx.get_node_attributes(
         G=splice_graph,
         name='coordinates'
     )
-
-    for exon_id, coordinates in sorted(exon2coordinates.items()):
-        for coordinate in coordinates:
-            transcript_id, start, _ = coordinate
-            yield "C\t{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format(
-                transcript_id, "+",
-                exon_id, "+",
-                start, str(len(node2seq[exon_id])) + "M"
-            )
-
-
-
-def _compute_paths(exons):
-    """Compute the path lines
-
-    P transcript_id list_of_exons
-    """
-    exon_df = exons_to_df(exons)
-    paths = transcript_to_path(exon_df)
-
-    for transcript_id, path in sorted(paths.items()):
-        yield "P\t{transcript_id}\t{path}\n".format(
-            transcript_id=transcript_id,
-            path=",".join([exon + "+" for exon in path])
+    for node, coordinates in node2coordinates.items():
+        transcript_id, start, end = coordinates
+        sequence = str(transcriptome_dict[transcript_id].seq[start:end])
+        yield "C\t{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format(
+            transcript_id, "+",
+            node, "+",
+            start, str(len(sequence)) + "M"
         )
 
 
-def write_gfa1(splice_graph, exons, filename):
+
+def _compute_paths(splice_graph):
+    """(nx.DiGraph) -> lists
+
+    Compute the paths in the splice graph:
+    P transcript_id [node1, ..., nodeN]
+    """
+    bed3records = nx.get_node_attributes(
+        G=splice_graph,
+        name="coordinates"
+    ).values()
+
+    bed6df = bed3_records_to_bed6df(bed3records)
+    path2nodes = bed6df_to_path2node(bed6df)
+    for transcript_id, path in path2nodes.items():
+        yield "P\t{transcript_id}\t{path}\n".format(
+            transcript_id=transcript_id,
+            path=",".join([node + "+" for node in path])
+        )
+
+
+
+
+def write_gfa1(splice_graph, transcriptome_dict, filename):
     """(dict_of_seqrecords, dict_of_seqrecords, str) -> None
 
     Write splice graph to filename in GFA 1 format
     """
     header = ["H\tVN:Z:1.0\n"]
 
-    segments = _compute_segment_lines(splice_graph)
+    segments = _compute_segments(splice_graph, transcriptome_dict)
     links = _compute_links(splice_graph)
-    containments = _compute_containments(splice_graph)
-    paths = _compute_paths(exons)
-
+    containments = _compute_containments(splice_graph, transcriptome_dict)
+    paths = _compute_paths(splice_graph)
     with open(filename, "w") as gfa1_out:
         gfa1_out.writelines(chain(
             header, segments, links, containments, paths
         ))
-
 
 
 def gfa1_to_exons(gfa_in_fn, fasta_out_fn, soft_mask_overlaps=False, hard_mask_overlaps=False):
@@ -320,7 +322,6 @@ def gfa1_to_exons(gfa_in_fn, fasta_out_fn, soft_mask_overlaps=False, hard_mask_o
     exon_dict = _segments_to_exon_dict(gfa1["segments"])
     coordinate_dict = _containments_to_coordinate_dict(gfa1["containments"])
     overlap_dict = _links_to_overlap_dict(gfa1["links"])
-    path_dict = _paths_to_path_dict(gfa1["paths"])
 
     # Mask if necessary
     _mask(exon_dict, overlap_dict, soft_mask_overlaps, hard_mask_overlaps)
@@ -354,7 +355,6 @@ def gfa1_to_gapped_transcript(
     # Process
     gfa1 = read_gfa1(gfa_in)
     exon_dict = _segments_to_exon_dict(gfa1["segments"])
-    coordinate_dict = _containments_to_coordinate_dict(gfa1["containments"])
     overlap_dict = _links_to_overlap_dict(gfa1["links"])
     path_dict = _paths_to_path_dict(gfa1["paths"])
 

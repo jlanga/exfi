@@ -2,9 +2,6 @@
 
 import networkx as nx
 
-from exfi.io import \
-    index_fasta
-
 from subprocess import \
     Popen
 
@@ -70,9 +67,6 @@ def _prepare_sealer(splice_graph, args):
         splice_graph=splice_graph,
         transcriptome_dict=transcriptome_dict
     )
-
-    print(edge2overlap)
-    print(node2seq)
 
     # Prepare fasta for sealer
     # Make temporary fasta where to write sequences for sealer

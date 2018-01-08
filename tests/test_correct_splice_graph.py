@@ -12,8 +12,7 @@ from exfi.build_baited_bloom_filter import \
     build_baited_bloom_filter
 
 from exfi.find_exons import \
-    _find_exons_pipeline, \
-    _get_fasta
+    _find_exons_pipeline
 
 from exfi.build_splice_graph import \
     build_splice_graph

@@ -305,10 +305,10 @@ def write_gfa1(splice_graph, transcriptome_dict, filename):
     """
     header = ["H\tVN:Z:1.0\n"]
 
-    segments = list(_compute_segments(splice_graph, transcriptome_dict))
-    links = list(_compute_links(splice_graph))
-    containments = list(_compute_containments(splice_graph, transcriptome_dict))
-    paths = list(_compute_paths(splice_graph))
+    segments = _compute_segments(splice_graph, transcriptome_dict)
+    links = _compute_links(splice_graph)
+    containments = _compute_containments(splice_graph, transcriptome_dict)
+    paths = _compute_paths(splice_graph)
     with open(filename, "w") as gfa1_out:
         gfa1_out.writelines(chain(
             header, segments, links, containments, paths
@@ -320,6 +320,7 @@ def gfa1_to_exons(gfa_in_fn, fasta_out_fn, soft_mask_overlaps=False, hard_mask_o
     gfa1 = read_gfa1(gfa_in_fn)
 
     exon_dict = _segments_to_exon_dict(gfa1["segments"])
+    coordinate_dict = _containments_to_coordinate_dict(gfa1["containments"])
     overlap_dict = _links_to_overlap_dict(gfa1["links"])
 
     # Mask if necessary

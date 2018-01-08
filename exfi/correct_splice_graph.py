@@ -2,6 +2,9 @@
 
 import networkx as nx
 
+from exfi.io import \
+    index_fasta
+
 from subprocess import \
     Popen
 
@@ -28,6 +31,25 @@ def _coordinates_to_variables(coordinates):
     return transcript, start, end
 
 
+def _get_node2sequence(splice_graph, transcriptome_dict):
+    """(nx.DiGraph, dict) -> dict of str
+
+    From the splice graph and a transcriptome, get the exon: sequence dictionary
+    """
+    node2coordinates = nx.get_node_attributes(
+        G=splice_graph,
+        name="coordinates"
+    )
+
+    node2sequence = {key: None for key in node2coordinates.keys()}
+
+    for node, coordinate in node2coordinates.items():
+        transcript_id, start, end = coordinate
+        sequence = str(transcriptome_dict[transcript_id][start:end].seq)
+        node2sequence[node] = sequence
+    return node2sequence
+
+
 def _prepare_sealer(splice_graph, args):
     """ (nx.DiGraph, dict_of_parameters) -> str
 
@@ -40,9 +62,17 @@ def _prepare_sealer(splice_graph, args):
         "bloom_filter": str,
     }
     """
+    transcriptome_dict = SeqIO.index(args["input_fasta"], format="fasta")
+
     # Get overlap and sequence data
-    edge2overlap = nx.get_edge_attributes(G=splice_graph, name="overlap")
-    node2seq = nx.get_node_attributes(G=splice_graph, name='sequence')
+    edge2overlap = nx.get_edge_attributes(G=splice_graph, name="overlaps")
+    node2seq = _get_node2sequence(
+        splice_graph=splice_graph,
+        transcriptome_dict=transcriptome_dict
+    )
+
+    print(edge2overlap)
+    print(node2seq)
 
     # Prepare fasta for sealer
     # Make temporary fasta where to write sequences for sealer
@@ -168,7 +198,7 @@ def _sculpt_graph(splice_graph, edge2fill_tmp, transcriptome_index):
         splice_graph.node[new_node]["coordinates"] = [(transcript1, start1, end2)]
 
         # Update edge2overlap
-        #print(nx.get_edge_attributes(splice_graph, "overlap"))
+        #print(nx.get_edge_attributes(splice_graph, "overlaps"))
 
         # Delete u from edge2fill
         del edge2fill[u]

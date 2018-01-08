@@ -11,7 +11,7 @@ from exfi.reduce_exons import \
 from exfi.build_splice_graph import \
     build_splice_graph
 
-from exfi.correct_splicegraph import \
+from exfi.correct_splice_graph import \
     correct_splice_graph
 
 from exfi.io import \

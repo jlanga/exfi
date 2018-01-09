@@ -59,13 +59,13 @@ build_baited_bloom_filter(
 )
 
 # Get predicted exons in bed format
-positive_exons_bed = _find_exons_pipeline(
+positive_exons_bed = list(_find_exons_pipeline(
     kmer=args["kmer"],
     bloom_filter_fn=args["bloom_filter"],
     transcriptome_fn=args["input_fasta"],
     max_fp_bases=args["max_fp_bases"],
     max_overlap=args["max_overlap"]
-)
+))
 
 # Bed -> fasta
 transcriptome_index = SeqIO.index(
@@ -116,10 +116,8 @@ class TestPrepareSealer(TestCase, CustomAssertions):
     """
     def test_file_creation(self):
         """_prepare_sealer: test creation"""
-        print(splice_graph.nodes())
-        print(splice_graph.edges())
+        splice_graph = build_splice_graph(positive_exons_bed)
         sealer_input_fn = _prepare_sealer(splice_graph, args)
-        print(sealer_input_fn)
         actual = list(SeqIO.parse(
             sealer_input_fn,
             format="fasta"
@@ -128,8 +126,6 @@ class TestPrepareSealer(TestCase, CustomAssertions):
             "tests/files/correct_splice_graph/to_seal.fa",
             format="fasta"
         ))
-        print(actual)
-        print(expected)
         self.assertEqualListOfSeqrecords(
             actual,
             expected
@@ -145,6 +141,7 @@ class TestRunSealer(TestCase, CustomAssertions):
     """
     def test_run(self):
         """_run_sealer: test if runs"""
+        splice_graph = build_splice_graph(positive_exons_bed)
         sealer_in_fn = _prepare_sealer(splice_graph, args)
         sealer_out_fn = _run_sealer(
             sealer_input_fn=sealer_in_fn,
@@ -197,9 +194,10 @@ class TestSculptGraph(TestCase):
     """_sculpt_graph(splice_graph, edge2fill):
     (nx.DiGraph, dict) -> nx.DiGraph
     """
+
     def test_sculpt_empty_data(self):
         """_sculpt_graph: empty case"""
-        sealed_graph = _sculpt_graph(splice_graph, {}, transcriptome_index)
+        sealed_graph = _sculpt_graph(splice_graph, {})
         self.assertTrue(nx.is_isomorphic(
             sealed_graph,
             splice_graph
@@ -216,7 +214,8 @@ class TestSculptGraph(TestCase):
         edge2fill = _collect_sealer_results(
             handle="tests/files/correct_splice_graph/sealed.fa"
         )
-        sealed_graph = _sculpt_graph(splice_graph, edge2fill, transcriptome_index)
+        splice_graph = build_splice_graph(positive_exons_bed)
+        sealed_graph = _sculpt_graph(splice_graph, edge2fill)
         self.assertTrue(nx.is_isomorphic(
             sealed_graph,
             test_graph

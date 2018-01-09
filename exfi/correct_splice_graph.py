@@ -15,6 +15,12 @@ from Bio import \
     Seq, \
     SeqRecord
 
+from natsort import \
+    natsorted
+
+
+
+
 def _coordinates_to_variables(coordinates):
     """(string) -> (string, int, int)
 
@@ -60,10 +66,9 @@ def _prepare_sealer(splice_graph, args):
     }
     """
     transcriptome_dict = SeqIO.index(args["input_fasta"], format="fasta")
-
     # Get overlap and sequence data
     edge2overlap = nx.get_edge_attributes(G=splice_graph, name="overlaps")
-    node2seq = _get_node2sequence(
+    node2sequence = _get_node2sequence(
         splice_graph=splice_graph,
         transcriptome_dict=transcriptome_dict
     )
@@ -76,7 +81,7 @@ def _prepare_sealer(splice_graph, args):
         overlap = edge2overlap[(node1, node2)]
         if overlap < 0 and overlap < args["max_gap_size"]:
             identifier = node1 + "~" + node2
-            sequence = Seq.Seq(node2seq[node1] + "N" * 100 + node2seq[node2])
+            sequence = Seq.Seq(node2sequence[node1] + "N" * 100 + node2sequence[node2])
             seqrecord = SeqRecord.SeqRecord(
                 id=identifier,
                 description="",
@@ -143,9 +148,7 @@ def _collect_sealer_results(handle):
     """
     # Collect results
     edge2fill = {}
-    for corrected in SeqIO.parse(
-        format="fasta", handle=handle
-    ):
+    for corrected in SeqIO.parse(format="fasta", handle=handle):
         node1, node2 = corrected.id.rsplit("_")[0].rsplit("_")[0].split("~")
         edge2fill[node1] = node2
 
@@ -153,54 +156,47 @@ def _collect_sealer_results(handle):
 
 
 
-def _sculpt_graph(splice_graph, edge2fill_tmp, transcriptome_index):
+def _sculpt_graph(splice_graph, edge2fill):
     """(nx.DiGraph, dict) -> nx.DiGraph
 
     Copy splice_graph, merge the nodes as dictated in edge2fill, return the
     sealed graph.
     """
 
-    edge2fill = edge2fill_tmp
-
     while len(edge2fill) > 0:
 
-        # Get involved nodes
-        u = list(edge2fill.keys())[0]
+        # Get nodes to modify
+        u = list(natsorted(edge2fill.keys()))[0]
         v = edge2fill[u]
 
-        # Make new node name
-        transcript1, start1, _ = _coordinates_to_variables(u)
-        _, _, end2 = _coordinates_to_variables(v)
-        new_node = transcript1 + ":" + str(start1) + "-" + str(end2)
+        # Compose new names and coordinates
+        u_transcript, u_start, u_end = splice_graph.node[u]["coordinates"]
+        v_transcript, v_start, v_end = splice_graph.node[v]["coordinates"]
+        n_coordinates = (u_transcript, u_start, v_end)
+        n = "{0}:{1}-{2}".format(*n_coordinates)
 
-        # Merge nodes
-        splice_graph = nx.contracted_nodes( # It is collapsed into u!!
-            G=splice_graph, u=u, v=v,
-            self_loops=False
-        )
+        # Insert new node
+        splice_graph.add_node(n)
+        splice_graph.node[n]["coordinates"] = n_coordinates
 
-        # Rename u
-        splice_graph = nx.relabel_nodes(
-            G=splice_graph,
-            mapping={u: new_node},
-            copy=False
-        )
+        # link pred(u) to n, and overlaps
+        for predecessor in splice_graph.predecessors(u):
+            splice_graph.add_edge(u=predecessor, v=n)
+            splice_graph[predecessor][n]['overlaps'] = splice_graph[predecessor][u]['overlaps']
 
-        # Update node2seq
-        splice_graph.node[new_node]["sequence"] = str(transcriptome_index[transcript1][start1:end2].seq)
-        # Update node2coord
-        splice_graph.node[new_node]["coordinates"] = [(transcript1, start1, end2)]
+        # Attach n to succ(v)
+        for successor in splice_graph.successors(v):
+            splice_graph.add_edge(u=n, v=successor)
+            splice_graph[n][successor]['overlaps'] = splice_graph[v][successor]['overlaps']
 
-        # Update edge2overlap
-        #print(nx.get_edge_attributes(splice_graph, "overlaps"))
+        # Delete u, delete v
+        splice_graph.remove_nodes_from(nodes=[u, v])
 
-        # Delete u from edge2fill
-        del edge2fill[u]
-        if v in edge2fill: # Update v if necessary
-            edge2fill[new_node] = edge2fill[v]
+        # Update dict of edges to fill
+        if v in edge2fill:  # Update v if necessary
+            edge2fill[n] = edge2fill[v]
             del edge2fill[v]
-
-
+        del edge2fill[u]
 
     return splice_graph
 
@@ -239,4 +235,4 @@ def correct_splice_graph(splice_graph, args):
     )
 
     # Compute the sealed splice graph
-    return _sculpt_graph(splice_graph, edge2fill, transcriptome_index)
+    return _sculpt_graph(splice_graph, edge2fill)

@@ -11,7 +11,8 @@ setup(
         'numpy',
         'Biopython',
         'networkx',
-        'pandas'
+        'pandas',
+        'natsort',
     ],
     long_description=open('README.md').read(),
     test_suite='nose.collector',

@@ -166,7 +166,7 @@ def _sculpt_graph(splice_graph, edge2fill):
     while len(edge2fill) > 0:
 
         # Get nodes to modify
-        u = list(natsorted(edge2fill.keys()))[0]
+        u = natsorted(edge2fill.keys())[0]
         v = edge2fill[u]
 
         # Compose new names and coordinates

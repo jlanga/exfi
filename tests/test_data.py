@@ -155,20 +155,20 @@ nx.set_edge_attributes(
 
 
 index_simple = index_fasta(
-    filename="tests/files/build_splicegraph/simple.fa",
+    filename="tests/files/build_splice_graph/simple.fa",
 )
 
 index_complex = index_fasta(
-    filename="tests/files/build_splicegraph/complex_transcripts.fa",
+    filename="tests/files/build_splice_graph/complex_transcripts.fa",
 )
 
 transcriptome_empty = {}
 transcriptome_simple = index_fasta(
-    filename="tests/files/build_splicegraph/transcriptome_simple.fa",
+    filename="tests/files/build_splice_graph/transcriptome_simple.fa",
 )
 
 transcriptome_complex = index_fasta(
-    filename="tests/files/build_splicegraph/transcriptome_complex.fa",
+    filename="tests/files/build_splice_graph/transcriptome_complex.fa",
 )
 
 

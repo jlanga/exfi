@@ -12,7 +12,8 @@ conda install --yes \
     bedtools \
     networkx \
     pandas \
-    pip
+    pip \
+    natsort
 conda clean --all --yes
 
 pushd /opt/

@@ -20,20 +20,6 @@ from natsort import \
 
 
 
-
-def _coordinates_to_variables(coordinates):
-    """(string) -> (string, int, int)
-
-    Convert a genomic coordinate of the form "TR_ID:start-end" into the tuple
-    ("TR_ID", start, end).
-    """
-    transcript, start_end = coordinates.rsplit(":", 1)
-    start_end = start_end.rsplit("-", 1)
-    start = int(start_end[0])
-    end = int(start_end[1])
-    return transcript, start, end
-
-
 def _get_node2sequence(splice_graph, transcriptome_dict):
     """(nx.DiGraph, dict) -> dict of str
 

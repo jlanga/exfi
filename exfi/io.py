@@ -12,6 +12,20 @@ from exfi.build_splice_graph import \
 
 from itertools import chain
 
+
+def _coordinate_str_to_tuple(coordinates):
+    """(string) -> (string, int, int)
+
+    Convert a genomic coordinate of the form "TR_ID:start-end" into the tuple
+    ("TR_ID", start, end).
+    """
+    transcript, start_end = coordinates.rsplit(":", 1)
+    start_end = start_end.rsplit("-", 1)
+    start = int(start_end[0])
+    end = int(start_end[1])
+    return transcript, start, end
+
+
 def _clean_seqrecord(seqrecord):
     """Delete the identifier from the description"""
     seqrecord.description = " ".join(seqrecord.description.split(" ")[1:])
@@ -85,7 +99,7 @@ def _containments_to_coordinate_dict(containments):
 def _links_to_overlap_dict(links):
     """(list of lists) -> dict
 
-    Convert a list of ["L", transcript_id, +, exon_id, +, position, overlap ] to a dict of
+    Convert a list of ["L", u, +, v, +, position, overlap ] to a dict of
     {exon_id: [coordinates wrt transcriptome]}
     """
     overlap_dict = {}
@@ -297,7 +311,6 @@ def _compute_paths(splice_graph):
 
 
 
-
 def write_gfa1(splice_graph, transcriptome_dict, filename):
     """(dict_of_seqrecords, dict_of_seqrecords, str) -> None
 
@@ -366,3 +379,16 @@ def gfa1_to_gapped_transcript(
 
     # Write
     SeqIO.write(format="fasta", sequences=composed_paths, handle=fasta_out)
+
+
+
+def gfa1_to_splice_graph(handle):
+    """(str) -> nx.DiGraph
+
+    Read a GFA1 file and store the splice graph
+    """
+    gfa1 = read_gfa1(handle)
+
+    exon_dict = _segments_to_exon_dict(gfa1["segments"])
+    coordinate_dict = _containments_to_coordinate_dict(gfa1["containments"])
+    overlap_dict = _links_to_overlap_dict(gfa1["links"])

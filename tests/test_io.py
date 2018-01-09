@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-import unittest
+from unittest import TestCase
 
 from exfi.io import \
+    _coordinate_str_to_tuple, \
     _compute_segments, \
     _compute_links, \
     _compute_containments, \
@@ -18,7 +19,37 @@ import os
 from tests.test_data import *
 
 
-class TestComputeSegments(unittest.TestCase):
+
+class TestCoordinatesToVariables(TestCase):
+    """_coordinate_str_to_tuple(coordinates):
+    (string) -> (string, int, int)
+    """
+    def test_empty_string(self):
+        """_coordinate_str_to_tuple: case empty"""
+        with self.assertRaises(ValueError):
+            _coordinate_str_to_tuple("")
+
+    def test_incorrect_string(self):
+        """_coordinate_str_to_tuple: case incorrect"""
+        with self.assertRaises(IndexError):
+            _coordinate_str_to_tuple("ENSDART00000161035:1")
+
+    def test_correct_string(self):
+        """_coordinate_str_to_tuple: case correct"""
+        self.assertEqual(
+            _coordinate_str_to_tuple("ENSDART00000161035:1-15"),
+            ("ENSDART00000161035", 1, 15)
+        )
+
+    def test_messy_string(self):
+        """_coordinate_str_to_tuple: messy case"""
+        self.assertEqual(
+            _coordinate_str_to_tuple("TRINITY_g14_c15_i5:1:2-15-12:1-15"),
+            ("TRINITY_g14_c15_i5:1:2-15-12", 1, 15)
+        )
+
+
+class TestComputeSegments(TestCase):
 
     def test_empty(self):
         """_compute_segments: empty case"""
@@ -40,7 +71,7 @@ class TestComputeSegments(unittest.TestCase):
 
 
 
-class TestComputeLinks(unittest.TestCase):
+class TestComputeLinks(TestCase):
     def test_empty(self):
         """_compute_links: empty case"""
         actual = list(_compute_links(splice_graph_empty))
@@ -61,7 +92,7 @@ class TestComputeLinks(unittest.TestCase):
 
 
 
-class TestComputeContainments(unittest.TestCase):
+class TestComputeContainments(TestCase):
     def test_empty(self):
         """_compute_containments: empty case"""
         actual = list(_compute_containments(splice_graph_empty, transcriptome_empty))
@@ -82,7 +113,7 @@ class TestComputeContainments(unittest.TestCase):
 
 
 
-class TestComputePaths(unittest.TestCase):
+class TestComputePaths(TestCase):
     def test_empty(self):
         """_compute_paths: empty case"""
         actual = list(_compute_paths(splice_graph_empty))
@@ -103,7 +134,7 @@ class TestComputePaths(unittest.TestCase):
 
 
 
-class TestWriteGFA1(unittest.TestCase):
+class TestWriteGFA1(TestCase):
 
     def test_empty(self):
         """write_gfa1: empty case"""
@@ -149,7 +180,7 @@ class TestWriteGFA1(unittest.TestCase):
 
 
 
-class TestGFA1ToExons(unittest.TestCase):
+class TestGFA1ToExons(TestCase):
 
     def test_empty(self):
         """gfa1_to_exons: empty case"""
@@ -217,7 +248,7 @@ class TestGFA1ToExons(unittest.TestCase):
 
 
 
-class TestGFA1ToGappedTranscript(unittest.TestCase):
+class TestGFA1ToGappedTranscript(TestCase):
 
     def test_empty(self):
         """gfa1_to_gapped_transcript: empty case"""

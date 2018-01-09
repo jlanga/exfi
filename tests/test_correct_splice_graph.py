@@ -1,7 +1,9 @@
 from unittest import TestCase
 
+from exfi.io import \
+    _coordinate_str_to_tuple
+
 from exfi.correct_splice_graph import \
-    _coordinates_to_variables, \
     _prepare_sealer, \
     _run_sealer, \
     _collect_sealer_results , \
@@ -76,37 +78,6 @@ transcriptome_index = SeqIO.index(
 # Build splice graph
 splice_graph = build_splice_graph(positive_exons_bed)
 
-
-
-
-
-class TestCoordinatesToVariables(TestCase):
-    """ _coordinates_to_variables(coordinates):
-    (string) -> (string, int, int)
-    """
-    def test_empty_string(self):
-        """_coordinates_to_variables: case empty"""
-        with self.assertRaises(ValueError):
-            _coordinates_to_variables("")
-
-    def test_incorrect_string(self):
-        """_coordinates_to_variables: case incorrect"""
-        with self.assertRaises(IndexError):
-            _coordinates_to_variables("ENSDART00000161035:1")
-
-    def test_correct_string(self):
-        """_coordinates_to_variables: case correct"""
-        self.assertEqual(
-            _coordinates_to_variables("ENSDART00000161035:1-15"),
-            ("ENSDART00000161035", 1, 15)
-        )
-
-    def test_messy_string(self):
-        """_coordinates_to_variables: messy case"""
-        self.assertEqual(
-            _coordinates_to_variables("TRINITY_g14_c15_i5:1:2-15-12:1-15"),
-            ("TRINITY_g14_c15_i5:1:2-15-12", 1, 15)
-        )
 
 
 

@@ -5,7 +5,9 @@ from exfi import __version__
 from exfi.build_baited_bloom_filter import build_baited_bloom_filter
 import sys
 from os.path import isfile, exists, dirname
-from os import makedirs
+from os import \
+    makedirs, \
+    remove
 
 parser = argparse.ArgumentParser(
     usage='build_baited_bloom_filter '
@@ -144,3 +146,6 @@ if __name__ == '__main__':
         threads=threads,
         reads=reads
     )
+
+    remove(output_dir + "/transcriptome.bf")
+    remove(output_dir + "/transcriptome.txt")

@@ -156,8 +156,8 @@ def _sculpt_graph(splice_graph, edge2fill):
         v = edge2fill[u]
 
         # Compose new names and coordinates
-        u_transcript, u_start, u_end = splice_graph.node[u]["coordinates"]
-        v_transcript, v_start, v_end = splice_graph.node[v]["coordinates"]
+        u_transcript, u_start, _ = splice_graph.node[u]["coordinates"]
+        _, _, v_end = splice_graph.node[v]["coordinates"]
         n_coordinates = (u_transcript, u_start, v_end)
         n = "{0}:{1}-{2}".format(*n_coordinates)
 
@@ -214,11 +214,6 @@ def correct_splice_graph(splice_graph, args):
 
     # Collect sealer results
     edge2fill = _collect_sealer_results(handle=sealer_output_fn)
-
-    transcriptome_index = SeqIO.index(
-        filename=args["input_fasta"],
-        format="fasta"
-    )
 
     # Compute the sealed splice graph
     return _sculpt_graph(splice_graph, edge2fill)

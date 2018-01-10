@@ -104,45 +104,6 @@ def compute_edge_overlaps(splice_graph):
 
     return edge_overlaps
 
-# def compute_edge_overlaps_complex_case(splice_graph):
-#     """Get the overlap between connected exons:
-#     - Positive overlap means that they overlap that number of bases,
-#     - Zero that they occur next to each other
-#     - Negative that there is a gap in the transcriptome of that number of bases (one or multiple exons of length < kmer)
-#
-#     Note: the splice graph must have already the nodes written with coordinates, and the edges alredy entered too.
-#     """
-#     #Init
-#     edge_overlaps = {edge: None for edge in splice_graph.edges()}
-#     exon2coord = nx.get_node_attributes(
-#         G=splice_graph,
-#         name='coordinates'
-#     )
-#
-#     for (node1, node2) in sorted(edge_overlaps.keys()):
-#
-#         # Get the list of transcripts that they belong
-#         node1_transcripts = set(coordinate[0] for coordinate in exon2coord[node1])
-#         node2_transcripts = set(coordinate[0] for coordinate in exon2coord[node2])
-#         intersection = node1_transcripts & node2_transcripts
-#         a_common_transcript = intersection.pop()
-#
-#         # Get the end the first
-#         node1_coords = exon2coord[node1]
-#         node1_coords_in_transcript = [x for x in node1_coords if x[0] == a_common_transcript][0]
-#         node1_end = node1_coords_in_transcript[2]
-#
-#         # Get the start of the next
-#         node2_coords = exon2coord[node2]
-#         node2_coords_in_transcript = [x for x in node2_coords if x[0] == a_common_transcript][0]
-#         node2_start = node2_coords_in_transcript[1]
-#
-#         # Overlap in bases, 0 means one next to the other, negative numbers a gap
-#         overlap = node1_end - node2_start
-#         edge_overlaps[(node1, node2)] = overlap
-#
-#     return edge_overlaps
-
 
 
 def build_splice_graph(positive_exons_bed):

@@ -95,6 +95,19 @@ def _containments_to_coordinate_dict(containments):
     return coordinate_dict
 
 
+def containments_to_node2coordinate(containments):
+    """(iterator of lists) -> dict {str: (str, int, int)}
+
+    Convert list of containment lines to a dict {node_id: (trancript_id, start, end)}
+    """
+    node2coordinate = {}
+    for line in containments:
+        _, transcript_id, _, node_id, _, start, length_str = line
+        start = int(start)
+        end = start + int(length_str.strip("M"))
+        node2coordinate[node_id] = (transcript_id, start, end)
+    return node2coordinate
+
 
 def _links_to_overlap_dict(links):
     """(list of lists) -> dict
@@ -105,8 +118,8 @@ def _links_to_overlap_dict(links):
     overlap_dict = {}
 
     for link in links:
-        _, start, _, end, _, overlap = link
-        overlap_dict[(start, end)] = overlap
+        _, u, _, v, _, overlap = link
+        overlap_dict[(u, v)] = overlap
     return overlap_dict
 
 
@@ -387,8 +400,20 @@ def gfa1_to_splice_graph(handle):
 
     Read a GFA1 file and store the splice graph
     """
+
+    # Read
     gfa1 = read_gfa1(handle)
 
-    exon_dict = _segments_to_exon_dict(gfa1["segments"])
-    coordinate_dict = _containments_to_coordinate_dict(gfa1["containments"])
+    # Process
+    coordinate_dict = containments_to_node2coordinate(gfa1["containments"])
     overlap_dict = _links_to_overlap_dict(gfa1["links"])
+
+    splice_graph = nx.DiGraph()
+    splice_graph.add_nodes_from(coordinate_dict.keys())
+    splice_graph.add_edges_from(overlap_dict.keys())
+    nx.set_node_attributes(
+        G=splice_graph, name="coordinates", values=coordinate_dict
+    )
+    nx.set_edge_attributes(
+        G=splice_graph, name="overlaps", values=overlap_dict
+        )

@@ -241,14 +241,14 @@ def _compute_segments(splice_graph, transcriptome_dict):
     S node_id sequence length
     """
     node2coords = nx.get_node_attributes(G=splice_graph, name="coordinates")
-    for node_id, coordinate in node2coords.items():
-        node, start, end = coordinate
-        sequence = str(transcriptome_dict[node].seq[start:end])
-        yield "S\t{node}\t{sequence}\tLN:i:{length}\n".format(
-            node=node_id,
-            sequence=sequence,
-            length=len(sequence)
-        )
+    for node_id, coordinates in node2coords.items():
+        for (transcript_id, start, end) in coordinates:
+            sequence = str(transcriptome_dict[transcript_id].seq[start:end])
+            yield "S\t{node}\t{sequence}\tLN:i:{length}\n".format(
+                node=node_id,
+                sequence=sequence,
+                length=len(sequence)
+            )
 
 
 
@@ -293,13 +293,13 @@ def _compute_containments(splice_graph, transcriptome_dict):
         name='coordinates'
     )
     for node, coordinates in node2coordinates.items():
-        transcript_id, start, end = coordinates
-        sequence = str(transcriptome_dict[transcript_id].seq[start:end])
-        yield "C\t{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format(
-            transcript_id, "+",
-            node, "+",
-            start, str(len(sequence)) + "M"
-        )
+        for (transcript_id, start, end) in coordinates:
+            sequence = str(transcriptome_dict[transcript_id].seq[start:end])
+            yield "C\t{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format(
+                transcript_id, "+",
+                node, "+",
+                start, str(len(sequence)) + "M"
+            )
 
 
 
@@ -309,10 +309,14 @@ def _compute_paths(splice_graph):
     Compute the paths in the splice graph:
     P transcript_id [node1, ..., nodeN]
     """
+    # Get just the coordinates
     bed3records = nx.get_node_attributes(
         G=splice_graph,
         name="coordinates"
     ).values()
+
+    # Flat out the list of coordinates
+    bed3records = [item for subrecord in bed3records for item in subrecord]
 
     bed6df = bed3_records_to_bed6df(bed3records)
     path2nodes = bed6df_to_path2node(bed6df)

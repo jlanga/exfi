@@ -40,8 +40,12 @@ def bed6df_to_node2coordinates(bed6df):
 
     Get from the BED6 dataframe the correspondece of name -> (chrom, start, end)
     """
+
+    # Check for extreme case:
     if bed6df.shape[0] > 0:
-        return bed6df\
+
+        # Compute the node_id: coordinates dict
+        node2coordinate = bed6df\
             .sort_values(['chrom', 'start', 'end'])\
             .drop(["score", "strand"], axis=1)\
             .assign(
@@ -52,6 +56,14 @@ def bed6df_to_node2coordinates(bed6df):
             .drop(["chrom", "start", "end"], axis=1)\
             .set_index("name", "coordinates")\
             .to_dict()["coordinates"]
+
+        # Reprocess the dict, one node may be in multiple transcripts at once
+        node2coordinate = {
+            key: (value,)
+            for key, value in node2coordinate.items()
+        }
+
+        return node2coordinate
     else:
         return {}
 
@@ -85,6 +97,8 @@ def compute_edge_overlaps(splice_graph):
     - Negative that there is a gap in the transcriptome of that number of bases (one or multiple exons of length < kmer)
     Return dict {(str, str): int} (node1, node2, and overlap)
     Note: the splice graph must have already the nodes written with coordinates, and the edges alredy entered too.
+
+    Hypothesis: node2coords.values should only hold one value
     """
     #Init
     node2coords = nx.get_node_attributes(
@@ -95,8 +109,8 @@ def compute_edge_overlaps(splice_graph):
     edge_overlaps = {edge: None for edge in splice_graph.edges()}
 
     for (node1, node2) in edge_overlaps.keys():
-        node1_end = node2coords[node1][2]
-        node2_start = node2coords[node2][1]
+        node1_end = node2coords[node1][0][2]
+        node2_start = node2coords[node2][0][1]
 
         # Overlap in bases, 0 means one next to the other, negative numbers a gap
         overlap = node1_end - node2_start

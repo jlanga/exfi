@@ -32,10 +32,10 @@ def _get_node2sequence(splice_graph, transcriptome_dict):
 
     node2sequence = {key: None for key in node2coordinates.keys()}
 
-    for node, coordinate in node2coordinates.items():
-        transcript_id, start, end = coordinate
-        sequence = str(transcriptome_dict[transcript_id][start:end].seq)
-        node2sequence[node] = sequence
+    for node, coordinates in node2coordinates.items():
+        for (transcript_id, start, end) in coordinates:
+            sequence = str(transcriptome_dict[transcript_id][start:end].seq)
+            node2sequence[node] = sequence
     return node2sequence
 
 
@@ -156,14 +156,14 @@ def _sculpt_graph(splice_graph, edge2fill):
         v = edge2fill[u]
 
         # Compose new names and coordinates
-        u_transcript, u_start, _ = splice_graph.node[u]["coordinates"]
-        _, _, v_end = splice_graph.node[v]["coordinates"]
+        u_transcript, u_start, _ = splice_graph.node[u]["coordinates"][0]
+        _, _, v_end = splice_graph.node[v]["coordinates"][0]
         n_coordinates = (u_transcript, u_start, v_end)
         n = "{0}:{1}-{2}".format(*n_coordinates)
 
         # Insert new node
         splice_graph.add_node(n)
-        splice_graph.node[n]["coordinates"] = n_coordinates
+        splice_graph.node[n]["coordinates"] = (n_coordinates,)
 
         # link pred(u) to n, and overlaps
         for predecessor in splice_graph.predecessors(u):

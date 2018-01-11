@@ -4,7 +4,10 @@ import argparse
 from exfi.io import \
     gfa1_to_exons
 
-from os.path import isfile
+from os.path import \
+    isfile, \
+    abspath
+
 from exfi import __version__
 
 
@@ -70,6 +73,8 @@ if __name__ == "__main__":
 
     # Parse
     args = vars(parser.parse_args())
+    args["input_gfa"] = abspath(args["input_gfa"])
+    args["output_fasta"] = abspath(args["output_fasta"])
 
     gfa1_to_exons(
         gfa_in_fn=args["input_gfa"],

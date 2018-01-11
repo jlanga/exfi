@@ -1,7 +1,5 @@
 from unittest import TestCase
 
-from exfi.io import \
-    _coordinate_str_to_tuple
 
 from exfi.correct_splice_graph import \
     _prepare_sealer, \

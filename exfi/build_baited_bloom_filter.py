@@ -30,8 +30,7 @@ abyss-sealer.
 """
 
 import shutil
-
-
+import os
 
 def _get_biobloommaker_command(args, output_dir):
     """Helper function to compose the command to execute"""
@@ -139,3 +138,8 @@ def build_baited_bloom_filter(args):
     p_categorize.stdout.close()
     p_categorize.wait()
     p_build_bf.wait()
+
+    if os.path.isfile(output_dir + "/transcriptome.bf"):
+        os.remove(output_dir + "/transcriptome.bf")
+    if os.path.isfile(output_dir + "/transcriptome.txt"):
+        os.remove(output_dir + "/transcriptome.txt")

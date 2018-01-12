@@ -152,13 +152,13 @@ nx.set_edge_attributes(
     G=SPLICE_GRAPH_COMPLEX, name="overlaps", values=OVERLAPS_COMPLEX
 )
 
-# INDEX_EMPTY_FN = "tests/build_splice_graph/empty.fa"
-# INDEX_SIMPLE_FN = "tests/build_splice_graph/simple.fa"
-# INDEX_COMPLEX = "tests/build_splice_graph/complex_transcripts.fa"
+TRANSCRIPTOME_EMPTY_FN = "tests/build_splice_graph/transcriptome_empty.fa"
+TRANSCRIPTOME_SIMPLE_FN = "tests/build_splice_graph/transcriptome_simple.fa"
+TRANSCRIPTOME_COMPLEX_FN = "tests/build_splice_graph/transcriptome_complex.fa"
 
-TRANSCRIPTOME_EMPTY = index_fasta("tests/build_splice_graph/transcriptome_empty.fa")
-TRANSCRIPTOME_SIMPLE = index_fasta("tests/build_splice_graph/transcriptome_simple.fa")
-TRANSCRIPTOME_COMPLEX = index_fasta("tests/build_splice_graph/transcriptome_complex.fa")
+TRANSCRIPTOME_EMPTY = index_fasta(TRANSCRIPTOME_EMPTY_FN)
+TRANSCRIPTOME_SIMPLE = index_fasta(TRANSCRIPTOME_SIMPLE_FN)
+TRANSCRIPTOME_COMPLEX = index_fasta(TRANSCRIPTOME_COMPLEX_FN)
 
 SEGMENTS_EMPTY = []
 SEGMENTS_SIMPLE = [

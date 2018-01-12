@@ -13,6 +13,12 @@ from os.path import isfile
 from exfi.build_baited_bloom_filter import \
     build_baited_bloom_filter
 
+READS_EMPTY_FN = "tests/build_baited_bloom_filter/reads_empty.fq"
+READS_1_FN = "tests/build_baited_bloom_filter/reads_1.fq"
+READS_2_FN = "tests/build_baited_bloom_filter/reads_2.fq"
+
+TRANSCRIPTOME_EMPTY_FN = "tests/build_baited_bloom_filter/transcriptome_empty.fa"
+TRANSCRIPTOME_SMALL_FN = "tests/build_baited_bloom_filter/transcriptome_small.fa"
 
 def _simple_build_baited(transcriptome, reads, tmp_bf):
     """(str, list, str, str) -> None
@@ -38,8 +44,8 @@ class TestBuildBaitedBloomFilter(TestCase):
 
         Note: biobloommaker fails
         '''
-        transcriptome = "tests/files/empty.txt"
-        reads = "tests/files/empty.txt"
+        transcriptome = TRANSCRIPTOME_EMPTY_FN
+        reads = READS_EMPTY_FN
         tmp_dir = tempfile.mkdtemp()
         tmp_bf = tmp_dir + "/empty_transcriptome.bf"
         _simple_build_baited(transcriptome, reads, tmp_bf)
@@ -48,8 +54,8 @@ class TestBuildBaitedBloomFilter(TestCase):
 
     def test_build_empty_library(self):
         '''_simple_build_baited: build a BF without reads'''
-        transcriptome = "tests/files/build_baited_bloom_filter/small_transcriptome.fa"
-        reads = ["tests/files/empty.txt"]
+        transcriptome = TRANSCRIPTOME_SMALL_FN
+        reads = [READS_EMPTY_FN]
         tmp_dir = tempfile.mkdtemp()
         tmp_bf = tmp_dir + "/empty_library.bf"
         _simple_build_baited(transcriptome, reads, tmp_bf)
@@ -58,8 +64,8 @@ class TestBuildBaitedBloomFilter(TestCase):
 
     def test_build_one_library(self):
         '''_simple_build_baited: build the BF with one library'''
-        transcriptome = "tests/files/build_baited_bloom_filter/small_transcriptome.fa"
-        reads = ["tests/files/build_baited_bloom_filter/reads_1.fq"]
+        transcriptome = TRANSCRIPTOME_SMALL_FN
+        reads = [READS_1_FN]
         tmp_dir = tempfile.mkdtemp()
         tmp_bf = tmp_dir + "/one_library.bf"
         _simple_build_baited(transcriptome, reads, tmp_bf)
@@ -68,17 +74,10 @@ class TestBuildBaitedBloomFilter(TestCase):
 
     def test_build_two_libraries(self):
         '''_simple_build_baited: build the BF with two libraries'''
-        transcriptome = "tests/files/build_baited_bloom_filter/small_transcriptome.fa"
-        reads = [
-            "tests/files/build_baited_bloom_filter/reads_1.fq",
-            "tests/files/build_baited_bloom_filter/reads_2.fq"
-        ]
+        transcriptome = TRANSCRIPTOME_SMALL_FN
+        reads = [READS_1_FN, READS_2_FN]
         tmp_dir = tempfile.mkdtemp()
         tmp_bf = tmp_dir + "/two_libraries.bf"
         _simple_build_baited(transcriptome, reads, tmp_bf)
         self.assertTrue(isfile(tmp_bf))
         shutil.rmtree(tmp_dir)
-        # shutil.rmtree(tmp_dir + "/categories_multiMatch.fa")
-        # shutil.rmtree(tmp_dir + "/categories_noMatch.fa")
-        # shutil.rmtree(tmp_dir + "/categories_summary.tsv")
-        # shutil.rmtree(tmp_dir + "/categories_transcriptome.fa")

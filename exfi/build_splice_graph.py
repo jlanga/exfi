@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+"""
+Module to build the associated splice graph from a set of bed3 records
+"""
+
 import networkx as nx
 import pandas as pd
 
@@ -23,15 +27,11 @@ def bed3_records_to_bed6df(iterable_of_bed3):
     """
     bed6_cols = ['chrom', 'start', 'end', 'name', 'score', 'strand']
     return pd.DataFrame(
-            data=(
-                bed3_record + (_bed3_to_str((bed3_record)), 0, '+')
-                for bed3_record in iterable_of_bed3
-            ),
-            columns=bed6_cols
-        )\
-        .sort_values(
-            by=bed6_cols[0:2]
-        )
+        data=(bed3_record + (_bed3_to_str((bed3_record)), 0, '+')
+              for bed3_record in iterable_of_bed3),
+        columns=bed6_cols
+    )\
+    .sort_values(by=bed6_cols[0:2])
 
 
 
@@ -64,8 +64,7 @@ def bed6df_to_node2coordinates(bed6df):
         }
 
         return node2coordinate
-    else:
-        return {}
+    return {}
 
 
 
@@ -77,26 +76,26 @@ def bed6df_to_path2node(bed6df):
     if bed6df.shape[0] > 0:
         return bed6df\
             .sort_values(['chrom', 'start', 'end'])\
-            .drop(['start','end', 'strand', 'score'], axis=1)\
+            .drop(['start', 'end', 'strand', 'score'], axis=1)\
             .rename(columns={'chrom':'path'})\
             .groupby('path')\
             .agg(lambda x: tuple(x.tolist()))\
             .to_dict()["name"]
-    else:
-        return {}
+    return {}
 
 
 
 def compute_edge_overlaps(splice_graph):
     """(nx.DiGraph) -> dict
 
-
     Get the overlap between connected exons:
     - Positive overlap means that they overlap that number of bases,
     - Zero that they occur next to each other
-    - Negative that there is a gap in the transcriptome of that number of bases (one or multiple exons of length < kmer)
+    - Negative that there is a gap in the transcriptome of that number of bases
+    (one or multiple exons of length < kmer)
     Return dict {(str, str): int} (node1, node2, and overlap)
-    Note: the splice graph must have already the nodes written with coordinates, and the edges alredy entered too.
+    Note: the splice graph must have already the nodes written with coordinates,
+    and the edges alredy entered too.
 
     Hypothesis: node2coords.values should only hold one value
     """

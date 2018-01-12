@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 
+"""
+Tests for exfi.build_splice_graph
+"""
+
+
 import unittest
+
+import networkx as nx
+
 from exfi.build_splice_graph import \
     _bed3_to_str, \
     bed3_records_to_bed6df, \
@@ -9,12 +17,17 @@ from exfi.build_splice_graph import \
     compute_edge_overlaps, \
     build_splice_graph
 
-import networkx as nx
 
-from tests.test_data import *
+from tests.test_data import \
+    bed3records_empty, bed3records_simple, bed3records_complex, \
+    bed6df_empty, bed6df_simple, bed6df_complex, \
+    path_empty, path_simple, path_complex, \
+    node2coords_empty, node2coords_simple, node2coords_complex, \
+    overlaps_empty, overlaps_simple, overlaps_complex, \
+    splice_graph_empty, splice_graph_simple, splice_graph_complex
 
-bed3_cols = ['chrom', 'start', 'end']
-bed6_cols = ['chrom', 'start', 'end', 'name', 'score', 'strand']
+BED3_COLS = ['chrom', 'start', 'end']
+BED6_COLS = ['chrom', 'start', 'end', 'name', 'score', 'strand']
 
 
 def _prepare_overlaps(bed3_records):
@@ -35,7 +48,7 @@ def _prepare_overlaps(bed3_records):
 
 
 class TestBed3ToStr(unittest.TestCase):
-
+    """Tests for _bed3_to_str"""
     def test_empty(self):
         """_bed3_to_str: empty record"""
         with self.assertRaises(IndexError):
@@ -44,12 +57,12 @@ class TestBed3ToStr(unittest.TestCase):
     def test_malformed1(self):
         """_bed3_to_str: record of 2 elements"""
         with self.assertRaises(IndexError):
-            _bed3_to_str((0,1))
+            _bed3_to_str((0, 1))
 
     def test_malformed2(self):
         """_bed3_to_str: record of 4 elements"""
         with self.assertRaises(IndexError):
-            _bed3_to_str((0,1,2,3))
+            _bed3_to_str((0, 1, 2, 3))
 
     def test_record(self):
         """_bed3_to_str: correct record"""
@@ -60,6 +73,7 @@ class TestBed3ToStr(unittest.TestCase):
 
 
 class TestBed3RecordsToBed6DF(unittest.TestCase):
+    """Tests for bed3_records_to_bed6df"""
 
     def test_empty_index(self):
         """bed3_records_to_bed6df: empty exome"""
@@ -87,6 +101,7 @@ class TestBed3RecordsToBed6DF(unittest.TestCase):
 
 
 class TestBed6DFToPath2Node(unittest.TestCase):
+    """Tests for bed6df_to_path2node"""
 
     def test_empty(self):
         """bed6df_to_path2node: convert an empty exome to path"""
@@ -112,7 +127,7 @@ class TestBed6DFToPath2Node(unittest.TestCase):
 
 
 class TestBed6ToNode2Coord(unittest.TestCase):
-
+    """Tests for bed6df_to_path2node"""
     def test_empty(self):
         """bed6df_to_node2coordinates: empty records"""
         self.assertEqual(
@@ -136,12 +151,12 @@ class TestBed6ToNode2Coord(unittest.TestCase):
 
 
 class TestComputeEdgeOverlaps(unittest.TestCase):
-
+    """Tests for compute_edge_overlaps"""
     def test_empty_exome(self):
         """compute_overlaps: compute the overlaps of an empty exome"""
         splice_graph = _prepare_overlaps({})
         overlaps = compute_edge_overlaps(splice_graph)
-        self.assertEqual(overlaps, {})
+        self.assertEqual(overlaps, overlaps_empty)
 
     def test_single_exon(self):
         """compute_overlaps: compute the overlaps of a single exon exome"""
@@ -159,6 +174,7 @@ class TestComputeEdgeOverlaps(unittest.TestCase):
 
 
 class TestBuildSpliceGraph(unittest.TestCase):
+    """Tests for build_splice_graph"""
 
     def test_empty(self):
         """build_splice_graph: compute the splice graph of an empty set of exons"""

@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 
+"""
+Module containing multiple functions for data wrantling:
+GFA1 <-> splice_graph
+bed3 to bed6
+Data frames, ...
+"""
+
+from itertools import chain
+
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
@@ -10,7 +19,7 @@ from exfi.build_splice_graph import \
     bed3_records_to_bed6df, \
     bed6df_to_path2node
 
-from itertools import chain
+
 
 
 def _coordinate_str_to_tuple(coordinates):
@@ -118,8 +127,8 @@ def _links_to_overlap_dict(links):
     overlap_dict = {}
 
     for link in links:
-        _, u, _, v, _, overlap = link
-        overlap_dict[(u, v)] = overlap
+        _, node_u, _, node_v, _, overlap = link
+        overlap_dict[(node_u, node_v)] = overlap
     return overlap_dict
 
 
@@ -143,7 +152,16 @@ def _paths_to_path_dict(paths):
 
 
 def read_gfa1(filename):
+    """(str) -> dict
 
+    Convert GFA1 file to dict {
+        "header": header list
+        "segments": segment list,
+        "links": link list,
+        "cointainments": containments list,
+        "paths": path list
+    }
+    """
     with open(filename, "r") as gfain:
 
         header = []
@@ -157,11 +175,16 @@ def read_gfa1(filename):
 
             line = line.strip().split("\t")
 
-            if line[0] == "H": header.append(line)
-            elif line[0] == "S": segments.append(line)
-            elif line[0] == "L": links.append(line)
-            elif line[0] == "C": containments.append(line)
-            elif line[0] == "P": paths.append(line)
+            if line[0] == "H":
+                header.append(line)
+            elif line[0] == "S":
+                segments.append(line)
+            elif line[0] == "L":
+                links.append(line)
+            elif line[0] == "C":
+                containments.append(line)
+            elif line[0] == "P":
+                paths.append(line)
 
     return {
         "header": header,
@@ -179,15 +202,15 @@ def _process_overlap_cigar(cigar_string):
 
 
 
-def _soft_mask_right(string, n):
+def _soft_mask_right(string, n_bases):
     """Soft mask the rightmost n bases"""
-    return string[:-n] + string[-n:].lower()
+    return string[:-n_bases] + string[-n_bases:].lower()
 
 
 
-def _soft_mask_left(string, n):
+def _soft_mask_left(string, n_bases):
     """Soft mask the leftmost n bases"""
-    return string[:n].lower() + string[n:]
+    return string[:n_bases].lower() + string[n_bases:]
 
 
 
@@ -202,15 +225,15 @@ def _soft_mask(exon_dict, overlap_dict):
 
 
 
-def _hard_mask_right(string, n):
+def _hard_mask_right(string, n_bases):
     """Hard mask the rightmost n bases"""
-    return string[:-n] + "N" * n
+    return string[:-n_bases] + "N" * n_bases
 
 
 
-def _hard_mask_left(string, n):
+def _hard_mask_left(string, n_bases):
     """Hard mask the leftmost n bases"""
-    return "N" * n + string[n:]
+    return "N" * n_bases + string[n_bases:]
 
 
 
@@ -227,10 +250,12 @@ def _hard_mask(exon_dict, overlap_dict):
 
 def _mask(exon_dict, overlap_dict, soft_mask_overlaps=False, hard_mask_overlaps=False):
     """If any of the soft mask or hard mask are activated, mask"""
-    if soft_mask_overlaps == True and hard_mask_overlaps == True:
+    if soft_mask_overlaps and hard_mask_overlaps:
         raise Exception("I can't soft mask and hard mask at the same time, dude!")
-    if soft_mask_overlaps: exon_dict = _soft_mask(exon_dict, overlap_dict)
-    if hard_mask_overlaps: exon_dict = _hard_mask(exon_dict, overlap_dict)
+    if soft_mask_overlaps:
+        exon_dict = _soft_mask(exon_dict, overlap_dict)
+    if hard_mask_overlaps:
+        exon_dict = _hard_mask(exon_dict, overlap_dict)
 
 
 
@@ -276,7 +301,7 @@ def _compute_links(splice_graph):
             orientation1="+",
             node2=node2,
             orientation2="+",
-            overlap = overlap
+            overlap=overlap
         )
 
 
@@ -345,8 +370,12 @@ def write_gfa1(splice_graph, transcriptome_dict, filename):
         ))
 
 
-def gfa1_to_exons(gfa_in_fn, fasta_out_fn, soft_mask_overlaps=False, hard_mask_overlaps=False):
+def gfa1_to_exons(gfa_in_fn, fasta_out_fn, soft_mask_overlaps=False,
+                  hard_mask_overlaps=False):
+    """(str, str, bool, bool) -> None
 
+    Write the exons in FASTA format present in a GFA1 file
+    """
     gfa1 = read_gfa1(gfa_in_fn)
 
     exon_dict = _segments_to_exon_dict(gfa1["segments"])
@@ -366,21 +395,30 @@ def gfa1_to_exons(gfa_in_fn, fasta_out_fn, soft_mask_overlaps=False, hard_mask_o
 
 
 def _compose_paths(exon_dict, path_dict, number_of_ns):
-    ns = "N" * number_of_ns
+    """(dict, dict, int) -> iterable of SeqRecord
+
+    Compose and return each gapped transcript.
+    """
+    chunk_of_ns = "N" * number_of_ns
     for transcript_id, exon_list in sorted(path_dict.items()):
         exon_seqs = [str(exon_dict[exon_id].seq) for exon_id in exon_list]
         yield SeqRecord(
             id=transcript_id,
             description=",".join(exon_list),
-            seq=Seq(ns.join(exon_seqs))
+            seq=Seq(chunk_of_ns.join(exon_seqs))
         )
 
 
-def gfa1_to_gapped_transcript(
-    gfa_in, fasta_out, number_of_ns=100, soft_mask_overlaps=False, hard_mask_overlaps=False):
-
-    if soft_mask_overlaps == True and hard_mask_overlaps == True:
-        raise Exception("I can't soft mask and hard mask at the same time, dude!")
+def gfa1_to_gapped_transcript(gfa_in, fasta_out, number_of_ns=100,
+                              soft_mask_overlaps=False,
+                              hard_mask_overlaps=False):
+    """
+    Write gapped transcripts as fasta from GFA1 file
+    """
+    if soft_mask_overlaps and hard_mask_overlaps:
+        raise Exception(
+            "I can't soft mask and hard mask at the same time, dude!"
+        )
 
     # Process
     gfa1 = read_gfa1(gfa_in)

@@ -63,7 +63,7 @@ def _get_categorize_command(args, output_dir):
 
 
 
-def _get_build_bf_command(args, input_fns):
+def _get_build_bf_command(args, out_fn):
     """Helper function to compose command to get the final Bloom Filter"""
     abyss_bloom_path = shutil.which('abyss-bloom')
     build_bf = [
@@ -74,7 +74,7 @@ def _get_build_bf_command(args, input_fns):
         '--levels', str(args["levels"]),
         '--threads', str(args["threads"]),
         args["output_bloom"]
-    ] + input_fns
+    ] + out_fn
     return build_bf
 
 

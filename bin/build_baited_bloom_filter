@@ -137,15 +137,7 @@ if __name__ == '__main__':
         makedirs(output_dir)
 
     # Run the program
-    build_baited_bloom_filter(
-        transcriptome=transcriptome,
-        kmer=kmer,
-        bloom_size=bloom_size,
-        levels=levels,
-        output_bloom=output_bloom,
-        threads=threads,
-        reads=reads
-    )
+    build_baited_bloom_filter(args)
 
     remove(output_dir + "/transcriptome.bf")
     remove(output_dir + "/transcriptome.txt")

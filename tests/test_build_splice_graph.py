@@ -19,12 +19,12 @@ from exfi.build_splice_graph import \
 
 
 from tests.test_data import \
-    bed3records_empty, bed3records_simple, bed3records_complex, \
-    bed6df_empty, bed6df_simple, bed6df_complex, \
-    path_empty, path_simple, path_complex, \
-    node2coords_empty, node2coords_simple, node2coords_complex, \
-    overlaps_empty, overlaps_simple, overlaps_complex, \
-    splice_graph_empty, splice_graph_simple, splice_graph_complex
+    BED3RECORDS_EMPTY, BED3RECORDS_SIMPLE, BED3RECORDS_COMPLEX, \
+    BED6DF_EMPTY, BED6DF_SIMPLE, BED6DF_COMPLEX, \
+    PATH_EMPTY, PATH_SIMPLE, PATH_COMPLEX, \
+    NODE2COORDS_EMPTY, NODE2COORDS_SIMPLE, NODE2COORDS_COMPLEX, \
+    OVERLAPS_EMPTY, OVERLAPS_SIMPLE, OVERLAPS_COMPLEX, \
+    SPLICE_GRAPH_EMPTY, SPLICE_GRAPH_SIMPLE, SPLICE_GRAPH_COMPLEX
 
 BED3_COLS = ['chrom', 'start', 'end']
 BED6_COLS = ['chrom', 'start', 'end', 'name', 'score', 'strand']
@@ -77,24 +77,24 @@ class TestBed3RecordsToBed6DF(unittest.TestCase):
 
     def test_empty_index(self):
         """bed3_records_to_bed6df: empty exome"""
-        actual = bed3_records_to_bed6df([])
-        expected = bed6df_empty
+        actual = bed3_records_to_bed6df(BED3RECORDS_EMPTY)
+        expected = BED6DF_EMPTY
         self.assertTrue(
             actual.equals(expected)
         )
 
     def test_one_entry(self):
         """bed3_records_to_bed6df: single exon"""
-        actual = bed3_records_to_bed6df(bed3records_simple)
-        expected = bed6df_simple
+        actual = bed3_records_to_bed6df(BED3RECORDS_SIMPLE)
+        expected = BED6DF_SIMPLE
         self.assertTrue(
             actual.equals(expected)
         )
 
     def test_multiple(self):
         """bed3_records_to_bed6df: multiple transcripts - multiple exons"""
-        actual = bed3_records_to_bed6df(bed3records_complex)
-        expected = bed6df_complex
+        actual = bed3_records_to_bed6df(BED3RECORDS_COMPLEX)
+        expected = BED6DF_COMPLEX
         self.assertTrue(
             actual.equals(expected)
         )
@@ -106,23 +106,23 @@ class TestBed6DFToPath2Node(unittest.TestCase):
     def test_empty(self):
         """bed6df_to_path2node: convert an empty exome to path"""
         self.assertEqual(
-            bed6df_to_path2node(bed6df_empty),
-            path_empty
+            bed6df_to_path2node(BED6DF_EMPTY),
+            PATH_EMPTY
         )
 
 
     def test_single(self):
         """bed6df_to_path2node: convert an single exon transcript to path"""
         self.assertEqual(
-            bed6df_to_path2node(bed6df_simple),
-            path_simple
+            bed6df_to_path2node(BED6DF_SIMPLE),
+            PATH_SIMPLE
         )
 
     def test_multiple(self):
         """bed6df_to_path2node: convert an single exon transcript to path"""
         self.assertEqual(
-            bed6df_to_path2node(bed6df_complex),
-            path_complex
+            bed6df_to_path2node(BED6DF_COMPLEX),
+            PATH_COMPLEX
         )
 
 
@@ -131,22 +131,22 @@ class TestBed6ToNode2Coord(unittest.TestCase):
     def test_empty(self):
         """bed6df_to_node2coordinates: empty records"""
         self.assertEqual(
-            node2coords_empty,
-            bed6df_to_node2coordinates(bed6df_empty)
+            NODE2COORDS_EMPTY,
+            bed6df_to_node2coordinates(BED6DF_EMPTY)
         )
 
     def test_simple(self):
         """bed6df_to_node2coordinates: single node"""
         self.assertEqual(
-            bed6df_to_node2coordinates(bed6df_simple),
-            node2coords_simple
+            bed6df_to_node2coordinates(BED6DF_SIMPLE),
+            NODE2COORDS_SIMPLE
         )
 
     def test_complex(self):
         """bed6df_to_node2coordinates: complex case"""
         self.assertEqual(
-            bed6df_to_node2coordinates(bed6df_complex),
-            node2coords_complex
+            bed6df_to_node2coordinates(BED6DF_COMPLEX),
+            NODE2COORDS_COMPLEX
         )
 
 
@@ -154,23 +154,21 @@ class TestComputeEdgeOverlaps(unittest.TestCase):
     """Tests for compute_edge_overlaps"""
     def test_empty_exome(self):
         """compute_overlaps: compute the overlaps of an empty exome"""
-        splice_graph = _prepare_overlaps({})
+        splice_graph = _prepare_overlaps(BED3RECORDS_EMPTY)
         overlaps = compute_edge_overlaps(splice_graph)
-        self.assertEqual(overlaps, overlaps_empty)
+        self.assertEqual(overlaps, OVERLAPS_EMPTY)
 
     def test_single_exon(self):
         """compute_overlaps: compute the overlaps of a single exon exome"""
-        splice_graph = _prepare_overlaps(bed3records_simple)
+        splice_graph = _prepare_overlaps(BED3RECORDS_SIMPLE)
         overlaps = compute_edge_overlaps(splice_graph)
-        self.assertEqual(overlaps, overlaps_simple)
+        self.assertEqual(overlaps, OVERLAPS_SIMPLE)
 
     def test_multiple_exons(self):
         """compute_overlaps: compute the overlaps of a simple exome"""
-        splice_graph = _prepare_overlaps(bed3records_complex)
+        splice_graph = _prepare_overlaps(BED3RECORDS_COMPLEX)
         overlaps = compute_edge_overlaps(splice_graph)
-        self.assertEqual(
-            overlaps, overlaps_complex
-        )
+        self.assertEqual(overlaps, OVERLAPS_COMPLEX)
 
 
 class TestBuildSpliceGraph(unittest.TestCase):
@@ -178,58 +176,52 @@ class TestBuildSpliceGraph(unittest.TestCase):
 
     def test_empty(self):
         """build_splice_graph: compute the splice graph of an empty set of exons"""
-        actual = build_splice_graph(bed3records_empty)
+        actual = build_splice_graph(BED3RECORDS_EMPTY)
         self.assertTrue(
             nx.is_isomorphic(
                 actual,
-                splice_graph_empty
+                SPLICE_GRAPH_EMPTY
             )
         )
         self.assertEqual(
             nx.get_node_attributes(G=actual, name="coordinates"),
-            nx.get_node_attributes(G=splice_graph_empty, name="coordinates"),
+            nx.get_node_attributes(G=SPLICE_GRAPH_EMPTY, name="coordinates"),
         )
         self.assertEqual(
             nx.get_edge_attributes(G=actual, name="overlaps"),
-            nx.get_edge_attributes(G=splice_graph_empty, name="overlaps"),
+            nx.get_edge_attributes(G=SPLICE_GRAPH_EMPTY, name="overlaps"),
         )
 
     def test_simple(self):
         """build_splice_graph: compute the splice graph of a singe exon"""
-        actual = build_splice_graph(bed3records_simple)
-        self.assertTrue(
-            nx.is_isomorphic(
-                actual,
-                splice_graph_simple
-            )
-        )
+        actual = build_splice_graph(BED3RECORDS_SIMPLE)
+        self.assertTrue(nx.is_isomorphic(
+            actual,
+            SPLICE_GRAPH_SIMPLE
+        ))
         self.assertEqual(
             nx.get_node_attributes(G=actual, name="coordinates"),
-            nx.get_node_attributes(G=splice_graph_simple, name="coordinates"),
+            nx.get_node_attributes(G=SPLICE_GRAPH_SIMPLE, name="coordinates"),
         )
         self.assertEqual(
             nx.get_edge_attributes(G=actual, name="overlaps"),
-            nx.get_edge_attributes(G=splice_graph_simple, name="overlaps"),
+            nx.get_edge_attributes(G=SPLICE_GRAPH_SIMPLE, name="overlaps"),
         )
 
     def test_multiple(self):
         """build_splice_graph: compute the splice graph of a set of exons"""
-        actual = build_splice_graph(bed3records_complex)
-        self.assertTrue(
-            nx.is_isomorphic(
-                actual,
-                splice_graph_complex
-            )
-        )
+        actual = build_splice_graph(BED3RECORDS_COMPLEX)
+        self.assertTrue(nx.is_isomorphic(
+            actual,
+            SPLICE_GRAPH_COMPLEX
+        ))
         self.assertEqual(
             nx.get_node_attributes(G=actual, name="coordinates"),
-            nx.get_node_attributes(G=splice_graph_complex, name="coordinates"),
+            nx.get_node_attributes(G=SPLICE_GRAPH_COMPLEX, name="coordinates"),
         )
-        print(nx.get_edge_attributes(G=actual, name="overlaps"))
-        print(nx.get_edge_attributes(G=splice_graph_complex, name="overlaps"))
         self.assertEqual(
             nx.get_edge_attributes(G=actual, name="overlaps"),
-            nx.get_edge_attributes(G=splice_graph_complex, name="overlaps"),
+            nx.get_edge_attributes(G=SPLICE_GRAPH_COMPLEX, name="overlaps"),
         )
 
 

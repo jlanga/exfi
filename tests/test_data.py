@@ -243,18 +243,18 @@ paths_complex = [
     'P\tENSDART00000165342.1\tENSDART00000165342.1:5-127+,ENSDART00000165342.1:125-304+,ENSDART00000165342.1:317-460+,ENSDART00000165342.1:459-592+,ENSDART00000165342.1:591-650+,ENSDART00000165342.1:645-746+,ENSDART00000165342.1:746-851+,ENSDART00000165342.1:854-886+,ENSDART00000165342.1:899-953+,ENSDART00000165342.1:974-1097+,ENSDART00000165342.1:1098-1175+,ENSDART00000165342.1:1176-1324+\n'
 ]
 
-empty_gfa = "tests/files/io/empty.gfa"
-simple_gfa = "tests/files/io/simple.gfa"
-complex_gfa = "tests/files/io/complex.gfa"
+gfa_empty = "tests/files/io/empty.gfa"
+gfa_simple = "tests/files/io/simple.gfa"
+gfa_complex = "tests/files/io/complex.gfa"
 
-empty_exons = "tests/files/io/empty_exons.fa"
-simple_exons = "tests/files/io/simple_exons.fa"
-complex_exons = "tests/files/io/complex_exons.fa"
-complex_exons_soft = "tests/files/io/complex_exons_soft.fa"
-complex_exons_hard = "tests/files/io/complex_exons_hard.fa"
+exons_empty = "tests/files/io/empty_exons.fa"
+exons_simple = "tests/files/io/simple_exons.fa"
+exons_complex = "tests/files/io/complex_exons.fa"
+exons_complex_soft = "tests/files/io/complex_exons_soft.fa"
+exons_complex_hard = "tests/files/io/complex_exons_hard.fa"
 
-empty_gapped = "tests/files/io/empty_gapped.fa"
-simple_gapped = "tests/files/io/simple_gapped.fa"
-complex_gapped = "tests/files/io/complex_gapped.fa"
-complex_gapped_soft = "tests/files/io/complex_gapped_soft.fa"
-complex_gapped_hard = "tests/files/io/complex_gapped_hard.fa"
+gapped_empty = "tests/files/io/empty_gapped.fa"
+gapped_simple = "tests/files/io/simple_gapped.fa"
+gapped_complex = "tests/files/io/complex_gapped.fa"
+gapped_complex_soft = "tests/files/io/complex_gapped_soft.fa"
+gapped_complex_hard = "tests/files/io/complex_gapped_hard.fa"

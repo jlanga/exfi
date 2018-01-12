@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 
-from unittest import TestCase
+"""
+Tests for exfi.io
+"""
+
+
+from unittest import TestCase, main
+
+import filecmp
+import tempfile
+import os
 
 from exfi.io import \
     _coordinate_str_to_tuple, \
@@ -12,11 +21,18 @@ from exfi.io import \
     gfa1_to_exons, \
     gfa1_to_gapped_transcript
 
-import filecmp
-import tempfile
-import os
-
-from tests.test_data import *
+from tests.test_data import \
+    exons_empty, exons_simple, exons_complex, \
+    exons_complex_soft, exons_complex_hard, \
+    transcriptome_empty, transcriptome_simple, transcriptome_complex, \
+    gfa_empty, gfa_simple, gfa_complex, \
+    gapped_empty, gapped_simple, gapped_complex, \
+    gapped_complex_hard, gapped_complex_soft, \
+    splice_graph_empty, splice_graph_simple, splice_graph_complex, \
+    segments_empty, segments_simple, segments_complex, \
+    links_empty, links_simple, links_complex, \
+    containments_empty, containments_simple, containments_complex, \
+    paths_empty, paths_simple, paths_complex
 
 
 
@@ -50,6 +66,7 @@ class TestCoordinatesToVariables(TestCase):
 
 
 class TestComputeSegments(TestCase):
+    """Tests for _compute_segments"""
 
     def test_empty(self):
         """_compute_segments: empty case"""
@@ -72,6 +89,8 @@ class TestComputeSegments(TestCase):
 
 
 class TestComputeLinks(TestCase):
+    """Tests for _compute_links"""
+
     def test_empty(self):
         """_compute_links: empty case"""
         actual = list(_compute_links(splice_graph_empty))
@@ -93,6 +112,8 @@ class TestComputeLinks(TestCase):
 
 
 class TestComputeContainments(TestCase):
+    """Tests for _compute_containments"""
+
     def test_empty(self):
         """_compute_containments: empty case"""
         actual = list(_compute_containments(splice_graph_empty, transcriptome_empty))
@@ -114,6 +135,8 @@ class TestComputeContainments(TestCase):
 
 
 class TestComputePaths(TestCase):
+    """Tests for _compute_paths"""
+
     def test_empty(self):
         """_compute_paths: empty case"""
         actual = list(_compute_paths(splice_graph_empty))
@@ -135,6 +158,7 @@ class TestComputePaths(TestCase):
 
 
 class TestWriteGFA1(TestCase):
+    """Tests for write_gfa1"""
 
     def test_empty(self):
         """write_gfa1: empty case"""
@@ -146,7 +170,7 @@ class TestWriteGFA1(TestCase):
         )
         self.assertTrue(filecmp.cmp(
             tmp_file,
-            empty_gfa
+            gfa_empty
         ))
         os.remove(tmp_file)
 
@@ -160,7 +184,7 @@ class TestWriteGFA1(TestCase):
         )
         self.assertTrue(filecmp.cmp(
             tmp_file,
-            simple_gfa
+            gfa_simple
         ))
         os.remove(tmp_file)
 
@@ -174,25 +198,26 @@ class TestWriteGFA1(TestCase):
         )
         self.assertTrue(filecmp.cmp(
             tmp_file,
-            complex_gfa
+            gfa_complex
         ))
         os.remove(tmp_file)
 
 
 
 class TestGFA1ToExons(TestCase):
+    """Tests for gfa1_to_exons"""
 
     def test_empty(self):
         """gfa1_to_exons: empty case"""
         tmp_file = tempfile.mkstemp()[1]
         gfa1_to_exons(
-            gfa_in_fn=empty_gfa,
+            gfa_in_fn=gfa_empty,
             fasta_out_fn=tmp_file,
             soft_mask_overlaps=False
         )
         self.assertTrue(filecmp.cmp(
             tmp_file,
-            empty_exons
+            exons_empty
         ))
         os.remove(tmp_file)
 
@@ -201,22 +226,22 @@ class TestGFA1ToExons(TestCase):
         """gfa1_to_exons: simple case"""
         tmp_file = tempfile.mkstemp()[1]
         gfa1_to_exons(
-            gfa_in_fn=simple_gfa,
+            gfa_in_fn=gfa_simple,
             fasta_out_fn=tmp_file,
             soft_mask_overlaps=False
         )
         self.assertTrue(filecmp.cmp(
             tmp_file,
-            simple_exons
+            exons_simple
         ))
         os.remove(tmp_file)
 
     def test_multiple(self):
         """gfa1_to_exons: complex case"""
         tmp_file = tempfile.mkstemp()[1]
-        gfa1_to_exons(gfa_in_fn=complex_gfa, fasta_out_fn=tmp_file)
+        gfa1_to_exons(gfa_in_fn=gfa_complex, fasta_out_fn=tmp_file)
         self.assertTrue(
-            filecmp.cmp(tmp_file, complex_exons)
+            filecmp.cmp(tmp_file, exons_complex)
         )
         os.remove(tmp_file)
 
@@ -224,12 +249,12 @@ class TestGFA1ToExons(TestCase):
         """gfa1_to_exons: complex case and soft masking"""
         tmp_file = tempfile.mkstemp()[1]
         gfa1_to_exons(
-            gfa_in_fn=complex_gfa,
+            gfa_in_fn=gfa_complex,
             fasta_out_fn=tmp_file,
             soft_mask_overlaps=True
         )
         self.assertTrue(
-            filecmp.cmp(tmp_file, complex_exons_soft)
+            filecmp.cmp(tmp_file, exons_complex_soft)
         )
         os.remove(tmp_file)
 
@@ -237,55 +262,55 @@ class TestGFA1ToExons(TestCase):
         """gfa1_to_exons: complex case and hard masking"""
         tmp_file = tempfile.mkstemp()[1]
         gfa1_to_exons(
-            gfa_in_fn=complex_gfa,
+            gfa_in_fn=gfa_complex,
             fasta_out_fn=tmp_file,
             hard_mask_overlaps=True
         )
         self.assertTrue(
-            filecmp.cmp(tmp_file, complex_exons_hard)
+            filecmp.cmp(tmp_file, exons_complex_hard)
         )
         os.remove(tmp_file)
 
 
 
 class TestGFA1ToGappedTranscript(TestCase):
+    """Tests for gfa1_to_gapped_transcript"""
 
     def test_empty(self):
         """gfa1_to_gapped_transcript: empty case"""
         tmp_file = tempfile.mkstemp()[1]
-        gfa1_to_gapped_transcript(gfa_in=empty_gfa, fasta_out=tmp_file)
+        gfa1_to_gapped_transcript(gfa_in=gfa_empty, fasta_out=tmp_file)
         self.assertTrue(
-            filecmp.cmp(tmp_file, empty_gapped)
+            filecmp.cmp(tmp_file, gapped_empty)
         )
         os.remove(tmp_file)
 
     def test_simple(self):
         """gfa1_to_gapped_transcript: simple case"""
         tmp_file = tempfile.mkstemp()[1]
-        gfa1_to_gapped_transcript(gfa_in=simple_gfa, fasta_out=tmp_file)
+        gfa1_to_gapped_transcript(gfa_in=gfa_simple, fasta_out=tmp_file)
         self.assertTrue(
-            filecmp.cmp(tmp_file, simple_gapped)
+            filecmp.cmp(tmp_file, gapped_simple)
         )
         os.remove(tmp_file)
 
     def test_multiple(self):
         """gfa1_to_gapped_transcript: complex case"""
         tmp_file = tempfile.mkstemp()[1]
-        gfa1_to_gapped_transcript(gfa_in=complex_gfa, fasta_out=tmp_file)
+        gfa1_to_gapped_transcript(gfa_in=gfa_complex, fasta_out=tmp_file)
         self.assertTrue(filecmp.cmp(
             tmp_file,
-            complex_gapped
+            gapped_complex
         ))
         os.remove(tmp_file)
 
     def test_multiple_soft(self):
         """gfa1_to_gapped_transcript: complex case and soft masking"""
         tmp_file = tempfile.mkstemp()[1]
-        gfa1_to_gapped_transcript(gfa_in=complex_gfa, fasta_out=tmp_file,
-            soft_mask_overlaps=True
-        )
+        gfa1_to_gapped_transcript(gfa_in=gfa_complex, fasta_out=tmp_file,
+                                  soft_mask_overlaps=True)
         self.assertTrue(
-            filecmp.cmp(tmp_file, complex_gapped_soft)
+            filecmp.cmp(tmp_file, gapped_complex_soft)
         )
         os.remove(tmp_file)
 
@@ -293,13 +318,12 @@ class TestGFA1ToGappedTranscript(TestCase):
     def test_multiple_hard(self):
         """gfa1_to_gapped_transcript: complex case and hard masking"""
         tmp_file = tempfile.mkstemp()[1]
-        gfa1_to_gapped_transcript(gfa_in=complex_gfa, fasta_out=tmp_file,
-            hard_mask_overlaps=True
-        )
+        gfa1_to_gapped_transcript(gfa_in=gfa_complex, fasta_out=tmp_file,
+                                  hard_mask_overlaps=True)
         self.assertTrue(
-            filecmp.cmp(tmp_file, complex_gapped_hard)
+            filecmp.cmp(tmp_file, gapped_complex_hard)
         )
         os.remove(tmp_file)
 
 if __name__ == '__main__':
-    unittest.main()
+    main()

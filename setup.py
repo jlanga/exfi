@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""
+setup.py: installer for exfi
+"""
+
 from setuptools import setup
 
 from exfi import __version__

@@ -11,6 +11,11 @@ from exfi.io import index_fasta
 
 BED6_COLS = ["chrom", "start", "end", "name", "score", "strand"]
 
+
+BED3RECORDS_EMPTY_FN = "tests/find_exons/empty.bed"
+BED3RECORDS_SIMPLE_FN = "tests/find_exons/simple.bed"
+BED3RECORDS_COMPLEX_FN = "tests/find_exons/complex.bed"
+
 BED3RECORDS_EMPTY = []
 BED3RECORDS_SIMPLE = [
     ("ENSDART00000161035.1", 0, 326)

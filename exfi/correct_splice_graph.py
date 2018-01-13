@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
-import networkx as nx
+"""
+exfi.correct_splice_graph.py: functions to take a splice graph and try to fill hypothetical gaps
+with abyss-sealer.
+"""
 
 from subprocess import \
     Popen
@@ -9,6 +12,8 @@ from tempfile import \
     mkstemp
 
 from os import remove
+
+import networkx as nx
 
 from Bio import \
     SeqIO, \
@@ -100,7 +105,7 @@ def _run_sealer(sealer_input_fn, args):
     # Run sealer
     sealer_output_prefix = mkstemp()
     c_sealer = [
-    'abyss-sealer',
+        'abyss-sealer',
         '--input-scaffold', sealer_input_fn,
         '--flank-length', str(args["kmer"]),
         '--max-gap-length', str(args["max_gap_size"]),
@@ -117,8 +122,6 @@ def _run_sealer(sealer_input_fn, args):
     p_sealer.communicate()
 
     # Clean files
-    # remove(sealer_input_fn)
-    # remove(sealer_output_prefix[1])
     remove(sealer_output_prefix[1] + "_log.txt")
     remove(sealer_output_prefix[1] + "_scaffold.fa")
 
@@ -149,40 +152,42 @@ def _sculpt_graph(splice_graph, edge2fill):
     sealed graph.
     """
 
-    while len(edge2fill) > 0:
+    while edge2fill:
 
         # Get nodes to modify
-        u = natsorted(edge2fill.keys())[0]
-        v = edge2fill[u]
+        node_u = natsorted(edge2fill.keys())[0]
+        node_v = edge2fill[node_u]
 
         # Compose new names and coordinates
-        u_transcript, u_start, _ = splice_graph.node[u]["coordinates"][0]
-        _, _, v_end = splice_graph.node[v]["coordinates"][0]
+        u_transcript, u_start, _ = splice_graph.node[node_u]["coordinates"][0]
+        _, _, v_end = splice_graph.node[node_v]["coordinates"][0]
         n_coordinates = (u_transcript, u_start, v_end)
-        n = "{0}:{1}-{2}".format(*n_coordinates)
+        node_n = "{0}:{1}-{2}".format(*n_coordinates)
 
         # Insert new node
-        splice_graph.add_node(n)
-        splice_graph.node[n]["coordinates"] = (n_coordinates,)
+        splice_graph.add_node(node_n)
+        splice_graph.node[node_n]["coordinates"] = (n_coordinates,)
 
         # link pred(u) to n, and overlaps
-        for predecessor in splice_graph.predecessors(u):
-            splice_graph.add_edge(u=predecessor, v=n)
-            splice_graph[predecessor][n]['overlaps'] = splice_graph[predecessor][u]['overlaps']
+        for predecessor in splice_graph.predecessors(node_u):
+            splice_graph.add_edge(u=predecessor, v=node_n)
+            splice_graph[predecessor][node_n]['overlaps'] = \
+                splice_graph[predecessor][node_u]['overlaps']
 
         # Attach n to succ(v)
-        for successor in splice_graph.successors(v):
-            splice_graph.add_edge(u=n, v=successor)
-            splice_graph[n][successor]['overlaps'] = splice_graph[v][successor]['overlaps']
+        for successor in splice_graph.successors(node_v):
+            splice_graph.add_edge(u=node_n, v=successor)
+            splice_graph[node_n][successor]['overlaps'] = \
+                splice_graph[node_v][successor]['overlaps']
 
         # Delete u, delete v
-        splice_graph.remove_nodes_from(nodes=[u, v])
+        splice_graph.remove_nodes_from(nodes=[node_u, node_v])
 
         # Update dict of edges to fill
-        if v in edge2fill:  # Update v if necessary
-            edge2fill[n] = edge2fill[v]
-            del edge2fill[v]
-        del edge2fill[u]
+        if node_v in edge2fill:  # Update v if necessary
+            edge2fill[node_n] = edge2fill[node_v]
+            del edge2fill[node_v]
+        del edge2fill[node_u]
 
     return splice_graph
 

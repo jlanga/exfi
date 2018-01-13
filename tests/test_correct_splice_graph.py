@@ -1,12 +1,21 @@
-from unittest import TestCase
+#!/usr/bin/env python3
+
+"""
+test_correct_splice_graph.py: tests for the exfi.correct_splice_graph submodule
+"""
 
 
-from exfi.correct_splice_graph import \
-    _prepare_sealer, \
-    _run_sealer, \
-    _collect_sealer_results , \
-    _sculpt_graph, \
-    correct_splice_graph
+from unittest import TestCase, main
+
+from tempfile import \
+    mkstemp
+
+from os import remove
+
+import networkx as nx
+
+from Bio import \
+    SeqIO
 
 from exfi.build_baited_bloom_filter import \
     build_baited_bloom_filter
@@ -17,64 +26,47 @@ from exfi.find_exons import \
 from exfi.build_splice_graph import \
     build_splice_graph
 
-from Bio import \
-    SeqIO
+from exfi.correct_splice_graph import \
+    _prepare_sealer, \
+    _run_sealer, \
+    _collect_sealer_results, \
+    _sculpt_graph, \
+    correct_splice_graph
 
-import networkx as nx
 
-from tempfile import \
-    mkstemp
 
 from tests.auxiliary_functions import \
     CustomAssertions
 
-from os import remove
-
-temp_bloom = mkstemp()
-temp_gfa = mkstemp()
 
 
-args = {
+TEMP_BLOOM = mkstemp()
+TEMP_GFA = mkstemp()
+
+
+ARGS = {
     "kmer": 30,
-    "bloom_filter": temp_bloom[1],
+    "input_bloom": TEMP_BLOOM[1],
     "bloom_size": "500M",
     "levels": 1,
-    "input_fasta": "tests/files/correct_splice_graph/transcript.fa",
+    "input_fasta": "tests/correct_splice_graph/transcript.fa",
     "max_fp_bases": 5,
     "max_overlap": 10,
-    "output_gfa": temp_gfa[1],
+    "output_gfa": TEMP_GFA[1],
     "threads": 4,
     "max_gap_size": 10,
-    "reads": ["tests/files/correct_splice_graph/reads.fa"]
+    "reads": ["tests/correct_splice_graph/reads.fa"],
+    "output_bloom" : TEMP_BLOOM[1],
+    "bloom_filter": TEMP_BLOOM[1]
 }
 
-build_baited_bloom_filter(
-    transcriptome=args["input_fasta"],
-    kmer=args["kmer"],
-    bloom_size=args["bloom_size"],
-    levels=args["levels"],
-    output_bloom=args["bloom_filter"],
-    threads=args["threads"],
-    reads=args["reads"]
-)
+build_baited_bloom_filter(ARGS)
 
 # Get predicted exons in bed format
-positive_exons_bed = list(_find_exons_pipeline(
-    kmer=args["kmer"],
-    bloom_filter_fn=args["bloom_filter"],
-    transcriptome_fn=args["input_fasta"],
-    max_fp_bases=args["max_fp_bases"],
-    max_overlap=args["max_overlap"]
-))
-
-# Bed -> fasta
-transcriptome_index = SeqIO.index(
-    filename=args["input_fasta"],
-    format="fasta"
-)
+POSITIVE_EXONS_BED = list(_find_exons_pipeline(ARGS))
 
 # Build splice graph
-splice_graph = build_splice_graph(positive_exons_bed)
+SPLICE_GRAPH = build_splice_graph(POSITIVE_EXONS_BED)
 
 
 
@@ -85,21 +77,10 @@ class TestPrepareSealer(TestCase, CustomAssertions):
     """
     def test_file_creation(self):
         """_prepare_sealer: test creation"""
-        splice_graph = build_splice_graph(positive_exons_bed)
-        sealer_input_fn = _prepare_sealer(splice_graph, args)
-        actual = list(SeqIO.parse(
-            sealer_input_fn,
-            format="fasta"
-        ))
-        expected = list(SeqIO.parse(
-            "tests/files/correct_splice_graph/to_seal.fa",
-            format="fasta"
-        ))
-        self.assertEqualListOfSeqrecords(
-            actual,
-            expected
-
-        )
+        sealer_input_fn = _prepare_sealer(SPLICE_GRAPH, ARGS)
+        actual = list(SeqIO.parse(sealer_input_fn, format="fasta"))
+        expected = list(SeqIO.parse("tests/correct_splice_graph/to_seal.fa", format="fasta"))
+        self.assertEqualListOfSeqrecords(actual, expected)
         remove(sealer_input_fn)
 
 
@@ -110,20 +91,11 @@ class TestRunSealer(TestCase, CustomAssertions):
     """
     def test_run(self):
         """_run_sealer: test if runs"""
-        splice_graph = build_splice_graph(positive_exons_bed)
-        sealer_in_fn = _prepare_sealer(splice_graph, args)
-        sealer_out_fn = _run_sealer(
-            sealer_input_fn=sealer_in_fn,
-            args=args
-        )
+        sealer_in_fn = _prepare_sealer(SPLICE_GRAPH, ARGS)
+        sealer_out_fn = _run_sealer(sealer_input_fn=sealer_in_fn, args=ARGS)
         self.assertEqualListOfSeqrecords(
-            list(SeqIO.parse(
-                "tests/files/correct_splice_graph/sealed.fa",
-                format="fasta"
-            )),
-            list(SeqIO.parse(
-                sealer_out_fn, "fasta"
-            ))
+            list(SeqIO.parse("tests/correct_splice_graph/sealed.fa", format="fasta")),
+            list(SeqIO.parse(sealer_out_fn, "fasta"))
         )
         remove(sealer_in_fn)
         remove(sealer_out_fn)
@@ -137,10 +109,7 @@ class TestCollectSealerResults(TestCase):
     def test_collect_empty(self):
         """_collect_sealer_results: empty case"""
         empty_file = mkstemp()
-        sealer_output_fn = _run_sealer(
-            sealer_input_fn=empty_file[1],
-            args=args
-        )
+        sealer_output_fn = _run_sealer(sealer_input_fn=empty_file[1], args=ARGS)
         # Collect sealer results
         edge2fill = _collect_sealer_results(handle=sealer_output_fn)
         self.assertEqual(edge2fill, {})
@@ -148,7 +117,7 @@ class TestCollectSealerResults(TestCase):
     def test_collect_somedata(self):
         """_collect_sealer_results: some data"""
         edge2fill = _collect_sealer_results(
-            handle="tests/files/correct_splice_graph/sealed.fa"
+            handle="tests/correct_splice_graph/sealed.fa"
         )
         self.assertEqual(
             edge2fill,
@@ -166,10 +135,10 @@ class TestSculptGraph(TestCase):
 
     def test_sculpt_empty_data(self):
         """_sculpt_graph: empty case"""
-        sealed_graph = _sculpt_graph(splice_graph, {})
+        sealed_graph = _sculpt_graph(SPLICE_GRAPH, {})
         self.assertTrue(nx.is_isomorphic(
             sealed_graph,
-            splice_graph
+            SPLICE_GRAPH
         ))
 
 
@@ -181,10 +150,9 @@ class TestSculptGraph(TestCase):
             v="ENSDART00000149335.2:1717-2286"
         )
         edge2fill = _collect_sealer_results(
-            handle="tests/files/correct_splice_graph/sealed.fa"
+            handle="tests/correct_splice_graph/sealed.fa"
         )
-        splice_graph = build_splice_graph(positive_exons_bed)
-        sealed_graph = _sculpt_graph(splice_graph, edge2fill)
+        sealed_graph = _sculpt_graph(SPLICE_GRAPH, edge2fill)
         self.assertTrue(nx.is_isomorphic(
             sealed_graph,
             test_graph
@@ -192,7 +160,7 @@ class TestSculptGraph(TestCase):
 
 
 
-class TestCorrectsplice_graph(TestCase):
+class TestCorrectSpliceGraph(TestCase):
     """ correct_splice_graph(splice_graph, args):
     (nx.DiGraph, int) -> nx.DiGraph
     """
@@ -203,7 +171,8 @@ class TestCorrectsplice_graph(TestCase):
             u="ENSDART00000149335.2:0-486",
             v="ENSDART00000149335.2:485-3379"
         )
-        sealed_graph = correct_splice_graph(splice_graph, args)
+        splice_graph = build_splice_graph(POSITIVE_EXONS_BED)
+        sealed_graph = correct_splice_graph(splice_graph, ARGS)
         print(test_graph.nodes())
         print(test_graph.edges())
         print(sealed_graph.nodes())
@@ -215,15 +184,6 @@ class TestCorrectsplice_graph(TestCase):
 
 
 if __name__ == '__main__':
-
-
-
-    # write_gfa1(
-    #     splice_graph=splice_graph,
-    #     exons=exon_index,
-    #     filename=args["output_gfa"]
-    # )
-
-    unittest.main()
+    main()
     # Remove BF
-    remove(temp_bloom, temp_gfa)
+    remove(TEMP_BLOOM, TEMP_GFA)

@@ -53,7 +53,7 @@ def _prepare_sealer(splice_graph, args):
     args = {
         "kmer": int,
         "max_gap_size": int, <- only one used
-        "bloom_filter": str,
+        "input_bloom": str,
     }
     """
     transcriptome_dict = SeqIO.index(args["input_fasta"], format="fasta")
@@ -111,7 +111,7 @@ def _run_sealer(sealer_input_fn, args):
         '--max-gap-length', str(args["max_gap_size"]),
         '--kmer', str(args["kmer"]),
         '--fix-errors',
-        '--input-bloom', args["bloom_filter"],
+        '--input-bloom', args["input_bloom"],
         '--mask',
         '--output-prefix', sealer_output_prefix[1],
         '--verbose'
@@ -201,7 +201,7 @@ def correct_splice_graph(splice_graph, args):
     args = {
         "kmer": int,
         "max_gap_size": int,
-        "bloom_filter": str,
+        "input_bloom": str,
         "input_fasta": str
     }
     """

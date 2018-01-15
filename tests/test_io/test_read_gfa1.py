@@ -27,8 +27,9 @@ from tests.test_data import \
     PATHS_EMPTY_DICT, PATHS_SIMPLE_DICT, PATHS_COMPLEX_DICT
 
 
-def _split_lines(list):
-    for element in list:
+def _split_lines(list_of_elements):
+    """Process line"""
+    for element in list_of_elements:
         yield element.strip().split("\t")
 
 

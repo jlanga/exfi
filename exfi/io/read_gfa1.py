@@ -11,7 +11,7 @@ def _overlap_str_to_int(overlap_str):
     20G -> -20
     13M -> M
     """
-    if type(overlap_str) != str:
+    if isintance(overlap_str, str):
         raise TypeError("{overlap} is not str".format(overlap=overlap_str))
     letter = overlap_str[-1]
     if letter == "M":

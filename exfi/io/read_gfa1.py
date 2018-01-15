@@ -25,7 +25,7 @@ def _overlap_str_to_int(overlap_str):
 def _process_segments(segments_raw):
     """(list of lists) -> dict
 
-    Conver a list of ["S", node_id, str, *whatever] to a dict {node_id: str}
+    Convert a list of ["S", node_id, str, *whatever] to a dict {node_id: str}
     """
     segments = {}
     for line in segments_raw:

@@ -24,7 +24,7 @@ class TestGFA1ToGappedTranscripts(TestCase):
     """Tests for gfa1_to_gapped_transcript"""
 
     def test_empty(self):
-        """gfa1_to_gapped_transcripts: empty case"""
+        """exfi.io.gfa1_to_gapped_transcripts.gfa1_to_gapped_transcripts: empty case"""
         tmp_file = tempfile.mkstemp()[1]
         gfa1_to_gapped_transcripts(gfa_in=GFA_EMPTY_FN, fasta_out=tmp_file)
         self.assertTrue(
@@ -33,7 +33,7 @@ class TestGFA1ToGappedTranscripts(TestCase):
         os.remove(tmp_file)
 
     def test_simple(self):
-        """gfa1_to_gapped_transcripts: simple case"""
+        """exfi.io.gfa1_to_gapped_transcripts.gfa1_to_gapped_transcripts: simple case"""
         tmp_file = tempfile.mkstemp()[1]
         gfa1_to_gapped_transcripts(gfa_in=GFA_SIMPLE_FN, fasta_out=tmp_file)
         self.assertTrue(
@@ -42,7 +42,7 @@ class TestGFA1ToGappedTranscripts(TestCase):
         os.remove(tmp_file)
 
     def test_multiple(self):
-        """gfa1_to_gapped_transcripts: complex case"""
+        """exfi.io.gfa1_to_gapped_transcripts.gfa1_to_gapped_transcripts: complex case"""
         tmp_file = tempfile.mkstemp()[1]
         gfa1_to_gapped_transcripts(gfa_in=GFA_COMPLEX_FN, fasta_out=tmp_file)
         self.assertTrue(filecmp.cmp(
@@ -52,7 +52,7 @@ class TestGFA1ToGappedTranscripts(TestCase):
         os.remove(tmp_file)
 
     def test_multiple_soft(self):
-        """gfa1_to_gapped_transcripts: complex case and soft masking"""
+        """exfi.io.gfa1_to_gapped_transcripts.gfa1_to_gapped_transcripts: complex case and soft masking"""
         tmp_file = tempfile.mkstemp()[1]
         gfa1_to_gapped_transcripts(
             gfa_in=GFA_COMPLEX_FN,
@@ -65,7 +65,7 @@ class TestGFA1ToGappedTranscripts(TestCase):
 
 
     def test_multiple_hard(self):
-        """gfa1_to_gapped_transcripts: complex case and hard masking"""
+        """exfi.io.gfa1_to_gapped_transcripts.gfa1_to_gapped_transcripts: complex case and hard masking"""
         tmp_file = tempfile.mkstemp()[1]
         gfa1_to_gapped_transcripts(
             gfa_in=GFA_COMPLEX_FN,

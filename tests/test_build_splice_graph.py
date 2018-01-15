@@ -50,22 +50,22 @@ def _prepare_overlaps(bed3_records):
 class TestBed3ToStr(unittest.TestCase):
     """Tests for _bed3_to_str"""
     def test_empty(self):
-        """_bed3_to_str: empty record"""
+        """exfi.build_splice_graph._bed3_to_str: empty record"""
         with self.assertRaises(IndexError):
             _bed3_to_str([])
 
     def test_malformed1(self):
-        """_bed3_to_str: record of 2 elements"""
+        """exfi.build_splice_graph._bed3_to_str: record of 2 elements"""
         with self.assertRaises(IndexError):
             _bed3_to_str((0, 1))
 
     def test_malformed2(self):
-        """_bed3_to_str: record of 4 elements"""
+        """exfi.build_splice_graph._bed3_to_str: record of 4 elements"""
         with self.assertRaises(IndexError):
             _bed3_to_str((0, 1, 2, 3))
 
     def test_record(self):
-        """_bed3_to_str: correct record"""
+        """exfi.build_splice_graph._bed3_to_str: correct record"""
         self.assertEqual(
             _bed3_to_str(("tr", 10, 15)),
             "tr:10-15"
@@ -76,7 +76,7 @@ class TestBed3RecordsToBed6DF(unittest.TestCase):
     """Tests for bed3_records_to_bed6df"""
 
     def test_empty_index(self):
-        """bed3_records_to_bed6df: empty exome"""
+        """exfi.build_splice_graph.bed3_records_to_bed6df: empty exome"""
         actual = bed3_records_to_bed6df(BED3RECORDS_EMPTY)
         expected = BED6DF_EMPTY
         self.assertTrue(
@@ -84,7 +84,7 @@ class TestBed3RecordsToBed6DF(unittest.TestCase):
         )
 
     def test_one_entry(self):
-        """bed3_records_to_bed6df: single exon"""
+        """exfi.build_splice_graph.bed3_records_to_bed6df: single exon"""
         actual = bed3_records_to_bed6df(BED3RECORDS_SIMPLE)
         expected = BED6DF_SIMPLE
         self.assertTrue(
@@ -92,7 +92,7 @@ class TestBed3RecordsToBed6DF(unittest.TestCase):
         )
 
     def test_multiple(self):
-        """bed3_records_to_bed6df: multiple transcripts - multiple exons"""
+        """exfi.build_splice_graph.bed3_records_to_bed6df: multiple transcripts - multiple exons"""
         actual = bed3_records_to_bed6df(BED3RECORDS_COMPLEX)
         expected = BED6DF_COMPLEX
         self.assertTrue(
@@ -104,7 +104,7 @@ class TestBed6DFToPath2Node(unittest.TestCase):
     """Tests for bed6df_to_path2node"""
 
     def test_empty(self):
-        """bed6df_to_path2node: convert an empty exome to path"""
+        """exfi.build_splice_graph.bed6df_to_path2node: convert an empty exome to path"""
         self.assertEqual(
             bed6df_to_path2node(BED6DF_EMPTY),
             PATH_EMPTY
@@ -112,14 +112,14 @@ class TestBed6DFToPath2Node(unittest.TestCase):
 
 
     def test_single(self):
-        """bed6df_to_path2node: convert an single exon transcript to path"""
+        """exfi.build_splice_graph.bed6df_to_path2node: convert an single exon transcript to path"""
         self.assertEqual(
             bed6df_to_path2node(BED6DF_SIMPLE),
             PATH_SIMPLE
         )
 
     def test_multiple(self):
-        """bed6df_to_path2node: convert an single exon transcript to path"""
+        """exfi.build_splice_graph.bed6df_to_path2node: convert an single exon transcript to path"""
         self.assertEqual(
             bed6df_to_path2node(BED6DF_COMPLEX),
             PATH_COMPLEX
@@ -129,21 +129,21 @@ class TestBed6DFToPath2Node(unittest.TestCase):
 class TestBed6ToNode2Coord(unittest.TestCase):
     """Tests for bed6df_to_path2node"""
     def test_empty(self):
-        """bed6df_to_node2coordinates: empty records"""
+        """exfi.build_splice_graph.bed6df_to_node2coordinates: empty records"""
         self.assertEqual(
             NODE2COORDS_EMPTY,
             bed6df_to_node2coordinates(BED6DF_EMPTY)
         )
 
     def test_simple(self):
-        """bed6df_to_node2coordinates: single node"""
+        """exfi.build_splice_graph.bed6df_to_node2coordinates: single node"""
         self.assertEqual(
             bed6df_to_node2coordinates(BED6DF_SIMPLE),
             NODE2COORDS_SIMPLE
         )
 
     def test_complex(self):
-        """bed6df_to_node2coordinates: complex case"""
+        """exfi.build_splice_graph.bed6df_to_node2coordinates: complex case"""
         self.assertEqual(
             bed6df_to_node2coordinates(BED6DF_COMPLEX),
             NODE2COORDS_COMPLEX
@@ -153,19 +153,19 @@ class TestBed6ToNode2Coord(unittest.TestCase):
 class TestComputeEdgeOverlaps(unittest.TestCase):
     """Tests for compute_edge_overlaps"""
     def test_empty_exome(self):
-        """compute_overlaps: compute the overlaps of an empty exome"""
+        """exfi.build_splice_graph.compute_overlaps: compute the overlaps of an empty exome"""
         splice_graph = _prepare_overlaps(BED3RECORDS_EMPTY)
         overlaps = compute_edge_overlaps(splice_graph)
         self.assertEqual(overlaps, OVERLAPS_EMPTY)
 
     def test_single_exon(self):
-        """compute_overlaps: compute the overlaps of a single exon exome"""
+        """exfi.build_splice_graph.compute_overlaps: compute the overlaps of a single exon exome"""
         splice_graph = _prepare_overlaps(BED3RECORDS_SIMPLE)
         overlaps = compute_edge_overlaps(splice_graph)
         self.assertEqual(overlaps, OVERLAPS_SIMPLE)
 
     def test_multiple_exons(self):
-        """compute_overlaps: compute the overlaps of a simple exome"""
+        """exfi.build_splice_graph.compute_overlaps: compute the overlaps of a simple exome"""
         splice_graph = _prepare_overlaps(BED3RECORDS_COMPLEX)
         overlaps = compute_edge_overlaps(splice_graph)
         self.assertEqual(overlaps, OVERLAPS_COMPLEX)
@@ -175,7 +175,7 @@ class TestBuildSpliceGraph(unittest.TestCase):
     """Tests for build_splice_graph"""
 
     def test_empty(self):
-        """build_splice_graph: compute the splice graph of an empty set of exons"""
+        """exfi.build_splice_graph.build_splice_graph: compute the splice graph of an empty set of exons"""
         actual = build_splice_graph(BED3RECORDS_EMPTY)
         self.assertTrue(
             nx.is_isomorphic(
@@ -193,7 +193,7 @@ class TestBuildSpliceGraph(unittest.TestCase):
         )
 
     def test_simple(self):
-        """build_splice_graph: compute the splice graph of a singe exon"""
+        """exfi.build_splice_graph.build_splice_graph: compute the splice graph of a singe exon"""
         actual = build_splice_graph(BED3RECORDS_SIMPLE)
         self.assertTrue(nx.is_isomorphic(
             actual,
@@ -209,7 +209,7 @@ class TestBuildSpliceGraph(unittest.TestCase):
         )
 
     def test_multiple(self):
-        """build_splice_graph: compute the splice graph of a set of exons"""
+        """exfi.build_splice_graph.build_splice_graph: compute the splice graph of a set of exons"""
         actual = build_splice_graph(BED3RECORDS_COMPLEX)
         self.assertTrue(nx.is_isomorphic(
             actual,

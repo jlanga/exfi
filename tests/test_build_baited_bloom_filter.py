@@ -40,7 +40,7 @@ class TestBuildBaitedBloomFilter(TestCase):
     """Tests for build_baited_bloom_filter functions"""
 
     def test_build_empty_transcriptome(self):
-        '''_simple_build_baited: try to bait with empty transcriptome
+        '''exfi.build_baited_bloom_filter._simple_build_baited: try to bait with empty transcriptome
 
         Note: biobloommaker fails
         '''
@@ -53,7 +53,7 @@ class TestBuildBaitedBloomFilter(TestCase):
         shutil.rmtree(tmp_dir)
 
     def test_build_empty_library(self):
-        '''_simple_build_baited: build a BF without reads'''
+        '''exfi.build_baited_bloom_filter._simple_build_baited: build a BF without reads'''
         transcriptome = TRANSCRIPTOME_SMALL_FN
         reads = [READS_EMPTY_FN]
         tmp_dir = tempfile.mkdtemp()
@@ -63,7 +63,7 @@ class TestBuildBaitedBloomFilter(TestCase):
         shutil.rmtree(tmp_dir)
 
     def test_build_one_library(self):
-        '''_simple_build_baited: build the BF with one library'''
+        '''exfi.build_baited_bloom_filter._simple_build_baited: build the BF with one library'''
         transcriptome = TRANSCRIPTOME_SMALL_FN
         reads = [READS_1_FN]
         tmp_dir = tempfile.mkdtemp()
@@ -73,7 +73,7 @@ class TestBuildBaitedBloomFilter(TestCase):
         shutil.rmtree(tmp_dir)
 
     def test_build_two_libraries(self):
-        '''_simple_build_baited: build the BF with two libraries'''
+        '''exfi.build_baited_bloom_filter._simple_build_baited: build the BF with two libraries'''
         transcriptome = TRANSCRIPTOME_SMALL_FN
         reads = [READS_1_FN, READS_2_FN]
         tmp_dir = tempfile.mkdtemp()

@@ -21,7 +21,7 @@ class TestGFA1ToExons(TestCase):
     """Tests for gfa1_to_exons"""
 
     def test_empty(self):
-        """gfa1_to_exons: empty case"""
+        """exfi.io.gfa1_to_exons.gfa1_to_exons: empty case"""
         tmp_file = tempfile.mkstemp()[1]
         gfa1_to_exons(
             gfa_in_fn=GFA_EMPTY_FN,
@@ -36,7 +36,7 @@ class TestGFA1ToExons(TestCase):
 
 
     def test_simple(self):
-        """gfa1_to_exons: simple case"""
+        """exfi.io.gfa1_to_exons.gfa1_to_exons: simple case"""
         tmp_file = tempfile.mkstemp()[1]
         gfa1_to_exons(
             gfa_in_fn=GFA_SIMPLE_FN,
@@ -50,7 +50,7 @@ class TestGFA1ToExons(TestCase):
         os.remove(tmp_file)
 
     def test_multiple(self):
-        """gfa1_to_exons: complex case"""
+        """exfi.io.gfa1_to_exons.gfa1_to_exons: complex case"""
         tmp_file = tempfile.mkstemp()[1]
         gfa1_to_exons(gfa_in_fn=GFA_COMPLEX_FN, fasta_out_fn=tmp_file)
         self.assertTrue(filecmp.cmp(
@@ -59,7 +59,7 @@ class TestGFA1ToExons(TestCase):
         os.remove(tmp_file)
 
     def test_multiple_soft(self):
-        """gfa1_to_exons: complex case and soft masking"""
+        """exfi.io.gfa1_to_exons.gfa1_to_exons: complex case and soft masking"""
         tmp_file = tempfile.mkstemp()[1]
         gfa1_to_exons(
             gfa_in_fn=GFA_COMPLEX_FN,
@@ -72,7 +72,7 @@ class TestGFA1ToExons(TestCase):
         os.remove(tmp_file)
 
     def test_multiple_hard(self):
-        """gfa1_to_exons: complex case and hard masking"""
+        """exfi.io.gfa1_to_exons.gfa1_to_exons: complex case and hard masking"""
         tmp_file = tempfile.mkstemp()[1]
         gfa1_to_exons(
             gfa_in_fn=GFA_COMPLEX_FN,

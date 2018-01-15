@@ -32,19 +32,19 @@ class TestComputeSegments(TestCase):
     """Tests for _compute_segments"""
 
     def test_empty(self):
-        """_compute_segments: empty case"""
+        """exfi.io.splice_graph_to_gfa1._compute_segments: empty case"""
         actual = list(_compute_segments(SPLICE_GRAPH_EMPTY, TRANSCRIPTOME_EMPTY))
         expected = SEGMENTS_EMPTY
         self.assertEqual(actual, expected)
 
     def test_simple(self):
-        """_compute_segments: simple case"""
+        """exfi.io.splice_graph_to_gfa1._compute_segments: simple case"""
         actual = list(_compute_segments(SPLICE_GRAPH_SIMPLE, TRANSCRIPTOME_SIMPLE))
         expected = SEGMENTS_SIMPLE
         self.assertEqual(actual, expected)
 
     def test_complex(self):
-        """_compute_segments: complex case"""
+        """exfi.io.splice_graph_to_gfa1._compute_segments: complex case"""
         actual = list(_compute_segments(SPLICE_GRAPH_COMPLEX, TRANSCRIPTOME_COMPLEX))
         expected = SEGMENTS_COMPLEX
         self.assertEqual(actual, expected)
@@ -55,19 +55,19 @@ class TestComputeLinks(TestCase):
     """Tests for _compute_links"""
 
     def test_empty(self):
-        """_compute_links: empty case"""
+        """exfi.io.splice_graph_to_gfa1._compute_links: empty case"""
         actual = list(_compute_links(SPLICE_GRAPH_EMPTY))
         expected = LINKS_EMPTY
         self.assertEqual(actual, expected)
 
     def test_simple(self):
-        """_compute_links: simple case"""
+        """exfi.io.splice_graph_to_gfa1._compute_links: simple case"""
         actual = list(_compute_links(SPLICE_GRAPH_SIMPLE))
         expected = LINKS_SIMPLE
         self.assertEqual(actual, expected)
 
     def test_coplex(self):
-        """_compute_links: complex case"""
+        """exfi.io.splice_graph_to_gfa1._compute_links: complex case"""
         actual = list(_compute_links(SPLICE_GRAPH_COMPLEX))
         expected = LINKS_COMPLEX
         self.assertEqual(actual, expected)
@@ -78,19 +78,19 @@ class TestComputeContainments(TestCase):
     """Tests for _compute_containments"""
 
     def test_empty(self):
-        """_compute_containments: empty case"""
+        """exfi.io.splice_graph_to_gfa1._compute_containments: empty case"""
         actual = list(_compute_containments(SPLICE_GRAPH_EMPTY, TRANSCRIPTOME_EMPTY))
         expected = CONTAINMENTS_EMPTY
         self.assertEqual(actual, expected)
 
     def test_simple(self):
-        """_compute_containments: simple case"""
+        """exfi.io.splice_graph_to_gfa1._compute_containments: simple case"""
         actual = list(_compute_containments(SPLICE_GRAPH_SIMPLE, TRANSCRIPTOME_SIMPLE))
         expected = CONTAINMENTS_SIMPLE
         self.assertEqual(actual, expected)
 
     def test_coplex(self):
-        """_compute_containments: complex case"""
+        """exfi.io.splice_graph_to_gfa1._compute_containments: complex case"""
         actual = list(_compute_containments(SPLICE_GRAPH_COMPLEX, TRANSCRIPTOME_COMPLEX))
         expected = CONTAINMENTS_COMPLEX
         self.assertEqual(actual, expected)
@@ -98,32 +98,32 @@ class TestComputeContainments(TestCase):
 
 
 class TestComputePaths(TestCase):
-    """Tests for _compute_paths"""
+    """Tests for exfi.io.splice_graph_to_gfa1._compute_paths"""
 
     def test_empty(self):
-        """_compute_paths: empty case"""
+        """exfi.io.splice_graph_to_gfa1._compute_paths: empty case"""
         actual = list(_compute_paths(SPLICE_GRAPH_EMPTY))
         expected = PATHS_EMPTY
         self.assertEqual(actual, expected)
 
     def test_simple(self):
-        """_compute_paths: simple case"""
+        """exfi.io.splice_graph_to_gfa1._compute_paths: simple case"""
         actual = list(_compute_paths(SPLICE_GRAPH_SIMPLE))
         expected = PATHS_SIMPLE
         self.assertEqual(actual, expected)
 
     def test_complex(self):
-        """_compute_paths: complex case"""
+        """exfi.io.splice_graph_to_gfa1._compute_paths: complex case"""
         actual = list(_compute_paths(SPLICE_GRAPH_COMPLEX))
         expected = PATHS_COMPLEX
         self.assertEqual(actual, expected)
 
 
 class TestSpliceGraphToGFA1(TestCase):
-    """Tests for splice_graph_to_gfa1"""
+    """Tests for exfi.io.splice_graph_to_gfa1.splice_graph_to_gfa1"""
 
     def test_empty(self):
-        """splice_graph_to_gfa1: empty case"""
+        """exfi.io.splice_graph_to_gfa1.splice_graph_to_gfa1: empty case"""
         tmp_file = tempfile.mkstemp()[1]
         splice_graph_to_gfa1(
             splice_graph=SPLICE_GRAPH_EMPTY,
@@ -137,7 +137,7 @@ class TestSpliceGraphToGFA1(TestCase):
         os.remove(tmp_file)
 
     def test_simple(self):
-        """splice_graph_to_gfa1: simple case"""
+        """exfi.io.splice_graph_to_gfa1.splice_graph_to_gfa1: simple case"""
         tmp_file = tempfile.mkstemp()[1]
         splice_graph_to_gfa1(
             splice_graph=SPLICE_GRAPH_SIMPLE,
@@ -151,7 +151,7 @@ class TestSpliceGraphToGFA1(TestCase):
         os.remove(tmp_file)
 
     def test_multiple(self):
-        """splice_graph_to_gfa1: complex case"""
+        """exfi.io.splice_graph_to_gfa1.splice_graph_to_gfa1: complex case"""
         tmp_file = tempfile.mkstemp()[1]
         splice_graph_to_gfa1(
             splice_graph=SPLICE_GRAPH_COMPLEX,
@@ -163,3 +163,6 @@ class TestSpliceGraphToGFA1(TestCase):
             GFA_COMPLEX_FN
         ))
         os.remove(tmp_file)
+
+if __name__ == "__main__":
+    main()

@@ -76,7 +76,7 @@ class TestPrepareSealer(TestCase, CustomAssertions):
     (nx.DiGraph, dict_of_parameters) -> str
     """
     def test_file_creation(self):
-        """_prepare_sealer: test creation"""
+        """exfi.correct_splice_graph._prepare_sealer: test creation"""
         sealer_input_fn = _prepare_sealer(SPLICE_GRAPH, ARGS)
         actual = list(SeqIO.parse(sealer_input_fn, format="fasta"))
         expected = list(SeqIO.parse("tests/correct_splice_graph/to_seal.fa", format="fasta"))
@@ -90,7 +90,7 @@ class TestRunSealer(TestCase, CustomAssertions):
     (str, dict) -> str
     """
     def test_run(self):
-        """_run_sealer: test if runs"""
+        """exfi.correct_splice_graph._run_sealer: test if runs"""
         sealer_in_fn = _prepare_sealer(SPLICE_GRAPH, ARGS)
         sealer_out_fn = _run_sealer(sealer_input_fn=sealer_in_fn, args=ARGS)
         self.assertEqualListOfSeqrecords(
@@ -107,7 +107,7 @@ class TestCollectSealerResults(TestCase):
     (str) -> dict
     """
     def test_collect_empty(self):
-        """_collect_sealer_results: empty case"""
+        """exfi.correct_splice_graph._collect_sealer_results: empty case"""
         empty_file = mkstemp()
         sealer_output_fn = _run_sealer(sealer_input_fn=empty_file[1], args=ARGS)
         # Collect sealer results
@@ -115,7 +115,7 @@ class TestCollectSealerResults(TestCase):
         self.assertEqual(edge2fill, {})
 
     def test_collect_somedata(self):
-        """_collect_sealer_results: some data"""
+        """exfi.correct_splice_graph._collect_sealer_results: some data"""
         edge2fill = _collect_sealer_results(
             handle="tests/correct_splice_graph/sealed.fa"
         )
@@ -134,7 +134,7 @@ class TestSculptGraph(TestCase):
     """
 
     def test_sculpt_empty_data(self):
-        """_sculpt_graph: empty case"""
+        """exfi.correct_splice_graph._sculpt_graph: empty case"""
         sealed_graph = _sculpt_graph(SPLICE_GRAPH, {})
         self.assertTrue(nx.is_isomorphic(
             sealed_graph,
@@ -143,7 +143,7 @@ class TestSculptGraph(TestCase):
 
 
     def test_scuplt_real_data(self):
-        """_sculpt_graph: some data"""
+        """exfi.correct_splice_graph._sculpt_graph: some data"""
         test_graph = nx.DiGraph()
         test_graph.add_edge(
             u="ENSDART00000149335.2:0-486",
@@ -165,7 +165,7 @@ class TestCorrectSpliceGraph(TestCase):
     (nx.DiGraph, int) -> nx.DiGraph
     """
     def test_correct_splice_graph(self):
-        """correct_splice_graph: some data"""
+        """exfi.correct_splice_graph.correct_splice_graph: some data"""
         test_graph = nx.DiGraph()
         test_graph.add_edge(
             u="ENSDART00000149335.2:0-486",

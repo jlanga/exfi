@@ -11,9 +11,15 @@ def _overlap_str_to_int(overlap_str):
     20G -> -20
     13M -> M
     """
-    if overlap_str[-1] == "M":
+    if type(overlap_str) != str:
+        raise TypeError("{overlap} is not str".format(overlap=overlap_str))
+    letter = overlap_str[-1]
+    if letter == "M":
         return int(overlap_str[:-1])
-    return -int(overlap_str[:-1])
+    elif letter == "G":
+        return -int(overlap_str[:-1])
+    else:
+        raise ValueError("{letter} letter is not M or G".format(letter=letter))
 
 
 def _process_segments(segments_raw):
@@ -57,8 +63,9 @@ def _process_containments(containments_raw):
         start = int(position)
         end = start + overlap
         if contained not in containments:
-            containments[contained] = ()
-        containments[contained] += ((container, start, end))
+            containments[contained] = ((container, start, end), )
+        else:
+            containments[contained] += ((container, start, end))
     return containments
 
 

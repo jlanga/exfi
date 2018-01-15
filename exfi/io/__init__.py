@@ -27,10 +27,7 @@ def _coordinate_str_to_tuple(coordinates):
 def _coordinate_tuple_to_str(transcript_id, start, end):
     """(str, int, int) -> str
 
-    Convert coordinates to str
-
-    >>> _coordinate_tuple_to_str("exon1", 1, 15)
-    exon1:1-15
+    Convert coordinates to str transcript_id:start-end
     """
     return "{transcript_id}:{start}-{end}".format(
         transcript_id=transcript_id,

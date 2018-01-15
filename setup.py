@@ -10,7 +10,10 @@ from exfi import __version__
 setup(
     name='exfi',
     version=__version__,
-    packages=['exfi'],
+    packages=[
+        'exfi',
+        'exfi.io'
+    ],
     license='MIT',
     install_requires=[
         'numpy',

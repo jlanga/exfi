@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 
 import argparse
-from exfi.io import \
-    gfa1_to_gapped_transcript
 
 from os.path import \
     isfile, \
     abspath
 
 from exfi import __version__
+from exfi.io.gfa1_to_gapped_transcripts import \
+    gfa1_to_gapped_transcripts
+
+
+
+
 
 parser = argparse.ArgumentParser(
     usage='gfa1_to_gapped_transcript -i splice_graph.gfa -o '
@@ -87,7 +91,7 @@ if __name__ == "__main__":
     args["input_gfa"] = abspath(args["input_gfa"])
     args["output_fasta"] = abspath(args["output_fasta"])
 
-    gfa1_to_gapped_transcript(
+    gfa1_to_gapped_transcripts(
         gfa_in=args["input_gfa"],
         fasta_out=args["output_fasta"],
         number_of_ns=args["number_of_ns"],

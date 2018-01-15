@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-from exfi.io import \
-    gfa1_to_exons
 
 from os.path import \
     isfile, \
@@ -10,6 +8,8 @@ from os.path import \
 
 from exfi import __version__
 
+from exfi.io.gfa1_to_exons import \
+    gfa1_to_exons
 
 parser = argparse.ArgumentParser(
     usage='gfa_to_exons -i splice_graph.gfa -o exons.fa',

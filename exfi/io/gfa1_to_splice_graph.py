@@ -30,3 +30,5 @@ def gfa1_to_splice_graph(handle):
     nx.set_edge_attributes(
         G=splice_graph, name="overlaps", values=overlap_dict
     )
+
+    return splice_graph

@@ -23,7 +23,8 @@ from tests.test_data import \
     LINKS_EMPTY_DICT, LINKS_SIMPLE_DICT, LINKS_COMPLEX_DICT, \
     CONTAINMENTS_EMPTY, CONTAINMENTS_SIMPLE, CONTAINMENTS_COMPLEX, \
     CONTAINMENTS_EMPTY_DICT, CONTAINMENTS_SIMPLE_DICT, CONTAINMENTS_COMPLEX_DICT, \
-    PATHS_EMPTY, PATHS_SIMPLE, PATHS_COMPLEX
+    PATHS_EMPTY, PATHS_SIMPLE, PATHS_COMPLEX, \
+    PATHS_EMPTY_DICT, PATHS_SIMPLE_DICT, PATHS_COMPLEX_DICT
 
 
 def _split_lines(list):
@@ -121,3 +122,75 @@ class TestProcessContainments(TestCase):
             _process_containments(_split_lines(CONTAINMENTS_COMPLEX)),
             CONTAINMENTS_COMPLEX_DICT
         )
+
+
+
+class TestProcessPaths(TestCase):
+    """Tests of exfi.io.read_gfa1._process_paths"""
+
+    def test_empty(self):
+        """exfi.io.read_gfa1._process_paths: empty case"""
+        self.assertEqual(
+            _process_paths(_split_lines(PATHS_EMPTY)),
+            PATHS_EMPTY_DICT
+        )
+
+    def test_simple(self):
+        """exfi.io.read_gfa1._process_paths: simple case"""
+        self.assertEqual(
+            _process_paths(_split_lines(PATHS_SIMPLE)),
+            PATHS_SIMPLE_DICT
+        )
+    def test_complex(self):
+        """exfi.io.read_gfa1._process_paths: complex case"""
+        self.assertEqual(
+            _process_paths(_split_lines(PATHS_COMPLEX)),
+            PATHS_COMPLEX_DICT
+        )
+
+
+class TestReadGFA1(TestCase):
+    """Tests for exfi.io.read_gfa1.read_gfa1"""
+
+    def test_empty(self):
+        """exfi.io.read_gfa1.read_gfa1: empty case"""
+        self.assertEqual(
+            read_gfa1(GFA_EMPTY_FN),
+            {
+                "header": "VN:Z:1.0",
+                "segments": SEGMENTS_EMPTY_DICT,
+                "links": LINKS_EMPTY_DICT,
+                "containments": CONTAINMENTS_EMPTY_DICT,
+                "paths": PATHS_EMPTY_DICT
+            }
+        )
+
+    def test_simple(self):
+        """exfi.io.read_gfa1.read_gfa1: simple case"""
+        self.assertEqual(
+            read_gfa1(GFA_SIMPLE_FN),
+            {
+                "header": "VN:Z:1.0",
+                "segments": SEGMENTS_SIMPLE_DICT,
+                "links": LINKS_SIMPLE_DICT,
+                "containments": CONTAINMENTS_SIMPLE_DICT,
+                "paths": PATHS_SIMPLE_DICT
+            }
+        )
+
+    def test_complex(self):
+        """exfi.io.read_gfa1.read_gfa1: complex case"""
+        self.assertEqual(
+            read_gfa1(GFA_COMPLEX_FN),
+            {
+                "header": "VN:Z:1.0",
+                "segments": SEGMENTS_COMPLEX_DICT,
+                "links": LINKS_COMPLEX_DICT,
+                "containments": CONTAINMENTS_COMPLEX_DICT,
+                "paths": PATHS_COMPLEX_DICT
+            }
+        )
+
+
+if __name__ == "__main__":
+    main()

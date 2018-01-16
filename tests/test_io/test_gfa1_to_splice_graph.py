@@ -6,8 +6,6 @@ Tests for exfi.io.gfa1_to_splice_graph
 
 from unittest import TestCase, main
 
-import networkx as nx
-
 from exfi.io.gfa1_to_splice_graph import gfa1_to_splice_graph
 
 from tests.auxiliary_functions import CustomAssertions

@@ -90,6 +90,7 @@ class CustomAssertions:
         Check if each element of list_of_seqrecords1 is exactly equal to each one of
         list_of_seqrecords2.
         """
+        # pylint: disable=invalid-name, bad-classmethod-argument
         length_1 = len(records1)
         length_2 = len(records2)
         if length_1 != length_2:
@@ -123,6 +124,7 @@ class CustomAssertions:
         - same coordinates
         - same overlaps
         """
+        # pylint: disable=invalid-name,bad-classmethod-argument
         coordinates1 = nx.get_node_attributes(G=sg1, name="coordinates")
         coordinates2 = nx.get_node_attributes(G=sg1, name="coordinates")
         overlaps1 = nx.get_edge_attributes(G=sg1, name="overlaps")

@@ -175,7 +175,9 @@ class TestBuildSpliceGraph(unittest.TestCase):
     """Tests for build_splice_graph"""
 
     def test_empty(self):
-        """exfi.build_splice_graph.build_splice_graph: compute the splice graph of an empty set of exons"""
+        """exfi.build_splice_graph.build_splice_graph: compute the splice graph of an empty set
+        of exons
+        """
         actual = build_splice_graph(BED3RECORDS_EMPTY)
         self.assertTrue(
             nx.is_isomorphic(

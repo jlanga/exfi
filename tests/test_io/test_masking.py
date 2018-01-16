@@ -6,8 +6,6 @@ Tests for exfi.io.masking
 
 from unittest import TestCase, main
 
-from exfi.io import index_fasta
-
 from exfi.io.masking import \
     _process_overlap_cigar, \
     _soft_mask_right, \

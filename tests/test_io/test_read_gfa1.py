@@ -27,10 +27,12 @@ from tests.test_data import \
     PATHS_EMPTY_DICT, PATHS_SIMPLE_DICT, PATHS_COMPLEX_DICT
 
 
+
 def _split_lines(list_of_elements):
     """Process line"""
     for element in list_of_elements:
         yield element.strip().split("\t")
+
 
 
 class TestOverlapStrToInt(TestCase):
@@ -191,6 +193,7 @@ class TestReadGFA1(TestCase):
                 "paths": PATHS_COMPLEX_DICT
             }
         )
+
 
 
 if __name__ == "__main__":

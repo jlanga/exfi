@@ -59,8 +59,8 @@ def _compute_links(splice_graph):
 
 
 
-def _compute_containments(splice_graph, transcriptome_dict):
-    """(nx.DiGraph, dict of SeqRecords) -> list
+def _compute_containments(splice_graph):
+    """(nx.DiGraph) -> list
 
     Compute the containment lines (w.r.t. transcriptome):
     C container orientation contained orientation position overlap
@@ -72,11 +72,11 @@ def _compute_containments(splice_graph, transcriptome_dict):
     )
     for node, coordinates in node2coordinates.items():
         for (transcript_id, start, end) in coordinates:
-            sequence = str(transcriptome_dict[transcript_id].seq[start:end])
+            cigar = str(int(end) - int(start)) + "M"
             yield "C\t{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format(
                 transcript_id, "+",
                 node, "+",
-                start, str(len(sequence)) + "M"
+                start, cigar
             )
 
 
@@ -115,7 +115,7 @@ def splice_graph_to_gfa1(splice_graph, transcriptome_dict, filename):
 
     segments = _compute_segments(splice_graph, transcriptome_dict)
     links = _compute_links(splice_graph)
-    containments = _compute_containments(splice_graph, transcriptome_dict)
+    containments = _compute_containments(splice_graph)
     paths = _compute_paths(splice_graph)
     with open(filename, "w") as gfa1_out:
         gfa1_out.writelines(chain(

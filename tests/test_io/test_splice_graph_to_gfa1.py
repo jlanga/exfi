@@ -79,19 +79,19 @@ class TestComputeContainments(TestCase):
 
     def test_empty(self):
         """exfi.io.splice_graph_to_gfa1._compute_containments: empty case"""
-        actual = list(_compute_containments(SPLICE_GRAPH_EMPTY, TRANSCRIPTOME_EMPTY))
+        actual = list(_compute_containments(SPLICE_GRAPH_EMPTY))
         expected = CONTAINMENTS_EMPTY
         self.assertEqual(actual, expected)
 
     def test_simple(self):
         """exfi.io.splice_graph_to_gfa1._compute_containments: simple case"""
-        actual = list(_compute_containments(SPLICE_GRAPH_SIMPLE, TRANSCRIPTOME_SIMPLE))
+        actual = list(_compute_containments(SPLICE_GRAPH_SIMPLE))
         expected = CONTAINMENTS_SIMPLE
         self.assertEqual(actual, expected)
 
     def test_coplex(self):
         """exfi.io.splice_graph_to_gfa1._compute_containments: complex case"""
-        actual = list(_compute_containments(SPLICE_GRAPH_COMPLEX, TRANSCRIPTOME_COMPLEX))
+        actual = list(_compute_containments(SPLICE_GRAPH_COMPLEX))
         expected = CONTAINMENTS_COMPLEX
         self.assertEqual(actual, expected)
 

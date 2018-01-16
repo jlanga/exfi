@@ -344,6 +344,11 @@ EXONS_COMPLEX_FN = "tests/io/exons_complex.fa"
 EXONS_COMPLEX_SOFT_FN = "tests/io/exons_complex_soft.fa"
 EXONS_COMPLEX_HARD_FN = "tests/io/exons_complex_hard.fa"
 
+
+EXONS_COMPLEX_DICT = {x.id: str(x.seq) for x  in index_fasta(EXONS_COMPLEX_FN).values()}
+EXONS_COMPLEX_SOFT_DICT = {x.id: str(x.seq) for x in index_fasta(EXONS_COMPLEX_SOFT_FN).values()}
+EXONS_COMPLEX_HARD_DICT = {x.id: str(x.seq) for x in index_fasta(EXONS_COMPLEX_HARD_FN).values()}
+
 GAPPED_EMPTY_FN = "tests/io/gapped_empty.fa"
 GAPPED_SIMPLE_FN = "tests/io/gapped_simple.fa"
 GAPPED_COMPLEX_FN = "tests/io/gapped_complex.fa"

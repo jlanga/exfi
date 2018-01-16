@@ -26,7 +26,7 @@ def gfa1_to_exons(gfa_in_fn, fasta_out_fn, soft_mask_overlaps=False, hard_mask_o
     link2overlap = gfa1["links"]
 
     # Mask if necessary
-    _mask(exon2sequence, link2overlap, soft_mask_overlaps, hard_mask_overlaps)
+    exon_dict = _mask(exon2sequence, link2overlap, soft_mask_overlaps, hard_mask_overlaps)
 
     # Add coordinate information to description
     # Compose SeqRecord of each exon

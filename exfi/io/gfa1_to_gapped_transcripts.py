@@ -28,16 +28,13 @@ def _compose_paths(exon_dict, path_dict, number_of_ns):
         )
 
 
-def gfa1_to_gapped_transcripts(gfa_in, fasta_out, number_of_ns=100,
-                              soft_mask_overlaps=False,
-                              hard_mask_overlaps=False):
+def gfa1_to_gapped_transcripts(
+    gfa_in, fasta_out, number_of_ns=100, soft_mask_overlaps=False, hard_mask_overlaps=False):
     """
     Write gapped transcripts as fasta from GFA1 file
     """
     if soft_mask_overlaps and hard_mask_overlaps:
-        raise Exception(
-            "I can't soft mask and hard mask at the same time, dude!"
-        )
+        raise Exception("I can't soft mask and hard mask at the same time, dude!")
 
     # Process
     gfa1 = read_gfa1(gfa_in)
@@ -47,7 +44,7 @@ def gfa1_to_gapped_transcripts(gfa_in, fasta_out, number_of_ns=100,
 
 
     # Mask if necessary
-    _mask(exon_dict, overlap_dict, soft_mask_overlaps, hard_mask_overlaps)
+    exon_dict = _mask(exon_dict, overlap_dict, soft_mask_overlaps, hard_mask_overlaps)
 
     composed_paths = _compose_paths(exon_dict, path_dict, number_of_ns)
 

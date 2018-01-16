@@ -14,7 +14,7 @@ from exfi.io.masking import _mask
 
 
 
-def gfa1_to_exons(gfa_in_fn, fasta_out_fn, soft_mask_overlaps=False, hard_mask_overlaps=False):
+def gfa1_to_exons(gfa_in_fn, fasta_out_fn, masking="none"):
     """(str, str, bool, bool) -> None
 
     Write the exons in FASTA format present in a GFA1 file
@@ -26,7 +26,7 @@ def gfa1_to_exons(gfa_in_fn, fasta_out_fn, soft_mask_overlaps=False, hard_mask_o
     link2overlap = gfa1["links"]
 
     # Mask if necessary
-    exon2sequence = _mask(exon2sequence, link2overlap, soft_mask_overlaps, hard_mask_overlaps)
+    exon2sequence = _mask(exon2sequence, link2overlap, masking)
 
     # Add coordinate information to description
     # Compose SeqRecord of each exon

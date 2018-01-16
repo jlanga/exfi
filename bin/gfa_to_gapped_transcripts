@@ -91,10 +91,15 @@ if __name__ == "__main__":
     args["input_gfa"] = abspath(args["input_gfa"])
     args["output_fasta"] = abspath(args["output_fasta"])
 
+    masking = "none"
+    if args["soft_mask"] == True:
+        masking = "soft"
+    if args["hasd_mask"] == True:
+        masking = "hard"
+
     gfa1_to_gapped_transcripts(
         gfa_in=args["input_gfa"],
         fasta_out=args["output_fasta"],
         number_of_ns=args["number_of_ns"],
-        soft_mask_overlaps=args["soft_mask_overlaps"],
-        hard_mask_overlaps=args["hard_mask_overlaps"]
+        masking=masking
     )

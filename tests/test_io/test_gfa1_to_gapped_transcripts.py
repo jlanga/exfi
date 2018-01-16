@@ -57,7 +57,8 @@ class TestGFA1ToGappedTranscripts(TestCase):
         gfa1_to_gapped_transcripts(
             gfa_in=GFA_COMPLEX_FN,
             fasta_out=tmp_file,
-            soft_mask_overlaps=True)
+            masking="soft"
+        )
         self.assertTrue(
             filecmp.cmp(tmp_file, GAPPED_COMPLEX_SOFT_FN)
         )
@@ -70,7 +71,7 @@ class TestGFA1ToGappedTranscripts(TestCase):
         gfa1_to_gapped_transcripts(
             gfa_in=GFA_COMPLEX_FN,
             fasta_out=tmp_file,
-            hard_mask_overlaps=True
+            masking="hard"
         )
         self.assertTrue(
             filecmp.cmp(tmp_file, GAPPED_COMPLEX_HARD_FN)

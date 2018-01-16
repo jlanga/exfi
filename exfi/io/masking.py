@@ -56,12 +56,10 @@ def _hard_mask(exon_dict, overlap_dict):
 
 
 
-def _mask(exon_dict, overlap_dict, soft_mask_overlaps=False, hard_mask_overlaps=False):
+def _mask(exon_dict, overlap_dict, masking="None"):
     """If any of the soft mask or hard mask are activated, mask"""
-    if soft_mask_overlaps and hard_mask_overlaps:
-        raise Exception("I can't soft mask and hard mask at the same time, dude!")
-    if soft_mask_overlaps:
-        exon_dict = _soft_mask(exon_dict, overlap_dict)
-    if hard_mask_overlaps:
+    if masking == "hard":
         exon_dict = _hard_mask(exon_dict, overlap_dict)
+    elif masking == "soft":
+        exon_dict = _soft_mask(exon_dict, overlap_dict)
     return exon_dict

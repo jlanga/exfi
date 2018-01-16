@@ -76,9 +76,14 @@ if __name__ == "__main__":
     args["input_gfa"] = abspath(args["input_gfa"])
     args["output_fasta"] = abspath(args["output_fasta"])
 
+    masking = "none"
+    if args["soft_mask"] == True:
+        masking = "soft"
+    if args["hasd_mask"] == True:
+        masking = "hard"
+
     gfa1_to_exons(
         gfa_in_fn=args["input_gfa"],
         fasta_out_fn=args["output_fasta"],
-        soft_mask_overlaps=args["soft_mask_overlaps"],
-        hard_mask_overlaps=args["hard_mask_overlaps"]
+        masking=masking
     )

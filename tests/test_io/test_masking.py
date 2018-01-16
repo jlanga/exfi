@@ -105,21 +105,21 @@ class TestMask(TestCase):
     def test_no_mask(self):
         """exfi.io.masking._mask: no masking"""
         self.assertEqual(
-            _mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX, False, False),
+            _mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX, "none"),
             EXONS_COMPLEX_DICT
         )
 
     def test_soft_mask(self):
         """exfi.io.masking._mask: soft masking"""
         self.assertEqual(
-            _mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX, True, False),
+            _mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX, "soft"),
             EXONS_COMPLEX_SOFT_DICT
         )
 
     def test_hard_mask(self):
         """exfi.io.masking._mask: hard masking"""
         self.assertEqual(
-            _mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX, False, True),
+            _mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX, "hard"),
             EXONS_COMPLEX_HARD_DICT
         )
 

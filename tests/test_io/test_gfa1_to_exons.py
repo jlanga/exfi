@@ -26,7 +26,7 @@ class TestGFA1ToExons(TestCase):
         gfa1_to_exons(
             gfa_in_fn=GFA_EMPTY_FN,
             fasta_out_fn=tmp_file,
-            soft_mask_overlaps=False
+            masking="none"
         )
         self.assertTrue(filecmp.cmp(
             tmp_file,
@@ -41,7 +41,7 @@ class TestGFA1ToExons(TestCase):
         gfa1_to_exons(
             gfa_in_fn=GFA_SIMPLE_FN,
             fasta_out_fn=tmp_file,
-            soft_mask_overlaps=False
+            masking="soft"
         )
         self.assertTrue(filecmp.cmp(
             tmp_file,
@@ -64,7 +64,7 @@ class TestGFA1ToExons(TestCase):
         gfa1_to_exons(
             gfa_in_fn=GFA_COMPLEX_FN,
             fasta_out_fn=tmp_file,
-            soft_mask_overlaps=True
+            masking="soft"
         )
         self.assertTrue(
             filecmp.cmp(tmp_file, EXONS_COMPLEX_SOFT_FN)
@@ -77,7 +77,7 @@ class TestGFA1ToExons(TestCase):
         gfa1_to_exons(
             gfa_in_fn=GFA_COMPLEX_FN,
             fasta_out_fn=tmp_file,
-            hard_mask_overlaps=True
+            masking="hard"
         )
         self.assertTrue(
             filecmp.cmp(tmp_file, EXONS_COMPLEX_HARD_FN)

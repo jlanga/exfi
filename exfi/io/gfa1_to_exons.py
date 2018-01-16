@@ -34,7 +34,10 @@ def gfa1_to_exons(gfa_in_fn, fasta_out_fn, soft_mask_overlaps=False, hard_mask_o
     for exon_id, exon_sequence in exon2sequence.items():
         # Compose coordinates
         exon_coordinates = exon2coordinates[exon_id]
-        description = " ".join(_coordinate_tuple_to_str(*coordinate) for coordinate in exon_coordinates)
+        description = " ".join(
+            _coordinate_tuple_to_str(*coordinate)
+            for coordinate in exon_coordinates
+        )
         sequences.append(SeqRecord(
             id=exon_id,
             description=description,

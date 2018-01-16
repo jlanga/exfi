@@ -29,7 +29,8 @@ def _compose_paths(exon_dict, path_dict, number_of_ns):
 
 
 def gfa1_to_gapped_transcripts(
-    gfa_in, fasta_out, number_of_ns=100, soft_mask_overlaps=False, hard_mask_overlaps=False):
+        gfa_in, fasta_out, number_of_ns=100, soft_mask_overlaps=False, hard_mask_overlaps=False
+    ):
     """
     Write gapped transcripts as fasta from GFA1 file
     """

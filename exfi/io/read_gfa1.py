@@ -63,11 +63,10 @@ def _process_containments(containments_raw):
         overlap = _overlap_str_to_int(overlap)
         start = int(position)
         end = start + overlap
-        containments[contained] = ((container, start, end), )
-        # if contained not in containments:
-        #     containments[contained] = ((container, start, end), )
-        # else:
-        #     containments[contained] += ((container, start, end))
+        # containments[contained] = ((container, start, end), )
+        if contained not in containments:
+            containments[contained] = ()
+        containments[contained] += ((container, start, end), )
     return containments
 
 

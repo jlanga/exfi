@@ -17,6 +17,7 @@ from exfi.build_splice_graph import \
     compute_edge_overlaps, \
     build_splice_graph
 
+from tests.auxiliary_functions import CustomAssertions
 
 from tests.test_data import \
     BED3RECORDS_EMPTY, BED3RECORDS_SIMPLE, BED3RECORDS_COMPLEX, \
@@ -171,7 +172,7 @@ class TestComputeEdgeOverlaps(unittest.TestCase):
         self.assertEqual(overlaps, OVERLAPS_COMPLEX)
 
 
-class TestBuildSpliceGraph(unittest.TestCase):
+class TestBuildSpliceGraph(unittest.TestCase, CustomAssertions):
     """Tests for build_splice_graph"""
 
     def test_empty(self):
@@ -179,51 +180,25 @@ class TestBuildSpliceGraph(unittest.TestCase):
         of exons
         """
         actual = build_splice_graph(BED3RECORDS_EMPTY)
-        self.assertTrue(
-            nx.is_isomorphic(
-                actual,
-                SPLICE_GRAPH_EMPTY
-            )
-        )
-        self.assertEqual(
-            nx.get_node_attributes(G=actual, name="coordinates"),
-            nx.get_node_attributes(G=SPLICE_GRAPH_EMPTY, name="coordinates"),
-        )
-        self.assertEqual(
-            nx.get_edge_attributes(G=actual, name="overlaps"),
-            nx.get_edge_attributes(G=SPLICE_GRAPH_EMPTY, name="overlaps"),
+        self.assertEqualSpliceGraphs(
+            actual,
+            SPLICE_GRAPH_EMPTY
         )
 
     def test_simple(self):
         """exfi.build_splice_graph.build_splice_graph: compute the splice graph of a singe exon"""
         actual = build_splice_graph(BED3RECORDS_SIMPLE)
-        self.assertTrue(nx.is_isomorphic(
+        self.assertEqualSpliceGraphs(
             actual,
             SPLICE_GRAPH_SIMPLE
-        ))
-        self.assertEqual(
-            nx.get_node_attributes(G=actual, name="coordinates"),
-            nx.get_node_attributes(G=SPLICE_GRAPH_SIMPLE, name="coordinates"),
-        )
-        self.assertEqual(
-            nx.get_edge_attributes(G=actual, name="overlaps"),
-            nx.get_edge_attributes(G=SPLICE_GRAPH_SIMPLE, name="overlaps"),
         )
 
     def test_multiple(self):
         """exfi.build_splice_graph.build_splice_graph: compute the splice graph of a set of exons"""
         actual = build_splice_graph(BED3RECORDS_COMPLEX)
-        self.assertTrue(nx.is_isomorphic(
+        self.assertEqualSpliceGraphs(
             actual,
             SPLICE_GRAPH_COMPLEX
-        ))
-        self.assertEqual(
-            nx.get_node_attributes(G=actual, name="coordinates"),
-            nx.get_node_attributes(G=SPLICE_GRAPH_COMPLEX, name="coordinates"),
-        )
-        self.assertEqual(
-            nx.get_edge_attributes(G=actual, name="overlaps"),
-            nx.get_edge_attributes(G=SPLICE_GRAPH_COMPLEX, name="overlaps"),
         )
 
 

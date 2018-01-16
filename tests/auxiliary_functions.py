@@ -8,6 +8,7 @@ import tempfile
 import shutil
 from subprocess import Popen, PIPE
 
+import networkx as nx
 from Bio import SeqIO
 
 from exfi.find_exons import \
@@ -113,3 +114,22 @@ class CustomAssertions:
                         )
                     )
             return True
+
+    @classmethod
+    def assertEqualSpliceGraphs(self, sg1, sg2):
+        """
+        Check if two splice graph are equal:
+        - are isomorphic
+        - same coordinates
+        - same overlaps
+        """
+        coordinates1 = nx.get_node_attributes(G=sg1, name="coordinates")
+        coordinates2 = nx.get_node_attributes(G=sg1, name="coordinates")
+        overlaps1 = nx.get_edge_attributes(G=sg1, name="overlaps")
+        overlaps2 = nx.get_edge_attributes(G=sg1, name="overlaps")
+        same_coordinates = coordinates1 == coordinates2
+        same_overlaps = overlaps1 == overlaps2
+        are_isomorphic = nx.is_isomorphic(sg1, sg2)
+        if are_isomorphic and same_coordinates and same_overlaps:
+            return True
+        return False

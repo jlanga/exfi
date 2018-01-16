@@ -52,17 +52,17 @@ script:
     --threads 2
     --output-bloom genome_k27_m500M_l1.bloom
     data/genome.fa.gz
-  - build_splicegraph
+  - build_splice_graph
     --input-fasta data/transcript.fa
     --input-bloom genome_k27_m500M_l1.bloom
     --kmer 27
     --max-fp-bases 5
     --output-gfa test_exons_raw.gfa
-  - gfa_to_exons
+  - gfa1_to_exons
     --input-gfa test_exons_raw.gfa
     --output-fasta exons.fa
     --soft-mask-overlaps
-  - gfa_to_gapped_transcripts
+  - gfa1_to_gapped_transcripts
     --input-gfa test_exons_raw.gfa
     --output-fasta gapped_transcripts.fa
     --number-of-ns 100

@@ -4,6 +4,13 @@
 Auxiliary functions and classes for testing
 """
 
+import tempfile
+import shutil
+from subprocess import Popen, PIPE
+
+import networkx as nx
+from Bio import SeqIO
+
 from exfi.find_exons import \
     _process_output, \
     _get_fasta, \
@@ -12,11 +19,10 @@ from exfi.find_exons import \
 from exfi.build_baited_bloom_filter import \
     _get_build_bf_command
 
-from subprocess import Popen, PIPE
-from Bio import SeqIO
 
-import tempfile
-import shutil
+
+
+
 
 def _command_to_list(command):
     """Execute command and return output as list of strings"""
@@ -39,50 +45,65 @@ def _getfasta_to_list(transcriptome_dict, iterable_of_bed):
 
 def _silent_popen(command):
     """Create a Popen with no stderr and stdout"""
-    return Popen(command,
+    return Popen(
+        command,
         stdout=open("/dev/null", 'w'),
         stderr=open("/dev/null", 'w'),
         shell=False
     )
 
 def _bf_and_process(reads_fns, transcriptome_fn):
-    """Build the BF and process the reads"""
+    """(list of str, str) -> list
+
+    Build the BF and process the reads
+    """
     tmp_dir = tempfile.mkdtemp()
     tmp_bf = tmp_dir + "/transcriptome_noreads.bf"
-    command = _get_build_bf_command("30", "100M", "1", "1", tmp_bf, reads_fns)
+    args = {
+        "kmer": 30,
+        "bloom_size": "100M",
+        "levels": 1,
+        "threads": 1,
+        "input_bloom": tmp_bf,
+        "output_bloom": tmp_bf,
+        "reads": reads_fns,
+        "input_fasta": transcriptome_fn,
+        "max_fp_bases": 5,
+        "max_overlap": 10
+    }
+    command = _get_build_bf_command(args, reads_fns)
     process = _silent_popen(command)
     process.wait()
-    results = _find_exons_pipeline(
-        kmer=30,
-        bloom_filter_fn=tmp_bf,
-        transcriptome_fn=transcriptome_fn,
-        max_fp_bases=5
-    )
+    results = _find_exons_pipeline(args)
     shutil.rmtree(tmp_dir)
     return list(results)
 
 
 class CustomAssertions:
-
+    """
+    Custom assertions not covered in unittest:
+    - assertEqualListOfSeqrecords
+    """
     @classmethod
     def assertEqualListOfSeqrecords(self, records1, records2):
         """
         Check if each element of list_of_seqrecords1 is exactly equal to each one of
         list_of_seqrecords2.
         """
-        n1 = len(records1)
-        n2 = len(records2)
-        if n1 != n2:
+        # pylint: disable=invalid-name, bad-classmethod-argument
+        length_1 = len(records1)
+        length_2 = len(records2)
+        if length_1 != length_2:
             raise AssertionError(
                 'Lengths differ:\n {len_1} != {len_2}'.format(
-                    len_1 = n1,
-                    len_2 = n2
+                    len_1=length_1,
+                    len_2=length_2
                 )
             )
         else:
-            for i in range(n1):
-                record1=records1[i]
-                record2=records2[i]
+            for i in range(length_1):
+                record1 = records1[i]
+                record2 = records2[i]
                 if record1.id != record2.id or record1.seq != record2.seq:
                     raise AssertionError(
                         'Records at position {i} differ:\n{id1} : {seq1}\n{id2} : {seq2}'.format(
@@ -94,3 +115,23 @@ class CustomAssertions:
                         )
                     )
             return True
+
+    @classmethod
+    def assertEqualSpliceGraphs(self, sg1, sg2):
+        """
+        Check if two splice graph are equal:
+        - are isomorphic
+        - same coordinates
+        - same overlaps
+        """
+        # pylint: disable=invalid-name,bad-classmethod-argument
+        coordinates1 = nx.get_node_attributes(G=sg1, name="coordinates")
+        coordinates2 = nx.get_node_attributes(G=sg1, name="coordinates")
+        overlaps1 = nx.get_edge_attributes(G=sg1, name="overlaps")
+        overlaps2 = nx.get_edge_attributes(G=sg1, name="overlaps")
+        same_coordinates = coordinates1 == coordinates2
+        same_overlaps = overlaps1 == overlaps2
+        are_isomorphic = nx.is_isomorphic(sg1, sg2)
+        if are_isomorphic and same_coordinates and same_overlaps:
+            return True
+        return False

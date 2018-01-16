@@ -4,8 +4,10 @@ import argparse
 from exfi import __version__
 from exfi.build_baited_bloom_filter import build_baited_bloom_filter
 import sys
-from os.path import isfile, exists, dirname
-from os import makedirs
+from os.path import isfile, exists, dirname, abspath
+from os import \
+    makedirs, \
+    remove
 
 parser = argparse.ArgumentParser(
     usage='build_baited_bloom_filter '
@@ -100,11 +102,11 @@ if __name__ == '__main__':
 
     # Store arguments
     args = vars(parser.parse_args())
-    transcriptome = args['input_fasta']
+    transcriptome = abspath(args['input_fasta'])
     kmer = args['kmer']
     bloom_size = args['bloom_size']
     levels = args['levels']
-    output_bloom = args['output_bloom']
+    output_bloom = abspath(args['output_bloom'])
     threads = args["threads"],
     reads = args["reads"]
     threads = int(*threads)  # I don't know why it is parsed as tuple
@@ -135,12 +137,7 @@ if __name__ == '__main__':
         makedirs(output_dir)
 
     # Run the program
-    build_baited_bloom_filter(
-        transcriptome=transcriptome,
-        kmer=kmer,
-        bloom_size=bloom_size,
-        levels=levels,
-        output_bloom=output_bloom,
-        threads=threads,
-        reads=reads
-    )
+    build_baited_bloom_filter(args)
+
+    #remove(output_dir + "/transcriptome.bf")
+    #remove(output_dir + "/transcriptome.txt")

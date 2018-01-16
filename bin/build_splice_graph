@@ -1,0 +1,148 @@
+#!/usr/bin/env python3
+
+import argparse
+
+from os.path import \
+    isfile, \
+    abspath
+
+from Bio import SeqIO
+
+from exfi import __version__
+
+from exfi.find_exons import \
+    _get_fasta, \
+    _find_exons_pipeline
+
+from exfi.build_splice_graph import \
+    build_splice_graph
+
+from exfi.correct_splice_graph import \
+    correct_splice_graph
+
+from exfi.io import \
+    index_fasta
+
+from exfi.io.splice_graph_to_gfa1 import \
+    splice_graph_to_gfa1
+
+
+
+
+
+parser = argparse.ArgumentParser(
+    usage='build_splicegraph -i transcriptome.fa -b bloom_filter.bf -k 30 1-o exome.gfa',
+    description='Store the predicted exome in GFA format',
+    epilog='Jorge Langa. Send issues and pull requests to github.com/jlanga/'
+           'exfi',
+)
+
+parser.add_argument(
+    '--version',
+    action='version',
+    version='%(prog)s {version}'.format(
+        version=__version__
+    )
+)
+
+parser.add_argument(
+    '--input-fasta',
+    '-i',
+    type=str,
+    required=True,
+    help='Input transcriptome in FASTA format',
+    dest='input_fasta',
+    metavar='FILE'
+)
+
+parser.add_argument(
+    '--input-bloom',
+    '-b',
+    type=str,
+    required=True,
+    help='Bloom filter with genomic sequences (from build_baited_bloom_filter or'
+        'abyss-bloom)',
+    dest='input_bloom',
+    metavar='BLOOM'
+)
+
+parser.add_argument(
+    '--kmer',
+    '-k',
+    type=int,
+    required=True,
+    help='The size of the k-mer (enter the same as in the bloom filter)',
+    dest='kmer',
+    metavar='KMER',
+    default=27
+)
+
+parser.add_argument(
+    '--max-fp-bases',
+    '-m',
+    type=int,
+    required=False,
+    help='Maximum number of consecutive false positives [5]',
+    dest="max_fp_bases",
+    metavar="INT",
+    default=5
+)
+
+parser.add_argument(
+    '--max-overlap',
+    '-l',
+    type=int,
+    required=False,
+    help='Maximum overlap in bp between pconsecutive exons (0 <= l <= k)',
+    dest='max_overlap',
+    metavar='INT',
+    default=10
+)
+
+parser.add_argument(
+    '--max-gap-size',
+    '-g',
+    type=int,
+    required=False,
+    help="Maximum gap size between predicted exons to try to fill with sealer",
+    dest="max_gap_size",
+    metavar='INT',
+    default=10
+)
+
+parser.add_argument(
+    '--output-gfa',
+    '-o',
+    type=str,
+    required=True,
+    help='Path to output GFA1 file (the splice graph)',
+    dest="output_gfa",
+    metavar="FILE"
+)
+
+args = parser.parse_args()
+
+if __name__ == "__main__":
+
+    args = vars(parser.parse_args())
+    args["input_bloom"] = abspath(args["input_bloom"])
+    args["input_fasta"] = abspath(args["input_fasta"])
+    args["output_gfa"] = abspath(args["output_gfa"])
+
+    # Get predicted exons in bed format
+    positive_exons_bed = _find_exons_pipeline(args)
+
+    # Build splice graph
+    splice_graph = build_splice_graph(positive_exons_bed)
+
+    # Transcriptome_dict
+    transcriptome_dict = index_fasta(args["input_fasta"])
+
+    splice_graph = correct_splice_graph(splice_graph, args)
+
+    # Write to GFA1
+    splice_graph_to_gfa1(
+        splice_graph=splice_graph,
+        transcriptome_dict=transcriptome_dict,
+        filename=args["output_gfa"]
+    )

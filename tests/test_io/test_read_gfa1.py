@@ -51,6 +51,10 @@ class TestOverlapStrToInt(TestCase):
         with self.assertRaises(ValueError):
             _overlap_str_to_int("12")
 
+    def test_fail_type(self):
+        """exfi.io.read_gfa1._overlap_str_to_int: not str"""
+        with self.assertRaises(TypeError):
+            _overlap_str_to_int(42)
 
 
 class TestProcessSegments(TestCase):

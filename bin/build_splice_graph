@@ -71,7 +71,7 @@ parser.add_argument(
     '-k',
     type=int,
     required=True,
-    help='The size of the k-mer (enter the same as in the bloom filter)',
+    help='The size of the k-mer (enter the same as in the bloom filter) [27]',
     dest='kmer',
     metavar='KMER',
     default=27
@@ -93,7 +93,7 @@ parser.add_argument(
     '-l',
     type=int,
     required=False,
-    help='Maximum overlap in bp between pconsecutive exons (0 <= l <= k)',
+    help='Maximum overlap in bp between pconsecutive exons (0 <= l <= k) [10]',
     dest='max_overlap',
     metavar='INT',
     default=10
@@ -104,7 +104,7 @@ parser.add_argument(
     '-g',
     type=int,
     required=False,
-    help="Maximum gap size between predicted exons to try to fill with sealer",
+    help="Maximum gap size between predicted exons to try to fill with sealer [10]",
     dest="max_gap_size",
     metavar='INT',
     default=10

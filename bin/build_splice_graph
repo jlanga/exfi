@@ -120,6 +120,14 @@ parser.add_argument(
     metavar="FILE"
 )
 
+parser.add_argument(
+    '--collapse',
+    '-c',
+    help='Collapse splice graph by exon sequence [False]',
+    dest='collapse',
+    action="store_true"
+)
+
 args = parser.parse_args()
 
 if __name__ == "__main__":
@@ -140,14 +148,15 @@ if __name__ == "__main__":
 
     splice_graph = correct_splice_graph(splice_graph, args)
 
-    collapsed_splice_graph = collapse_splice_graph(
+    if args["collapse"]:
+        splice_graph = collapse_splice_graph(
         splice_graph=splice_graph,
         transcriptome_dict={x.id: str(x.seq) for x in transcriptome_dict.values()}
     )
 
     # Write to GFA1
     splice_graph_to_gfa1(
-        splice_graph=collapsed_splice_graph,
+        splice_graph=splice_graph,
         transcriptome_dict=transcriptome_dict,
         filename=args["output_gfa"]
     )

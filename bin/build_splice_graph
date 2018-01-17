@@ -31,7 +31,7 @@ from exfi.collapse_splice_graph import collapse_splice_graph
 
 
 parser = argparse.ArgumentParser(
-    usage='build_splicegraph -i transcriptome.fa -b bloom_filter.bf -k 30 1-o exome.gfa',
+    usage='build_splicegraph -i transcriptome.fa -b bloom_filter.bf -k 30 -o exome.gfa',
     description='Store the predicted exome in GFA format',
     epilog='Jorge Langa. Send issues and pull requests to github.com/jlanga/'
            'exfi',

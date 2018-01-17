@@ -124,7 +124,7 @@ def _run_sealer(sealer_input_fn, args):
     # Clean files
     remove(sealer_output_prefix[1] + "_log.txt")
     remove(sealer_output_prefix[1] + "_scaffold.fa")
-
+    remove(sealer_output_prefix[1])
     return sealer_output_prefix[1] + "_merged.fa"
 
 
@@ -138,7 +138,7 @@ def _collect_sealer_results(handle):
     # Collect results
     edge2fill = {}
     for corrected in SeqIO.parse(format="fasta", handle=handle):
-        node1, node2 = corrected.id.rsplit("_")[0].rsplit("_")[0].split("~")
+        node1, node2 = corrected.id.rsplit("_", 2)[0].split("~")
         edge2fill[node1] = node2
 
     return edge2fill
@@ -219,6 +219,9 @@ def correct_splice_graph(splice_graph, args):
 
     # Collect sealer results
     edge2fill = _collect_sealer_results(handle=sealer_output_fn)
+
+    remove(sealer_input_fn)
+    remove(sealer_output_fn)
 
     # Compute the sealed splice graph
     return _sculpt_graph(splice_graph, edge2fill)

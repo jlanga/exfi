@@ -20,14 +20,14 @@ def _compute_segments(splice_graph, transcriptome_dict):
     """
     node2coords = nx.get_node_attributes(G=splice_graph, name="coordinates")
     for node_id, coordinates in node2coords.items():
-        for coordinate in coordinates:
-            transcript_id, start, end = coordinate
-            sequence = str(transcriptome_dict[transcript_id].seq[start:end])
-            yield "S\t{node}\t{sequence}\tLN:i:{length}\n".format(
-                node=node_id,
-                sequence=sequence,
-                length=len(sequence)
-            )
+        coordinate = coordinates[0]
+        transcript_id, start, end = coordinate
+        sequence = str(transcriptome_dict[transcript_id].seq[start:end])
+        yield "S\t{node}\t{sequence}\tLN:i:{length}\n".format(
+            node=node_id,
+            sequence=sequence,
+            length=len(sequence)
+        )
 
 
 
@@ -113,7 +113,6 @@ def splice_graph_to_gfa1(splice_graph, transcriptome_dict, filename):
     Write splice graph to filename in GFA 1 format
     """
     header = ["H\tVN:Z:1.0\n"]
-
     segments = _compute_segments(splice_graph, transcriptome_dict)
     links = _compute_links(splice_graph)
     containments = _compute_containments(splice_graph)

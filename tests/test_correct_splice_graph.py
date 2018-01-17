@@ -65,11 +65,13 @@ build_baited_bloom_filter(ARGS)
 POSITIVE_EXONS_BED = list(_find_exons_pipeline(ARGS))
 SPLICE_GRAPH = build_splice_graph(POSITIVE_EXONS_BED)
 
+
 def tearDownModule():
     """Remove temporary bloom and temporary GFA files"""
     # pylint: disable=invalid-name
     remove(TEMP_BLOOM[1])
     remove(TEMP_GFA[1])
+
 
 
 class TestPrepareSealer(TestCase, CustomAssertions):
@@ -86,9 +88,6 @@ class TestPrepareSealer(TestCase, CustomAssertions):
         self.assertEqualListOfSeqrecords(actual, expected)
 
 
-
-
-
 class TestRunSealer(TestCase, CustomAssertions):
     """_run_sealer(sealer_input_fn, args):
     (str, dict) -> str
@@ -98,12 +97,12 @@ class TestRunSealer(TestCase, CustomAssertions):
         """exfi.correct_splice_graph._run_sealer: test if runs"""
         sealer_in_fn = _prepare_sealer(SPLICE_GRAPH, ARGS)
         sealer_out_fn = _run_sealer(sealer_input_fn=sealer_in_fn, args=ARGS)
-        self.assertEqualListOfSeqrecords(
-            list(SeqIO.parse("tests/correct_splice_graph/sealed.fa", format="fasta")),
-            list(SeqIO.parse(sealer_out_fn, "fasta"))
-        )
+        actual = list(SeqIO.parse("tests/correct_splice_graph/sealed.fa", format="fasta"))
+        expected = list(SeqIO.parse(sealer_out_fn, "fasta"))
         remove(sealer_in_fn)
         remove(sealer_out_fn)
+        self.assertEqualListOfSeqrecords(actual, expected)
+
 
 
 class TestCollectSealerResults(TestCase):
@@ -117,6 +116,7 @@ class TestCollectSealerResults(TestCase):
         sealer_output_fn = _run_sealer(sealer_input_fn=empty_file[1], args=ARGS)
         edge2fill = _collect_sealer_results(handle=sealer_output_fn)
         remove(empty_file[1])
+        remove(sealer_output_fn)
         self.assertEqual(edge2fill, {})
 
     def test_collect_somedata(self):

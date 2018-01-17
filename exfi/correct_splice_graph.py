@@ -220,5 +220,8 @@ def correct_splice_graph(splice_graph, args):
     # Collect sealer results
     edge2fill = _collect_sealer_results(handle=sealer_output_fn)
 
+    remove(sealer_input_fn)
+    remove(sealer_output_fn)
+
     # Compute the sealed splice graph
     return _sculpt_graph(splice_graph, edge2fill)

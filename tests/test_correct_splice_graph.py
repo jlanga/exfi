@@ -39,42 +39,44 @@ from tests.auxiliary_functions import \
     CustomAssertions
 
 
+def _comopose_args(bloom_fn, gfa_fn):
+    """Compose a dict of args with two variables"""
+    return {
+        "kmer": 30,
+        "input_bloom": bloom_fn,
+        "bloom_size": "500M",
+        "levels": 1,
+        "input_fasta": "tests/correct_splice_graph/transcript.fa",
+        "max_fp_bases": 5,
+        "max_overlap": 10,
+        "output_gfa": gfa_fn,
+        "threads": 4,
+        "max_gap_size": 10,
+        "reads": ["tests/correct_splice_graph/reads.fa"],
+        "output_bloom" : bloom_fn,
+        "bloom_filter": bloom_fn
+    }
+
 
 TEMP_BLOOM = mkstemp()
 TEMP_GFA = mkstemp()
-
-
-ARGS = {
-    "kmer": 30,
-    "input_bloom": TEMP_BLOOM[1],
-    "bloom_size": "500M",
-    "levels": 1,
-    "input_fasta": "tests/correct_splice_graph/transcript.fa",
-    "max_fp_bases": 5,
-    "max_overlap": 10,
-    "output_gfa": TEMP_GFA[1],
-    "threads": 4,
-    "max_gap_size": 10,
-    "reads": ["tests/correct_splice_graph/reads.fa"],
-    "output_bloom" : TEMP_BLOOM[1],
-    "bloom_filter": TEMP_BLOOM[1]
-}
-
+ARGS = _comopose_args(TEMP_BLOOM[1], TEMP_GFA[1])
 build_baited_bloom_filter(ARGS)
-
-# Get predicted exons in bed format
 POSITIVE_EXONS_BED = list(_find_exons_pipeline(ARGS))
-
-# Build splice graph
 SPLICE_GRAPH = build_splice_graph(POSITIVE_EXONS_BED)
 
-
+def tearDownModule():
+    """Remove temporary bloom and temporary GFA files"""
+    # pylint: disable=invalid-name
+    remove(TEMP_BLOOM[1])
+    remove(TEMP_GFA[1])
 
 
 class TestPrepareSealer(TestCase, CustomAssertions):
     """_prepare_sealer(splice_graph, args)
     (nx.DiGraph, dict_of_parameters) -> str
     """
+
     def test_file_creation(self):
         """exfi.correct_splice_graph._prepare_sealer: test creation"""
         sealer_input_fn = _prepare_sealer(SPLICE_GRAPH, ARGS)
@@ -85,10 +87,13 @@ class TestPrepareSealer(TestCase, CustomAssertions):
 
 
 
+
+
 class TestRunSealer(TestCase, CustomAssertions):
     """_run_sealer(sealer_input_fn, args):
     (str, dict) -> str
     """
+
     def test_run(self):
         """exfi.correct_splice_graph._run_sealer: test if runs"""
         sealer_in_fn = _prepare_sealer(SPLICE_GRAPH, ARGS)
@@ -101,11 +106,11 @@ class TestRunSealer(TestCase, CustomAssertions):
         remove(sealer_out_fn)
 
 
-
 class TestCollectSealerResults(TestCase):
     """_collect_sealer_results(handle):
     (str) -> dict
     """
+
     def test_collect_empty(self):
         """exfi.correct_splice_graph._collect_sealer_results: empty case"""
         empty_file = mkstemp()
@@ -165,6 +170,7 @@ class TestCorrectSpliceGraph(TestCase):
     """ correct_splice_graph(splice_graph, args):
     (nx.DiGraph, int) -> nx.DiGraph
     """
+
     def test_correct_splice_graph(self):
         """exfi.correct_splice_graph.correct_splice_graph: some data"""
         test_graph = nx.DiGraph()
@@ -180,7 +186,7 @@ class TestCorrectSpliceGraph(TestCase):
         ))
 
 
+
 if __name__ == '__main__':
     main()
     # Remove BF
-    remove(TEMP_BLOOM, TEMP_GFA)

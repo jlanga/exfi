@@ -80,8 +80,8 @@ class TestPrepareSealer(TestCase, CustomAssertions):
         sealer_input_fn = _prepare_sealer(SPLICE_GRAPH, ARGS)
         actual = list(SeqIO.parse(sealer_input_fn, format="fasta"))
         expected = list(SeqIO.parse("tests/correct_splice_graph/to_seal.fa", format="fasta"))
-        self.assertEqualListOfSeqrecords(actual, expected)
         remove(sealer_input_fn)
+        self.assertEqualListOfSeqrecords(actual, expected)
 
 
 
@@ -110,8 +110,8 @@ class TestCollectSealerResults(TestCase):
         """exfi.correct_splice_graph._collect_sealer_results: empty case"""
         empty_file = mkstemp()
         sealer_output_fn = _run_sealer(sealer_input_fn=empty_file[1], args=ARGS)
-        # Collect sealer results
         edge2fill = _collect_sealer_results(handle=sealer_output_fn)
+        remove(empty_file[1])
         self.assertEqual(edge2fill, {})
 
     def test_collect_somedata(self):
@@ -119,6 +119,7 @@ class TestCollectSealerResults(TestCase):
         edge2fill = _collect_sealer_results(
             handle="tests/correct_splice_graph/sealed.fa"
         )
+        # Do not remove file!
         self.assertEqual(
             edge2fill,
             {
@@ -173,10 +174,6 @@ class TestCorrectSpliceGraph(TestCase):
         )
         splice_graph = build_splice_graph(POSITIVE_EXONS_BED)
         sealed_graph = correct_splice_graph(splice_graph, ARGS)
-        print(test_graph.nodes())
-        print(test_graph.edges())
-        print(sealed_graph.nodes())
-        print(sealed_graph.edges())
         self.assertTrue(nx.is_isomorphic(
             sealed_graph,
             test_graph

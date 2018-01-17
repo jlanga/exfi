@@ -26,7 +26,7 @@ from exfi.io import \
 from exfi.io.splice_graph_to_gfa1 import \
     splice_graph_to_gfa1
 
-
+from exfi.collapse_splice_graph import collapse_splice_graph
 
 
 
@@ -140,9 +140,14 @@ if __name__ == "__main__":
 
     splice_graph = correct_splice_graph(splice_graph, args)
 
+    collapsed_splice_graph = collapse_splice_graph(
+        splice_graph=splice_graph,
+        transcriptome_dict={x.id: str(x.seq) for x in transcriptome_dict.values()}
+    )
+
     # Write to GFA1
     splice_graph_to_gfa1(
-        splice_graph=splice_graph,
+        splice_graph=collapsed_splice_graph,
         transcriptome_dict=transcriptome_dict,
         filename=args["output_gfa"]
     )

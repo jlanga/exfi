@@ -11,7 +11,7 @@ from tempfile import \
     mkstemp
 
 from os import remove
-
+from os.path import dirname
 import networkx as nx
 
 from Bio import \
@@ -58,9 +58,11 @@ def _comopose_args(bloom_fn, gfa_fn):
     }
 
 
-TEMP_BLOOM = mkstemp()
-TEMP_GFA = mkstemp()
-ARGS = _comopose_args(TEMP_BLOOM[1], TEMP_GFA[1])
+TEMP = mkstemp()
+TEMPDIR = dirname(TEMP[1])
+TEMP_BLOOM = TEMP[1] + ".bloom"
+TEMP_GFA = TEMP[1] + ".gfa"
+ARGS = _comopose_args(TEMP_BLOOM, TEMP_GFA)
 build_baited_bloom_filter(ARGS)
 POSITIVE_EXONS_BED = list(_find_exons_pipeline(ARGS))
 SPLICE_GRAPH = build_splice_graph(POSITIVE_EXONS_BED)
@@ -69,12 +71,12 @@ SPLICE_GRAPH = build_splice_graph(POSITIVE_EXONS_BED)
 def tearDownModule():
     """Remove temporary bloom and temporary GFA files"""
     # pylint: disable=invalid-name
-    remove(TEMP_BLOOM[1])
-    remove(TEMP_GFA[1])
-    remove("/tmp/categories_multiMatch.fa")
-    remove("/tmp/categories_noMatch.fa")
-    remove("/tmp/categories_summary.tsv")
-    remove("/tmp/categories_transcriptome.fa")
+    remove(TEMP[1])
+    remove(TEMP_BLOOM)
+    remove(TEMPDIR + "/categories_multiMatch.fa")
+    remove(TEMPDIR + "/categories_noMatch.fa")
+    remove(TEMPDIR + "/categories_summary.tsv")
+    remove(TEMPDIR + "/categories_transcriptome.fa")
 
 
 

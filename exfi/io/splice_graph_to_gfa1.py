@@ -7,9 +7,9 @@ exfi.io.splice_graph_to_gfa1.py: functions to convert a splice graph into a GFA1
 from itertools import chain
 
 import networkx as nx
+import pandas as pd
 
 from exfi.build_splice_graph import \
-    bed3_records_to_bed6df, \
     bed6df_to_path2node
 
 def _compute_segments(splice_graph, transcriptome_dict):
@@ -88,16 +88,23 @@ def _compute_paths(splice_graph):
     Compute the paths in the splice graph:
     P transcript_id [node1, ..., nodeN]
     """
-    # Get just the coordinates
-    bed3records = nx.get_node_attributes(
+    # Make bed6df
+    node2coords = nx.get_node_attributes(
         G=splice_graph,
         name="coordinates"
-    ).values()
+    )
 
-    # Flat out the list of coordinates
-    bed3records = [item for subrecord in bed3records for item in subrecord]
+    bed6_records = (
+        (seqid, start, end, name, ".", "+")
+        for name, coordinates in node2coords.items()
+        for (seqid, start, end) in coordinates
+    )
 
-    bed6df = bed3_records_to_bed6df(bed3records)
+    bed6df = pd.DataFrame(
+        data=bed6_records,
+        columns=["chrom", "start", "end", "name", "score", "strand"]
+    )
+
     path2nodes = bed6df_to_path2node(bed6df)
     for transcript_id, path in path2nodes.items():
         yield "P\t{transcript_id}\t{path}\n".format(

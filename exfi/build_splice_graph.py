@@ -69,7 +69,7 @@ def bed6df_to_node2coordinates(bed6df):
 
 
 def bed6df_to_path2node(bed6df):
-    """(pandas.df) -> {transcript_id: (coordinates1, ..., coordinatesN)}
+    """(pandas.df) -> {transcript_id: (node1, ..., nodeN)}
 
     Get a dict containing transcript_id to the tuple of node names that compose
     it in order, indicating the path."""

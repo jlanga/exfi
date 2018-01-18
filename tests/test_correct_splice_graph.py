@@ -12,6 +12,7 @@ from tempfile import \
 
 from os import remove
 from os.path import dirname
+
 import networkx as nx
 
 from Bio import \

@@ -165,20 +165,23 @@ def _sculpt_graph(splice_graph, edge2fill):
         node_n = "{0}:{1}-{2}".format(*n_coordinates)
 
         # Insert new node
-        splice_graph.add_node(node_n)
-        splice_graph.node[node_n]["coordinates"] = (n_coordinates,)
+        splice_graph.add_node(node_n, coordinates=(n_coordinates,))
 
         # link pred(u) to n, and overlaps
         for predecessor in splice_graph.predecessors(node_u):
-            splice_graph.add_edge(u=predecessor, v=node_n)
-            splice_graph[predecessor][node_n]['overlaps'] = \
-                splice_graph[predecessor][node_u]['overlaps']
+            splice_graph.add_edge(
+                u=predecessor,
+                v=node_n,
+                overlaps=splice_graph[predecessor][node_u]['overlaps']
+            )
 
         # Attach n to succ(v)
         for successor in splice_graph.successors(node_v):
-            splice_graph.add_edge(u=node_n, v=successor)
-            splice_graph[node_n][successor]['overlaps'] = \
-                splice_graph[node_v][successor]['overlaps']
+            splice_graph.add_edge(
+                u=node_n,
+                v=successor,
+                overlaps=splice_graph[node_v][successor]['overlaps']
+            )
 
         # Delete u, delete v
         splice_graph.remove_nodes_from(nodes=[node_u, node_v])

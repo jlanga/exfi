@@ -40,7 +40,7 @@ from tests.auxiliary_functions import \
     CustomAssertions
 
 
-def _comopose_args(bloom_fn, gfa_fn):
+def _compose_args(bloom_fn, gfa_fn):
     """Compose a dict of args with two variables"""
     return {
         "kmer": 30,
@@ -63,7 +63,7 @@ TEMP = mkstemp()
 TEMPDIR = dirname(TEMP[1])
 TEMP_BLOOM = TEMP[1] + ".bloom"
 TEMP_GFA = TEMP[1] + ".gfa"
-ARGS = _comopose_args(TEMP_BLOOM, TEMP_GFA)
+ARGS = _compose_args(TEMP_BLOOM, TEMP_GFA)
 build_baited_bloom_filter(ARGS)
 POSITIVE_EXONS_BED = list(_find_exons_pipeline(ARGS))
 SPLICE_GRAPH = build_splice_graph(POSITIVE_EXONS_BED)

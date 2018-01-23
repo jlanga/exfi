@@ -23,7 +23,10 @@ from Bio import \
 from natsort import \
     natsorted
 
+from exfi.io.join_components import \
+    join_components
 
+from exfi.io.split_into_components import split_into_components
 
 def _get_node2sequence(splice_graph: nx.DiGraph, transcriptome_dict: dict) -> dict:
     """From the splice graph and a transcriptome, get the exon: sequence dictionary"""
@@ -147,59 +150,6 @@ def _filled_edges_by_transcript(splice_graph: nx.DiGraph, filled_edges: str) -> 
 
 
 
-def _raw_splice_graph_to_components(splice_graph: nx.DiGraph) -> dict:
-    '''Convert a single splice graph into a dict of splice graphs, where
-    - keys are transcript_ids
-    - values are the splice graph of that transcript
-    '''
-    # Compute connected components
-    undirected_components = nx.connected_component_subgraphs(G=splice_graph.to_undirected())
-
-    component_dict = {}
-    for undirected_component in undirected_components:
-
-        # Get the transcript_id of the component
-        nodes = tuple(x for x in undirected_component.nodes())
-        a_node = nodes[0]
-        transcript = undirected_component.node[a_node]["coordinates"][0][0]
-
-        # Get node data as is
-        node2coord = nx.get_node_attributes(
-            G=undirected_component,
-            name="coordinates"
-        )
-
-        # Get edge data. Be careful because each edge is twice: one in each direction
-        # Use natsorted to get the correct direction
-        edge2overlap = {}
-        for node_u, node_v in undirected_component.edges():
-            node_u, node_v = natsorted([node_u, node_v])
-            edge2overlap[(node_u, node_v)] = splice_graph[node_u][node_v]["overlaps"]
-
-        # Re-create directed graph
-        # Nodes
-        directed_component = nx.DiGraph()
-        directed_component.add_nodes_from(node2coord.keys())
-        nx.set_node_attributes(
-            G=directed_component,
-            name="coordinates",
-            values=node2coord
-        )
-        # Edges
-        directed_component.add_edges_from(edge2overlap.keys())
-        nx.set_edge_attributes(
-            G=directed_component,
-            name="overlaps",
-            values=edge2overlap
-        )
-
-        # Store directed component in its position
-        component_dict[transcript] = directed_component
-
-    return component_dict
-
-
-
 def _rename_nodes_from_collapse(quotient_graph: nx.DiGraph) -> dict:
     """Compose the new_node ids from nx.quotient to str or tuples of strs"""
     # Main dict
@@ -238,7 +188,6 @@ def _recompute_edge2overlap(component: nx.DiGraph, quotient_relabeled: nx.DiGrap
     old_edge2overlap = nx.get_edge_attributes(G=component, name="overlaps")
     new_edge2overlap = {}
 
-
     for edge in quotient_relabeled.edges():
         node_u, node_v = edge
 
@@ -250,6 +199,7 @@ def _recompute_edge2overlap(component: nx.DiGraph, quotient_relabeled: nx.DiGrap
 
         elif isinstance(node_u, str) and isinstance(node_v, tuple):
             new_edge2overlap[(node_u, node_v)] = old_edge2overlap[(node_u, node_v[0])]
+
         else:
             new_edge2overlap[(node_u, node_v)] = old_edge2overlap[(node_u, node_v)]
 
@@ -296,7 +246,11 @@ def _sculpt_graph(splice_graph: nx.DiGraph, filled_edges: set) -> nx.DiGraph:
 
     # Compute the quotient graph
     def full_partition(node_u, node_v, filled_edges):
-        """Function to test if node_u and node_v belong to the same partition of the graph"""
+        """Function to test if node_u and node_v belong to the same partition of the graph
+
+        Note: to be a equivalence relationship it should be "there is a path between u and v or
+        between v and u". Given the directedness of the graph, it is not required.
+        """
         graph = nx.DiGraph()
         graph.add_edges_from(filled_edges)
         if node_u in graph.nodes() and \
@@ -367,7 +321,7 @@ def correct_splice_graph(splice_graph: nx.DiGraph, args: dict) -> nx.DiGraph:
     )
 
     # Split Splice graph into subgraphs
-    transcript2component = _raw_splice_graph_to_components(splice_graph=splice_graph)
+    transcript2component = split_into_components(splice_graph=splice_graph)
 
     # Process each component separatedly
     processed_splice_graph = {}
@@ -382,26 +336,6 @@ def correct_splice_graph(splice_graph: nx.DiGraph, args: dict) -> nx.DiGraph:
         )
 
     # Join everything into a splice_graph
-    joint = nx.DiGraph()
-
-    # Nodes
-    node2coordinate = {
-        node: coordinate
-        for subgraph in processed_splice_graph.values()
-        for node, coordinate in nx.get_node_attributes(G=subgraph, name="coordinates").items()
-    }
-    joint.add_nodes_from(node2coordinate.keys())
-    nx.set_node_attributes(G=joint, name="coordinates", values=node2coordinate)
-    del node2coordinate
-
-    # Edges
-    edge2overlap = {
-        edge: overlap
-        for subgraph in processed_splice_graph.values()
-        for edge, overlap in nx.get_edge_attributes(G=subgraph, name="overlaps").items()
-    }
-    joint.add_edges_from(edge2overlap.keys())
-    nx.set_edge_attributes(G=joint, name="overlaps", values=edge2overlap)
-    del edge2overlap
+    joint = join_components(processed_splice_graph)
 
     return joint

@@ -35,7 +35,6 @@ from exfi.correct_splice_graph import \
     _run_sealer, \
     _collect_sealer_results, \
     _filled_edges_by_transcript, \
-    _raw_splice_graph_to_components, \
     _rename_nodes_from_collapse, \
     _recompute_node2coord, \
     _recompute_edge2overlap, \
@@ -232,27 +231,6 @@ class TestFilledEdgeByTranscript(TestCase):
         actual = _filled_edges_by_transcript(splice_graph=SPLICE_GRAPH, filled_edges=initial)
         expected = FILLED_EDGE_BY_TRANSCRIPT
         self.assertEqual(actual, expected)
-
-
-
-class TestRawSpliceGraphToComponents(TestCase, CustomAssertions):
-    "Tests for _raw_splice_graph_to_components(splice_graph: nx.DiGraph) -> dict"
-
-    def test_empty(self):
-        "exfi.correct_splice_graph._raw_splice_graph_to_components: empty case"
-        initial = nx.DiGraph()
-        actual = _raw_splice_graph_to_components(initial)
-        expected = {}
-        self.assertEqual(actual, expected)
-
-    def test_some_data(self):
-        "exfi.correct_splice_graph._raw_splice_graph_to_components: some data"
-        actual = _raw_splice_graph_to_components(SPLICE_GRAPH)
-        expected = SPLITTED_SPLICE_GRAPH
-        for component_id in expected:
-            self.assertEqualSpliceGraphs(
-                actual[component_id], expected[component_id]
-            )
 
 
 

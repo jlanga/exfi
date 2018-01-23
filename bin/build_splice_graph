@@ -128,6 +128,15 @@ parser.add_argument(
     action="store_true"
 )
 
+parser.add_argument(
+    '--correct',
+    '-C',
+    help='Correct splice graph by using sealer between exons that seem nearby [False]',
+    dest='correct',
+    action="store_true"
+)
+
+
 args = parser.parse_args()
 
 if __name__ == "__main__":
@@ -146,7 +155,8 @@ if __name__ == "__main__":
     # Transcriptome_dict
     transcriptome_dict = index_fasta(args["input_fasta"])
 
-    splice_graph = correct_splice_graph(splice_graph, args)
+    if args["correct"]:
+        splice_graph = correct_splice_graph(splice_graph, args)
 
     if args["collapse"]:
         splice_graph = collapse_splice_graph(

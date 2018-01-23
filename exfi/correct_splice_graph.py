@@ -291,6 +291,9 @@ def _compute_new_node_ids(quotient_relabeled: nx.DiGraph, component: nx.DiGraph)
 def _sculpt_graph(splice_graph: nx.DiGraph, filled_edges: set) -> nx.DiGraph:
     """Apply sealer corrections in filled_edges to the splice graph"""
 
+    if not filled_edges:
+        return splice_graph
+
     # Compute the quotient graph
     def full_partition(node_u, node_v, filled_edges):
         """Function to test if node_u and node_v belong to the same partition of the graph"""
@@ -371,12 +374,12 @@ def correct_splice_graph(splice_graph: nx.DiGraph, args: dict) -> nx.DiGraph:
     for component_id, sub_splice_graph in transcript2component.items():
         if component_id in filled_edges_by_transcript:
             filled_edges = filled_edges_by_transcript[component_id]
-            processed_splice_graph[component_id] = _sculpt_graph(
-                sub_splice_graph,
-                filled_edges
-            )
         else:
-            processed_splice_graph[component_id] = sub_splice_graph
+            filled_edges = {}
+        processed_splice_graph[component_id] = _sculpt_graph(
+            sub_splice_graph,
+            filled_edges
+        )
 
     # Join everything into a splice_graph
     joint = nx.DiGraph()

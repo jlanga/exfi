@@ -3,15 +3,22 @@
 """exfi.io.join_components: Submodule to convert a dict of splice graphs into a
 single splice graph"""
 
+import logging
+
 import networkx as nx
+
+
 
 def join_components(dict_of_components: dict) -> nx.DiGraph:
     """Merge all splice graphs in dict_of_components into a single splice_graph"""
+
+    logging.info("\tJoining multiple splice graphs into one")
 
     # Join everything into a splice_graph
     joint = nx.DiGraph()
 
     # Nodes
+    logging.info("\t\tProcessing nodes")
     node2coordinate = {
         node: coordinate
         for subgraph in dict_of_components.values()
@@ -23,6 +30,7 @@ def join_components(dict_of_components: dict) -> nx.DiGraph:
     del node2coordinate
 
     # Edges
+    logging.info("\t\tProcessing edges")
     edge2overlap = {
         edge: overlap
         for subgraph in dict_of_components.values()

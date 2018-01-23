@@ -4,6 +4,8 @@
 Submodule to split a huge splice graph into its constituent components
 """
 
+import logging
+
 import networkx as nx
 from natsort import natsorted
 
@@ -13,17 +15,21 @@ def split_into_components(splice_graph: nx.DiGraph) -> dict:
     - keys are transcript_ids
     - values are the splice graph of that transcript
     '''
+    logging.info("\tSplitting directed graph into directed components")
     # Compute connected components
+    logging.info("\t\tComputing undirected components")
     undirected_components = nx.connected_component_subgraphs(G=splice_graph.to_undirected())
 
     component_dict = {}
+
+    logging.info("\t\tComputing directed components")
     for undirected_component in undirected_components:
 
         # Get the transcript_id of the component
         nodes = tuple(x for x in undirected_component.nodes())
         a_node = nodes[0]
         transcript = undirected_component.node[a_node]["coordinates"][0][0]
-
+        logging.info("\t\t\tProcessing component {transcript}".format(transcript=transcript))
         # Get node data as is
         node2coord = nx.get_node_attributes(
             G=undirected_component,

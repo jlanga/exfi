@@ -4,6 +4,8 @@
 exfi.io.read_gfa1: submodule to process a gfa1 into almost a splice graph
 """
 
+import logging
+
 
 def _overlap_str_to_int(overlap_str):
     """(str) -> int
@@ -28,6 +30,7 @@ def _process_segments(segments_raw):
 
     Convert a list of ["S", node_id, str, *whatever] to a dict {node_id: str}
     """
+    logging.info("\tProcessing segments")
     segments = {}
     for line in segments_raw:
         _, node_id, sequence, *_ = line
@@ -42,6 +45,7 @@ def _process_links(links_raw):
     Convert a list of ["L", from, from_orient, to, to_ortient, overlap] to a dict
     {(from, to): overlap}
     """
+    logging.info("\tProcessing links")
     links = {}
     for line in links_raw:
         _, node_u, _, node_v, _, overlap, *_ = line
@@ -57,6 +61,7 @@ def _process_containments(containments_raw):
     Convert a list of ["C", transcript_id, _, node_id, _, position, overlap] to a dict
     {node_id: (transcript_id, start, end)}
     """
+    logging.info("\tProcessing containments")
     containments = {}
     for line in containments_raw:
         _, container, _, contained, _, position, overlap, *_ = line
@@ -76,6 +81,7 @@ def _process_paths(containments_raw):
 
     Conver a list of ["P", transcript_id, node1+,...,nodeN+]  to a dict {tra}
     """
+    logging.info("\tProcessing paths")
     paths = {}
     for line in containments_raw:
         _, path_name, segment_names, *_ = line
@@ -97,6 +103,8 @@ def read_gfa1(filename):
     }
     """
     with open(filename, "r") as gfain:
+
+        logging.info("Reading gfa1 {file}".format(file=filename))
 
         segments = []
         links = []

@@ -29,6 +29,7 @@ pipeline:
 abyss-sealer.
 """
 
+import logging
 import shutil
 import os
 
@@ -115,7 +116,7 @@ def build_baited_bloom_filter(args):
     build_bf = _get_build_bf_command(args, ["/dev/stdin"])
 
     # Run the pipeline
-    stderr.write(
+    logging.info(
         "\n\nRunning command: {command}\n".format(
             command=" ".join(build_transcriptome_bf)
         )
@@ -125,7 +126,7 @@ def build_baited_bloom_filter(args):
 
     p_build_transcriptome_bf.wait()
 
-    stderr.write(
+    logging.info(
         "\n\nRunning command: {command1} | {command2}\n".format(
             command1=" ".join(categorize),
             command2=" ".join(build_bf)

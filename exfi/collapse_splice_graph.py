@@ -6,6 +6,7 @@ exfi.collapse_splice_graph: merge nodes with the exact same sequence
 
 import networkx as nx
 
+import logging
 
 def _compute_seq2node(node2coord, transcriptome_dict):
     """(dict, dict) -> dict
@@ -17,6 +18,7 @@ def _compute_seq2node(node2coord, transcriptome_dict):
     - node2seq = {node_id: str}
     """
     # Get the node -> sequence
+    logging.info("Computing the sequence to node_id dictionary")
     seq2node = {}
     for node_id, coordinates in node2coord.items():
         seqid, start, end = coordinates[0]  # Just take the first
@@ -33,6 +35,7 @@ def _compute_old2new(seq2node):
 
     Compute the dict of old identifiers to new
     """
+    logging.info("Computing mapping between new exon ids to the old ones")
     old2new = {}
     for i, old_nodes in enumerate(seq2node.values()):
         new_node = "exon_{exon_number:08d}".format(exon_number=i)
@@ -47,6 +50,7 @@ def _compute_new_node2coord(old2new, node2coord):
 
     Recompute the node to coordinate dict
     """
+    logging.info("Computing new node -> coordinates dict")
     # Compute the new set coordinates of each node
     new_node2coord = {}
     for old_id, new_id in old2new.items():
@@ -61,6 +65,7 @@ def _compute_new_link2overlap(old2new, link2overlap):
 
     Recompute the link2overlaps dict accordint to the new node_ids
     """
+    logging.info("Computing new link -> overlap dict")
     # Compute the new set of edges and overlaps
     new_link2overlap = {}
     for (node_from, node_to), overlap in link2overlap.items():
@@ -75,7 +80,7 @@ def collapse_splice_graph(splice_graph, transcriptome_dict):
 
     Collapse nodes by sequence identity
     """
-
+    logging.info("Collapsing graph by sequence")
     # Get node and edge data
     node2coord = nx.get_node_attributes(G=splice_graph, name="coordinates")
     link2overlap = nx.get_edge_attributes(G=splice_graph, name="overlaps")

@@ -4,6 +4,8 @@
 exfi.io.masking.py: submodule to soft and hard mask sequence strings
 """
 
+import logging
+
 def _process_overlap_cigar(cigar_string):
     """Process a simple CIGAR string (number, letter)"""
     return [cigar_string[-1], int(cigar_string[:-1])]
@@ -59,7 +61,9 @@ def _hard_mask(exon_dict, overlap_dict):
 def _mask(exon_dict, overlap_dict, masking="None"):
     """If any of the soft mask or hard mask are activated, mask"""
     if masking == "hard":
+        logging.info("\tHard masking sequences")
         exon_dict = _hard_mask(exon_dict, overlap_dict)
     elif masking == "soft":
+        logging.info("\tSoft masking sequences")
         exon_dict = _soft_mask(exon_dict, overlap_dict)
     return exon_dict

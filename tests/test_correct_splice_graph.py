@@ -344,8 +344,9 @@ class TestComputeNewNodeIds(TestCase):
 
 
 class TestSculptGraph(TestCase):
-    """_sculpt_graph(splice_graph, edge2fill):
-    (nx.DiGraph, dict) -> nx.DiGraph
+    """Tests for exfi.correct_splice_graph._sculpt_graph
+
+    _sculpt_graph(splice_graph: nx.DiGraph, filled_edges: set) -> nx.DiGraph
     """
 
     def test_sculpt_empty_data(self):
@@ -378,8 +379,9 @@ class TestSculptGraph(TestCase):
 
 
 class TestCorrectSpliceGraph(TestCase):
-    """ correct_splice_graph(splice_graph, args):
-    (nx.DiGraph, int) -> nx.DiGraph
+    """Tests for exfi.correct_splice_graph.correct_splice_graph.
+
+    correct_splice_graph(splice_graph: nx.DiGraph, args: dict) -> nx.DiGraph
     """
 
     def test_correct_splice_graph(self):
@@ -394,7 +396,7 @@ class TestCorrectSpliceGraph(TestCase):
             splice_graph,
             filename="unsealed.gfa",
             transcriptome_dict=SeqIO.index("tests/correct_splice_graph/transcript.fa", "fasta"))
-        sealed_graph = correct_splice_graph(splice_graph, ARGS)["ENSDART00000149335.2"]
+        sealed_graph = correct_splice_graph(splice_graph, ARGS)
         self.assertTrue(nx.is_isomorphic(
             sealed_graph,
             test_graph

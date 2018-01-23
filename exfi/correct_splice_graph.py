@@ -332,7 +332,7 @@ def _sculpt_graph(splice_graph: nx.DiGraph, filled_edges: set) -> nx.DiGraph:
 
 
 
-def correct_splice_graph(splice_graph: nx.DiGraph, args: dict) -> dict:
+def correct_splice_graph(splice_graph: nx.DiGraph, args: dict) -> nx.DiGraph:
     """Try to correct small gaps (SNPs and indels) with abyss-sealer
 
     args = {
@@ -378,6 +378,27 @@ def correct_splice_graph(splice_graph: nx.DiGraph, args: dict) -> dict:
         else:
             processed_splice_graph[component_id] = sub_splice_graph
 
+    # Join everything into a splice_graph
+    joint = nx.DiGraph()
 
-    # Compute the sealed splice graph
-    return processed_splice_graph
+    # Nodes
+    node2coordinate = {
+        node: coordinate
+        for subgraph in processed_splice_graph.values()
+        for node, coordinate in nx.get_node_attributes(G=subgraph, name="coordinates").items()
+    }
+    joint.add_nodes_from(node2coordinate.keys())
+    nx.set_node_attributes(G=joint, name="coordinates", values=node2coordinate)
+    del node2coordinate
+
+    # Edges
+    edge2overlap = {
+        edge: overlap
+        for subgraph in processed_splice_graph.values()
+        for edge, overlap in nx.get_edge_attributes(G=subgraph, name="overlaps").items()
+    }
+    joint.add_edges_from(edge2overlap.keys())
+    nx.set_edge_attributes(G=joint, name="overlaps", values=edge2overlap)
+    del edge2overlap
+
+    return joint

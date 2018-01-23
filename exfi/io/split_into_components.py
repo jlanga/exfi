@@ -29,7 +29,7 @@ def split_into_components(splice_graph: nx.DiGraph) -> dict:
         nodes = tuple(x for x in undirected_component.nodes())
         a_node = nodes[0]
         transcript = undirected_component.node[a_node]["coordinates"][0][0]
-        logging.info("\t\t\tProcessing component {transcript}".format(transcript=transcript))
+        logging.info("\t\t\tProcessing component %s", transcript)
         # Get node data as is
         node2coord = nx.get_node_attributes(
             G=undirected_component,

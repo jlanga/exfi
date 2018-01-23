@@ -21,9 +21,7 @@ def gfa1_to_exons(gfa_in_fn, fasta_out_fn, masking="none"):
 
     Write the exons in FASTA format present in a GFA1 file
     """
-    logging.info("Converting GFA1 file {gfa} into exon fasta {fasta}".format(
-        gfa=gfa_in_fn, fasta=fasta_out_fn
-    ))
+    logging.info("Converting GFA1 file %s into exon fasta %s", gfa_in_fn, fasta_out_fn)
     gfa1 = read_gfa1(gfa_in_fn)
 
     exon2sequence = gfa1["segments"]
@@ -38,7 +36,7 @@ def gfa1_to_exons(gfa_in_fn, fasta_out_fn, masking="none"):
     logging.info("\tComposing SeqRecords")
     sequences = []
     for exon_id, exon_sequence in exon2sequence.items():
-        logging.debug("Processing {exon_id}".format(exon_id=exon_id))
+        logging.debug("Processing %s", exon_id)
 
         # Compose coordinates
         exon_coordinates = exon2coordinates[exon_id]

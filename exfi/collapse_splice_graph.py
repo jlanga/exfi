@@ -4,9 +4,9 @@
 exfi.collapse_splice_graph: merge nodes with the exact same sequence
 """
 
-import networkx as nx
-
 import logging
+
+import networkx as nx
 
 def _compute_seq2node(node2coord, transcriptome_dict):
     """(dict, dict) -> dict

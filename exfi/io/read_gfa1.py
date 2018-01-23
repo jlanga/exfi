@@ -104,7 +104,7 @@ def read_gfa1(filename):
     """
     with open(filename, "r") as gfain:
 
-        logging.info("Reading gfa1 {file}".format(file=filename))
+        logging.info("Reading gfa1 %s", filename)
 
         segments = []
         links = []

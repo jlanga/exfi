@@ -15,7 +15,7 @@ def gfa1_to_splice_graph(handle):
 
     Read a GFA1 file and store the splice graph
     """
-    logging.info("Converting gfa1 {gfa} to splice graph".format(gfa=handle))
+    logging.info("Converting gfa1 %s to splice graph", handle)
 
     # Read
     gfa1 = read_gfa1(handle)

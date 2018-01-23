@@ -344,7 +344,7 @@ def correct_splice_graph(splice_graph: nx.DiGraph, args: dict) -> nx.DiGraph:
     # Process each component separatedly
     processed_splice_graph = {transcript_id: None for transcript_id in transcript2component}
     for component_id in processed_splice_graph:
-        logging.info("\tProcessing component " + component_id)
+        logging.info("\tProcessing component %s", component_id)
         processed_splice_graph[component_id] = _sculpt_graph(
             transcript2component[component_id],
             filled_edges_by_transcript[component_id]

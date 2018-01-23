@@ -36,9 +36,7 @@ def gfa1_to_gapped_transcripts(gfa_in, fasta_out, number_of_ns=100, masking="non
     Write gapped transcripts as fasta from GFA1 file
     """
 
-    logging.info("Converting GFA1 file {gfa} to gapped transcript fasta {fasta}".format(
-        gfa=gfa_in, fasta=fasta_out
-    ))
+    logging.info("Converting GFA1 file %s to gapped transcript fasta %s", gfa_in, fasta_out)
 
     # Process
     gfa1 = read_gfa1(gfa_in)

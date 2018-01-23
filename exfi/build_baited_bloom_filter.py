@@ -100,7 +100,6 @@ def build_baited_bloom_filter(args):
 
     # Imports
     from subprocess import Popen, PIPE
-    from sys import stderr
     from os.path import dirname
 
     output_dir = dirname(args["output_bloom"])
@@ -117,9 +116,7 @@ def build_baited_bloom_filter(args):
 
     # Run the pipeline
     logging.info(
-        "\n\nRunning command: {command}\n".format(
-            command=" ".join(build_transcriptome_bf)
-        )
+        "\n\nRunning command: %s\n", " ".join(build_transcriptome_bf)
     )
 
     p_build_transcriptome_bf = Popen(build_transcriptome_bf, shell=False)
@@ -127,10 +124,7 @@ def build_baited_bloom_filter(args):
     p_build_transcriptome_bf.wait()
 
     logging.info(
-        "\n\nRunning command: {command1} | {command2}\n".format(
-            command1=" ".join(categorize),
-            command2=" ".join(build_bf)
-        )
+        "\n\nRunning command: %s | %s\n", " ".join(categorize), " ".join(build_bf)
     )
 
     p_categorize = Popen(categorize, stdout=PIPE, shell=False)

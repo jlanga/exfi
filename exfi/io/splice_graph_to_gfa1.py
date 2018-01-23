@@ -23,7 +23,7 @@ def _compute_segments(splice_graph, transcriptome_dict):
     logging.info("\tComputing segments")
     node2coords = nx.get_node_attributes(G=splice_graph, name="coordinates")
     for node_id, coordinates in node2coords.items():
-        logging.debug("\t\tProcessing node {node_id}".format(node_id=node_id))
+        logging.debug("\t\tProcessing node %s", node_id)
         coordinate = coordinates[0]
         transcript_id, start, end = coordinate
         sequence = str(transcriptome_dict[transcript_id].seq[start:end])
@@ -49,7 +49,7 @@ def _compute_links(splice_graph):
     )
 
     for (node1, node2), overlap in edge2overlap.items():
-        logging.debug("Processsing edge ({node1}, {node2})".format(node1=node1, node2=node2))
+        logging.debug("Processsing edge (%s, %s)", node1, node2)
         # is an overlap or a gap
         if overlap >= 0:
             overlap = "{}M".format(overlap)
@@ -80,9 +80,7 @@ def _compute_containments(splice_graph):
     )
     for node, coordinates in node2coordinates.items():
         for (transcript_id, start, end) in coordinates:
-            logging.debug("\t\tProcessing {node} - {transcript_id}:{start}-{end}".format(
-                node=node, transcript_id=transcript_id, start=start, end=end
-            ))
+            logging.debug("\t\tProcessing %s - %s:%s-%s", node, transcript_id, start, end)
             cigar = str(int(end) - int(start)) + "M"
             yield "C\t{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format(
                 transcript_id, "+",
@@ -98,7 +96,7 @@ def _compute_paths(splice_graph):
     Compute the paths in the splice graph:
     P transcript_id [node1, ..., nodeN]
     """
-    logging.info("\tComputing path")
+    logging.info("\tComputing paths")
     # Make bed6df
     node2coords = nx.get_node_attributes(
         G=splice_graph,
@@ -130,7 +128,7 @@ def splice_graph_to_gfa1(splice_graph, transcriptome_dict, filename):
 
     Write splice graph to filename in GFA 1 format
     """
-    logging.info("Writing splice graph to GFA1 file {file}".format(file=filename))
+    logging.info("Writing splice graph to GFA1 file %s", filename)
     header = ["H\tVN:Z:1.0\n"]
     segments = _compute_segments(splice_graph, transcriptome_dict)
     links = _compute_links(splice_graph)

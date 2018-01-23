@@ -6,12 +6,13 @@ from unittest import TestCase, main
 
 from exfi.io.join_components import join_components
 from exfi.io.split_into_components import split_into_components
-from exfi.io.gfa1_to_splice_graph import gfa1_to_splice_graph
 
 from tests.auxiliary_functions import CustomAssertions
 
 from tests.test_data import \
     SPLICE_GRAPH_EMPTY, SPLICE_GRAPH_SIMPLE, SPLICE_GRAPH_COMPLEX
+
+
 
 class TestJoinComponents(TestCase, CustomAssertions):
     """Tests for exfi.io.join_components.join_components"""
@@ -29,8 +30,8 @@ class TestJoinComponents(TestCase, CustomAssertions):
 
     def test_complex(self):
         """exfi.io.join_components.join_components: complex case"""
-        actual = join_components(split_into_components(SPLICE_GRAPH_EMPTY))
-        self.assertEqualSpliceGraphs(actual, SPLICE_GRAPH_SIMPLE)
+        actual = join_components(split_into_components(SPLICE_GRAPH_COMPLEX))
+        self.assertEqualSpliceGraphs(actual, SPLICE_GRAPH_COMPLEX)
 
 
 

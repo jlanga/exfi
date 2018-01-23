@@ -92,7 +92,7 @@ def partition(node_u, node_v, edge2fill):
     graph.add_edges_from(edge2fill)
     if node_u in graph.nodes() and \
         node_v in graph.nodes() and \
-        nx.shortest_path(G=graph, source=node_u, target=node_v):
+        nx.has_path(G=graph, source=node_u, target=node_v):
         return True
     return False
 

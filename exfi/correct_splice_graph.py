@@ -245,22 +245,17 @@ def _sculpt_graph(splice_graph: nx.DiGraph, filled_edges: set) -> nx.DiGraph:
         return splice_graph
 
     # Compute the quotient graph
-    def full_partition(node_u, node_v, filled_edges):
-        """Function to test if node_u and node_v belong to the same partition of the graph
-
-        Note: to be a equivalence relationship it should be "there is a path between u and v or
-        between v and u". Given the directedness of the graph, it is not required.
-        """
+    def partition(node_u, node_v):
+        """Function to test if node_u and node_v belong to the same partition of the graph"""
         graph = nx.DiGraph()
         graph.add_edges_from(filled_edges)
         if node_u in graph.nodes() and \
             node_v in graph.nodes() and \
-            nx.shortest_path(G=graph, source=node_u, target=node_v):
+            nx.has_path(G=graph, source=node_u, target=node_v):
             return True
         return False
 
-    partition = lambda u, v: full_partition(u, v, filled_edges)
-
+    # Compute the quotient graph
     quotient = nx.quotient_graph(G=splice_graph, partition=partition)
 
     # Rename nodes (frozensets are tricky)
@@ -311,7 +306,7 @@ def correct_splice_graph(splice_graph: nx.DiGraph, args: dict) -> nx.DiGraph:
         args=args
     )
 
-    # Collect sealer results
+    # Collect results
     filled_edges = _collect_sealer_results(handle=sealer_output_fn)
     remove(sealer_input_fn)
     remove(sealer_output_fn)
@@ -319,20 +314,22 @@ def correct_splice_graph(splice_graph: nx.DiGraph, args: dict) -> nx.DiGraph:
         splice_graph=splice_graph,
         filled_edges=filled_edges
     )
+    del filled_edges
 
     # Split Splice graph into subgraphs
     transcript2component = split_into_components(splice_graph=splice_graph)
 
+    # Complete the filled_edges_by_transcript dict
+    for transcript in transcript2component:
+        if transcript not in filled_edges_by_transcript:
+            filled_edges_by_transcript[transcript] = {}
+
     # Process each component separatedly
-    processed_splice_graph = {}
-    for component_id, sub_splice_graph in transcript2component.items():
-        if component_id in filled_edges_by_transcript:
-            filled_edges = filled_edges_by_transcript[component_id]
-        else:
-            filled_edges = {}
+    processed_splice_graph = {transcript_id: None for transcript_id in transcript2component}
+    for component_id in processed_splice_graph:
         processed_splice_graph[component_id] = _sculpt_graph(
-            sub_splice_graph,
-            filled_edges
+            transcript2component[component_id],
+            filled_edges_by_transcript[component_id]
         )
 
     # Join everything into a splice_graph

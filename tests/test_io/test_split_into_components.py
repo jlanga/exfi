@@ -13,16 +13,18 @@ from tests.auxiliary_functions import CustomAssertions
 from tests.test_data import \
     SPLICE_GRAPH_EMPTY, SPLICE_GRAPH_SIMPLE, SPLICE_GRAPH_COMPLEX
 
+
+
 class TestSplitIntoComponents(TestCase, CustomAssertions):
     """Tests for exfi.io.split_into_components.split_into_components
 
+     split_into_components(splice_graph: nx.DiGraph) -> dict
     """
 
     def test_empty(self):
         """exfi.io.split_into_components.split_into_components: empty case"""
         actual = join_components(split_into_components(SPLICE_GRAPH_EMPTY))
         self.assertEqualSpliceGraphs(actual, SPLICE_GRAPH_EMPTY)
-
 
     def test_simple(self):
         """exfi.io.split_into_components.split_into_components: simple case"""

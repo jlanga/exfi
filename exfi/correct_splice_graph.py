@@ -25,11 +25,8 @@ from natsort import \
 
 
 
-def _get_node2sequence(splice_graph, transcriptome_dict):
-    """(nx.DiGraph, dict) -> dict of str
-
-    From the splice graph and a transcriptome, get the exon: sequence dictionary
-    """
+def _get_node2sequence(splice_graph: nx.DiGraph, transcriptome_dict: dict) -> dict:
+    """From the splice graph and a transcriptome, get the exon: sequence dictionary"""
     node2coordinates = nx.get_node_attributes(
         G=splice_graph,
         name="coordinates"
@@ -44,10 +41,8 @@ def _get_node2sequence(splice_graph, transcriptome_dict):
     return node2sequence
 
 
-def _prepare_sealer(splice_graph, args):
-    """ (nx.DiGraph, dict_of_parameters) -> str
-
-    Prepare fasta file with candidates to be filled with sealer. Return the path
+def _prepare_sealer(splice_graph: nx.DiGraph, args: dict) -> str:
+    """Prepare fasta file with candidates to be filled with sealer. Return the path
     of the fasta file to be sealed.
 
     args = {
@@ -90,10 +85,8 @@ def _prepare_sealer(splice_graph, args):
 
 
 
-def _run_sealer(sealer_input_fn, args):
-    """(str, dict) -> str
-
-    Run abyss-sealer with the parameters in args, and the scaffold in
+def _run_sealer(sealer_input_fn: str, args: dict) -> str:
+    """Run abyss-sealer with the parameters in args, and the scaffold in
     sealer_input.
 
     args = {
@@ -129,74 +122,218 @@ def _run_sealer(sealer_input_fn, args):
 
 
 
-def _collect_sealer_results(handle):
-    """(str) -> dict
-
-    Process extensions from sealer and return the computed extensions if a dict
-    edge2fill = {(node1, node2): "acgt"}
-    """
+def _collect_sealer_results(handle: str) -> set:
+    """Process extensions from sealer and return the computed extensions in a set of pairs of
+    tuples: set((node1, node2), ... , (nodeN-1, nodeN))"""
     # Collect results
-    edge2fill = {}
+    filled_edges = set()
     for corrected in SeqIO.parse(format="fasta", handle=handle):
         node1, node2 = corrected.id.rsplit("_", 2)[0].split("~")
-        edge2fill[node1] = node2
-
-    return edge2fill
-
-
-
-def _sculpt_graph(splice_graph, edge2fill):
-    """(nx.DiGraph, dict) -> nx.DiGraph
-
-    Copy splice_graph, merge the nodes as dictated in edge2fill, return the
-    sealed graph.
-    """
-
-    while edge2fill:
-
-        # Get nodes to modify
-        node_u = natsorted(edge2fill.keys())[0]
-        node_v = edge2fill[node_u]
-
-        # Compose new names and coordinates
-        u_transcript, u_start, _ = splice_graph.node[node_u]["coordinates"][0]
-        _, _, v_end = splice_graph.node[node_v]["coordinates"][0]
-        n_coordinates = (u_transcript, u_start, v_end)
-        node_n = "{0}:{1}-{2}".format(*n_coordinates)
-
-        # Insert new node
-        splice_graph.add_node(node_n)
-        splice_graph.node[node_n]["coordinates"] = (n_coordinates,)
-
-        # link pred(u) to n, and overlaps
-        for predecessor in splice_graph.predecessors(node_u):
-            splice_graph.add_edge(u=predecessor, v=node_n)
-            splice_graph[predecessor][node_n]['overlaps'] = \
-                splice_graph[predecessor][node_u]['overlaps']
-
-        # Attach n to succ(v)
-        for successor in splice_graph.successors(node_v):
-            splice_graph.add_edge(u=node_n, v=successor)
-            splice_graph[node_n][successor]['overlaps'] = \
-                splice_graph[node_v][successor]['overlaps']
-
-        # Delete u, delete v
-        splice_graph.remove_nodes_from(nodes=[node_u, node_v])
-
-        # Update dict of edges to fill
-        if node_v in edge2fill:  # Update v if necessary
-            edge2fill[node_n] = edge2fill[node_v]
-            del edge2fill[node_v]
-        del edge2fill[node_u]
-
-    return splice_graph
+        filled_edges.add((node1, node2))
+    return filled_edges
 
 
 
-def correct_splice_graph(splice_graph, args):
-    """(nx.DiGraph, str, int, int) -> nx.DiGraph
+def _filled_edges_by_transcript(splice_graph: nx.DiGraph, filled_edges: str) -> dict:
+    """Split the edge2fill by the transcript they belong. Result is
+    dict(transcript_id: set)"""
+    filled_edges_by_transcript = {}
+    for node_u, node_v in filled_edges:
+        transcript = splice_graph.nodes[node_u]["coordinates"][0][0]
+        if transcript not in filled_edges_by_transcript:
+            filled_edges_by_transcript[transcript] = set()
+        filled_edges_by_transcript[transcript].add((node_u, node_v))
+    return filled_edges_by_transcript
 
-    Try to correct small gaps (SNPs and indels) with abyss-sealer
+
+
+def _raw_splice_graph_to_components(splice_graph: nx.DiGraph) -> dict:
+    '''Convert a single splice graph into a dict of splice graphs, where
+    - keys are transcript_ids
+    - values are the splice graph of that transcript
+    '''
+    # Compute connected components
+    undirected_components = nx.connected_component_subgraphs(G=splice_graph.to_undirected())
+
+    component_dict = {}
+    for undirected_component in undirected_components:
+
+        # Get the transcript_id of the component
+        nodes = tuple(x for x in undirected_component.nodes())
+        a_node = nodes[0]
+        transcript = undirected_component.node[a_node]["coordinates"][0][0]
+
+        # Get node data as is
+        node2coord = nx.get_node_attributes(
+            G=undirected_component,
+            name="coordinates"
+        )
+
+        # Get edge data. Be careful because each edge is twice: one in each direction
+        # Use natsorted to get the correct direction
+        edge2overlap = {}
+        for node_u, node_v in undirected_component.edges():
+            node_u, node_v = natsorted([node_u, node_v])
+            edge2overlap[(node_u, node_v)] = splice_graph[node_u][node_v]["overlaps"]
+
+        # Re-create directed graph
+        # Nodes
+        directed_component = nx.DiGraph()
+        directed_component.add_nodes_from(node2coord.keys())
+        nx.set_node_attributes(
+            G=directed_component,
+            name="coordinates",
+            values=node2coord
+        )
+        # Edges
+        directed_component.add_edges_from(edge2overlap.keys())
+        nx.set_edge_attributes(
+            G=directed_component,
+            name="overlaps",
+            values=edge2overlap
+        )
+
+        # Store directed component in its position
+        component_dict[transcript] = directed_component
+
+    return component_dict
+
+
+
+def _rename_nodes_from_collapse(quotient_graph: nx.DiGraph) -> dict:
+    """Compose the new_node ids from nx.quotient to str or tuples of strs"""
+    # Main dict
+    mapping = {  # Old -> New
+        node_id: tuple(natsorted(node for node in node_id))
+        for node_id in quotient_graph.nodes()
+    }
+    # Convert single item tuples to str
+    for key, value in mapping.items():
+        if len(value) == 1:
+            mapping[key] = value[0]
+    return mapping
+
+
+
+def _recompute_node2coord(component: nx.DiGraph, quotient_relabeled: nx.DiGraph) -> dict:
+    """Compute the new node2coord for the quotient graph"""
+    # Get the new_node2coord data
+    old_node2coord = nx.get_node_attributes(G=component, name="coordinates")
+    new_node2coord = {}
+    for nodes in quotient_relabeled.nodes():
+        if isinstance(nodes, str):  # node is untouched in quotient
+            new_node2coord[nodes] = old_node2coord[nodes]
+        elif isinstance(nodes, tuple):  # node was touched
+            first_old_node = nodes[0]
+            last_old_node = nodes[-1]
+            transcript, start, _ = old_node2coord[first_old_node][0]
+            _, _, end = old_node2coord[last_old_node][0]
+            new_node2coord[nodes] = ((transcript, start, end),)
+    return new_node2coord
+
+
+
+def _recompute_edge2overlap(component: nx.DiGraph, quotient_relabeled: nx.DiGraph) -> dict:
+    """Compute the new node2coord for the quotient graph"""
+    old_edge2overlap = nx.get_edge_attributes(G=component, name="overlaps")
+    new_edge2overlap = {}
+
+
+    for edge in quotient_relabeled.edges():
+        node_u, node_v = edge
+
+        if isinstance(node_u, tuple) and isinstance(node_v, tuple):
+            new_edge2overlap[(node_u, node_v)] = old_edge2overlap[(node_u[-1], node_v[0])]
+
+        elif isinstance(node_u, tuple) and isinstance(node_v, str):
+            new_edge2overlap[(node_u, node_v)] = old_edge2overlap[(node_u[-1], node_v)]
+
+        elif isinstance(node_u, str) and isinstance(node_v, tuple):
+            new_edge2overlap[(node_u, node_v)] = old_edge2overlap[(node_u, node_v[0])]
+        else:
+            new_edge2overlap[(node_u, node_v)] = old_edge2overlap[(node_u, node_v)]
+
+    return new_edge2overlap
+
+
+
+def _compute_new_node_ids(quotient_relabeled: nx.DiGraph, component: nx.DiGraph) -> dict:
+    """Compose the new node id for every collapsed node in nx.quotient_graph"""
+
+    quotient_mapping = {}
+    old_node2coord = nx.get_node_attributes(G=component, name="coordinates")
+
+    for node in quotient_relabeled.nodes():
+
+        if isinstance(node, tuple):  # Collapsed node
+
+            # Compute starting node and coordinates
+            node = tuple(natsorted(node))
+            first_node_id = node[0]
+            last_node_id = node[-1]
+            transcript_id, start, _ = old_node2coord[first_node_id][0]
+            _, _, end = old_node2coord[last_node_id][0]
+
+            # Compose new node
+            new_node_id = "{transcript}:{start}-{end}".format(
+                transcript=transcript_id,
+                start=start,
+                end=end
+            )
+            quotient_mapping[node] = new_node_id
+        else:
+            quotient_mapping[node] = node
+
+    return quotient_mapping
+
+
+
+def _sculpt_graph(splice_graph: nx.DiGraph, filled_edges: set) -> nx.DiGraph:
+    """Apply sealer corrections in filled_edges to the splice graph"""
+
+    # Compute the quotient graph
+    def full_partition(node_u, node_v, filled_edges):
+        """Function to test if node_u and node_v belong to the same partition of the graph"""
+        graph = nx.DiGraph()
+        graph.add_edges_from(filled_edges)
+        if node_u in graph.nodes() and \
+            node_v in graph.nodes() and \
+            nx.shortest_path(G=graph, source=node_u, target=node_v):
+            return True
+        return False
+
+    partition = lambda u, v: full_partition(u, v, filled_edges)
+
+    quotient = nx.quotient_graph(G=splice_graph, partition=partition)
+
+    # Rename nodes (frozensets are tricky)
+    mapping_sg_to_partition = _rename_nodes_from_collapse(quotient)
+    quotient_relabeled = nx.relabel_nodes(
+        copy=True,
+        G=quotient,
+        mapping=mapping_sg_to_partition
+    )
+
+    # Recompute graph info
+    node2coord = _recompute_node2coord(splice_graph, quotient_relabeled)
+    edge2overlap = _recompute_edge2overlap(splice_graph, quotient_relabeled)
+    node_ids = _compute_new_node_ids(component=splice_graph, quotient_relabeled=quotient_relabeled)
+
+    # Set new info
+    nx.set_node_attributes(G=quotient_relabeled, name="coordinates", values=node2coord)
+    nx.set_edge_attributes(G=quotient_relabeled, name="overlaps", values=edge2overlap)
+    component_final = nx.relabel_nodes(
+        copy=True,
+        G=quotient_relabeled,
+        mapping=node_ids
+    )
+
+    return component_final
+
+
+
+def correct_splice_graph(splice_graph: nx.DiGraph, args: dict) -> dict:
+    """Try to correct small gaps (SNPs and indels) with abyss-sealer
 
     args = {
         "kmer": int,
@@ -218,10 +355,29 @@ def correct_splice_graph(splice_graph, args):
     )
 
     # Collect sealer results
-    edge2fill = _collect_sealer_results(handle=sealer_output_fn)
-
+    filled_edges = _collect_sealer_results(handle=sealer_output_fn)
     remove(sealer_input_fn)
     remove(sealer_output_fn)
+    filled_edges_by_transcript = _filled_edges_by_transcript(
+        splice_graph=splice_graph,
+        filled_edges=filled_edges
+    )
+
+    # Split Splice graph into subgraphs
+    transcript2component = _raw_splice_graph_to_components(splice_graph=splice_graph)
+
+    # Process each component separatedly
+    processed_splice_graph = {}
+    for component_id, sub_splice_graph in transcript2component.items():
+        if component_id in filled_edges_by_transcript:
+            filled_edges = filled_edges_by_transcript[component_id]
+            processed_splice_graph[component_id] = _sculpt_graph(
+                sub_splice_graph,
+                filled_edges
+            )
+        else:
+            processed_splice_graph[component_id] = sub_splice_graph
+
 
     # Compute the sealed splice graph
-    return _sculpt_graph(splice_graph, edge2fill)
+    return processed_splice_graph

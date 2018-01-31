@@ -51,12 +51,19 @@ def _prepare_sealer(splice_graph: nx.DiGraph, args: dict) -> str:
     """Prepare fasta file with candidates to be filled with sealer. Return the path
     of the fasta file to be sealed.
 
+    Candidates to be sealed:
+        - pairs of exons with mall gaps (size <= max_gap_size)
+        - pairs of exons with any kind of positive overlap
+
     args = {
+        "input_fasta": str,
         "kmer": int,
-        "max_gap_size": int, <- only one used
+        "max_gap_size": int,
         "input_bloom": str,
+        "max_fp_bases": int
     }
     """
+
     logging.info("\tPreparing input for abyss-sealer")
     transcriptome_dict = SeqIO.index(args["input_fasta"], format="fasta")
     # Get overlap and sequence data
@@ -70,11 +77,33 @@ def _prepare_sealer(splice_graph: nx.DiGraph, args: dict) -> str:
     # Make temporary fasta where to write sequences for sealer
     sealer_input = mkstemp()
     sequences_to_seal = list()
+
     for (node1, node2), overlap in edge2overlap.items():
         overlap = edge2overlap[(node1, node2)]
-        if overlap < 0 and overlap < args["max_gap_size"]:
+        if overlap < 0 and overlap <= args["max_gap_size"]:  # Small gap
             identifier = node1 + "~" + node2
-            sequence = Seq.Seq(node2sequence[node1] + "N" * 100 + node2sequence[node2])
+            sequence = Seq.Seq(
+                node2sequence[node1][0:-args["max_fp_bases"]] \
+                + "N" * 100 \
+                + node2sequence[node2][args["max_fp_bases"]:]
+            )
+            seqrecord = SeqRecord.SeqRecord(
+                id=identifier,
+                description="",
+                seq=sequence
+            )
+            sequences_to_seal.append(seqrecord)
+        elif overlap >= 0:
+            # Trim overlap bases from one of the threads
+            identifier = node1 + "~" + node2
+            # Cut overlap from one end, again from the other, and from both to see what happens
+
+            ## Both
+            sequence = Seq.Seq(
+                node2sequence[node1][0:-overlap-args["max_fp_bases"]] \
+                + "N" * 100 \
+                + node2sequence[node2][overlap+args["max_fp_bases"]:]
+            )
             seqrecord = SeqRecord.SeqRecord(
                 id=identifier,
                 description="",
@@ -109,7 +138,7 @@ def _run_sealer(sealer_input_fn: str, args: dict) -> str:
         'abyss-sealer',
         '--input-scaffold', sealer_input_fn,
         '--flank-length', str(args["kmer"]),
-        '--max-gap-length', str(args["max_gap_size"]),
+        '--max-gap-length', "30",
         '--kmer', str(args["kmer"]),
         '--fix-errors',
         '--input-bloom', args["input_bloom"],

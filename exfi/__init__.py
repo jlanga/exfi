@@ -3,4 +3,4 @@ Compute the splice graph from a transcriptome and raw genomic reads using bloom
 filters.
 """
 
-__version__ = '1.4.2'
+__version__ = '1.4.3'

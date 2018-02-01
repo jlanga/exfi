@@ -10,6 +10,9 @@ Module to compute positive exons in the bloom filter as follos:
 
 
 # Import everything
+
+import logging
+
 from subprocess import Popen, PIPE
 from Bio.SeqRecord import SeqRecord
 
@@ -55,6 +58,7 @@ def _find_exons_pipeline(args):
         "max_fp_bases": int
     }
     """
+    logging.info("Running the find exons pipeline")
     # Prepare the commands
     c_kmers = [
         "abyss-bloom", "kmers", "--kmer", str(args["kmer"]), "--verbose", "--bed",

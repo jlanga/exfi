@@ -4,12 +4,14 @@
 exfi.io.splice_graph_to_gfa1.py: functions to convert a splice graph into a GFA1 file
 """
 
+import logging
+
 from itertools import chain
 
 import networkx as nx
+import pandas as pd
 
 from exfi.build_splice_graph import \
-    bed3_records_to_bed6df, \
     bed6df_to_path2node
 
 def _compute_segments(splice_graph, transcriptome_dict):
@@ -18,15 +20,18 @@ def _compute_segments(splice_graph, transcriptome_dict):
     Compute the segment lines:
     S node_id sequence length
     """
+    logging.info("\tComputing segments")
     node2coords = nx.get_node_attributes(G=splice_graph, name="coordinates")
     for node_id, coordinates in node2coords.items():
-        for (transcript_id, start, end) in coordinates:
-            sequence = str(transcriptome_dict[transcript_id].seq[start:end])
-            yield "S\t{node}\t{sequence}\tLN:i:{length}\n".format(
-                node=node_id,
-                sequence=sequence,
-                length=len(sequence)
-            )
+        logging.debug("\t\tProcessing node %s", node_id)
+        coordinate = coordinates[0]
+        transcript_id, start, end = coordinate
+        sequence = str(transcriptome_dict[transcript_id].seq[start:end])
+        yield "S\t{node}\t{sequence}\tLN:i:{length}\n".format(
+            node=node_id,
+            sequence=sequence,
+            length=len(sequence)
+        )
 
 
 
@@ -36,6 +41,7 @@ def _compute_links(splice_graph):
     Compute the link lines:
     L start orientation end orientation overlap
     """
+    logging.info("\tComputing links")
     # Edges
     edge2overlap = nx.get_edge_attributes(
         G=splice_graph,
@@ -43,6 +49,7 @@ def _compute_links(splice_graph):
     )
 
     for (node1, node2), overlap in edge2overlap.items():
+        logging.debug("Processsing edge (%s, %s)", node1, node2)
         # is an overlap or a gap
         if overlap >= 0:
             overlap = "{}M".format(overlap)
@@ -59,24 +66,26 @@ def _compute_links(splice_graph):
 
 
 
-def _compute_containments(splice_graph, transcriptome_dict):
-    """(nx.DiGraph, dict of SeqRecords) -> list
+def _compute_containments(splice_graph):
+    """(nx.DiGraph) -> list
 
     Compute the containment lines (w.r.t. transcriptome):
     C container orientation contained orientation position overlap
     """
     # Extract from the graph necessary data
+    logging.info("\tComputing containments")
     node2coordinates = nx.get_node_attributes(
         G=splice_graph,
         name='coordinates'
     )
     for node, coordinates in node2coordinates.items():
         for (transcript_id, start, end) in coordinates:
-            sequence = str(transcriptome_dict[transcript_id].seq[start:end])
+            logging.debug("\t\tProcessing %s - %s:%s-%s", node, transcript_id, start, end)
+            cigar = str(int(end) - int(start)) + "M"
             yield "C\t{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format(
                 transcript_id, "+",
                 node, "+",
-                start, str(len(sequence)) + "M"
+                start, cigar
             )
 
 
@@ -87,16 +96,24 @@ def _compute_paths(splice_graph):
     Compute the paths in the splice graph:
     P transcript_id [node1, ..., nodeN]
     """
-    # Get just the coordinates
-    bed3records = nx.get_node_attributes(
+    logging.info("\tComputing paths")
+    # Make bed6df
+    node2coords = nx.get_node_attributes(
         G=splice_graph,
         name="coordinates"
-    ).values()
+    )
 
-    # Flat out the list of coordinates
-    bed3records = [item for subrecord in bed3records for item in subrecord]
+    bed6_records = (
+        (seqid, start, end, name, ".", "+")
+        for name, coordinates in node2coords.items()
+        for (seqid, start, end) in coordinates
+    )
 
-    bed6df = bed3_records_to_bed6df(bed3records)
+    bed6df = pd.DataFrame(
+        data=bed6_records,
+        columns=["chrom", "start", "end", "name", "score", "strand"]
+    )
+
     path2nodes = bed6df_to_path2node(bed6df)
     for transcript_id, path in path2nodes.items():
         yield "P\t{transcript_id}\t{path}\n".format(
@@ -111,11 +128,11 @@ def splice_graph_to_gfa1(splice_graph, transcriptome_dict, filename):
 
     Write splice graph to filename in GFA 1 format
     """
+    logging.info("Writing splice graph to GFA1 file %s", filename)
     header = ["H\tVN:Z:1.0\n"]
-
     segments = _compute_segments(splice_graph, transcriptome_dict)
     links = _compute_links(splice_graph)
-    containments = _compute_containments(splice_graph, transcriptome_dict)
+    containments = _compute_containments(splice_graph)
     paths = _compute_paths(splice_graph)
     with open(filename, "w") as gfa1_out:
         gfa1_out.writelines(chain(

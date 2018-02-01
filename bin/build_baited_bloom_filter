@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import logging
 from exfi import __version__
 from exfi.build_baited_bloom_filter import build_baited_bloom_filter
 import sys
@@ -96,7 +97,12 @@ parser.add_argument(
     dest='reads'
 )
 
-
+parser.add_argument(
+    "-v", "--verbose",
+    action="store_true",
+    dest="verbose",
+    help="Increase output verbosity"
+)
 
 if __name__ == '__main__':
 
@@ -110,6 +116,12 @@ if __name__ == '__main__':
     threads = args["threads"],
     reads = args["reads"]
     threads = int(*threads)  # I don't know why it is parsed as tuple
+
+    # Set up logger
+    if args["verbose"]:
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
+    else:
+        logging.basicConfig(level=logging.CRITICAL, format='%(asctime)s %(message)s')
 
     # Check inputs
     assert isfile(transcriptome), 'ERROR: input fasta does not exist'

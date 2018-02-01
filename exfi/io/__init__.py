@@ -7,6 +7,7 @@ bed3 to bed6
 Data frames, ...
 """
 
+import logging
 
 from Bio import SeqIO
 
@@ -53,6 +54,7 @@ def _clean_index(index):
 
 def index_fasta(filename):
     """Create a fasta dict, with clean descriptions, key=id, value=seqrecord"""
+    logging.info("Indexing fasta file %s", filename)
     index = SeqIO.index(
         filename=filename,
         format="fasta"

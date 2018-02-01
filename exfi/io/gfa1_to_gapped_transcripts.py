@@ -5,6 +5,8 @@ exfi.io.gfa1_to_gapped_transcript.py: submodule to convert a GFA1 file to a fast
 spaces between predicted exons are filled with a string of Ns.
 """
 
+import logging
+
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 from Bio import SeqIO
@@ -18,6 +20,7 @@ def _compose_paths(exon_dict, path_dict, number_of_ns):
 
     Compose and return each gapped transcript.
     """
+    logging.info("\tComposing paths")
     chunk_of_ns = "N" * number_of_ns
     for transcript_id, exon_list in sorted(path_dict.items()):
         exon_seqs = [str(exon_dict[exon_id]) for exon_id in exon_list]
@@ -33,6 +36,8 @@ def gfa1_to_gapped_transcripts(gfa_in, fasta_out, number_of_ns=100, masking="non
     Write gapped transcripts as fasta from GFA1 file
     """
 
+    logging.info("Converting GFA1 file %s to gapped transcript fasta %s", gfa_in, fasta_out)
+
     # Process
     gfa1 = read_gfa1(gfa_in)
     exon_dict = gfa1["segments"]
@@ -46,4 +51,5 @@ def gfa1_to_gapped_transcripts(gfa_in, fasta_out, number_of_ns=100, masking="non
     composed_paths = _compose_paths(exon_dict, path_dict, number_of_ns)
 
     # Write
+    logging.info("\tWriting to file")
     SeqIO.write(format="fasta", sequences=composed_paths, handle=fasta_out)

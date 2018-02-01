@@ -29,6 +29,7 @@ pipeline:
 abyss-sealer.
 """
 
+import logging
 import shutil
 import os
 
@@ -99,11 +100,9 @@ def build_baited_bloom_filter(args):
 
     # Imports
     from subprocess import Popen, PIPE
-    from sys import stderr
-    from os.path import dirname
+    from os.path import dirname, abspath
 
-    output_dir = dirname(args["output_bloom"])
-
+    output_dir = dirname(abspath(args["output_bloom"]))
     # Convert single read library to list
     if isinstance(args["reads"], str):
         args["reads"] = [args["reads"]]
@@ -115,21 +114,22 @@ def build_baited_bloom_filter(args):
     build_bf = _get_build_bf_command(args, ["/dev/stdin"])
 
     # Run the pipeline
-    stderr.write(
-        "\n\nRunning command: {command}\n".format(
-            command=" ".join(build_transcriptome_bf)
-        )
+    logging.info(
+        "\n\nRunning command: %s\n", " ".join(build_transcriptome_bf)
     )
+
+    # Create links to /dev/null for categories_{match,nomatch,multi}.fa and summary
+    os.symlink(os.devnull, output_dir + "/categories_transcriptome.fa")
+    os.symlink(os.devnull, output_dir + "/categories_noMatch.fa")
+    os.symlink(os.devnull, output_dir + "/categories_multiMatch.fa")
+    os.symlink(os.devnull, output_dir + "/categories_summary.tsv")
 
     p_build_transcriptome_bf = Popen(build_transcriptome_bf, shell=False)
 
     p_build_transcriptome_bf.wait()
 
-    stderr.write(
-        "\n\nRunning command: {command1} | {command2}\n".format(
-            command1=" ".join(categorize),
-            command2=" ".join(build_bf)
-        )
+    logging.info(
+        "\n\nRunning command: %s | %s\n", " ".join(categorize), " ".join(build_bf)
     )
 
     p_categorize = Popen(categorize, stdout=PIPE, shell=False)
@@ -139,7 +139,14 @@ def build_baited_bloom_filter(args):
     p_categorize.wait()
     p_build_bf.wait()
 
+    # Clean up files from biobloommaker
     if os.path.isfile(output_dir + "/transcriptome.bf"):
         os.remove(output_dir + "/transcriptome.bf")
     if os.path.isfile(output_dir + "/transcriptome.txt"):
         os.remove(output_dir + "/transcriptome.txt")
+
+    # Clean up files from biobloomcategorizer
+    os.remove(output_dir + "/categories_transcriptome.fa")
+    os.remove(output_dir + "/categories_noMatch.fa")
+    os.remove(output_dir + "/categories_multiMatch.fa")
+    os.remove(output_dir + "/categories_summary.tsv")

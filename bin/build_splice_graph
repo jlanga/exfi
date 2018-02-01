@@ -2,6 +2,8 @@
 
 import argparse
 
+import logging
+
 from os.path import \
     isfile, \
     abspath
@@ -26,12 +28,12 @@ from exfi.io import \
 from exfi.io.splice_graph_to_gfa1 import \
     splice_graph_to_gfa1
 
-
+from exfi.collapse_splice_graph import collapse_splice_graph
 
 
 
 parser = argparse.ArgumentParser(
-    usage='build_splicegraph -i transcriptome.fa -b bloom_filter.bf -k 30 1-o exome.gfa',
+    usage='build_splicegraph -i transcriptome.fa -b bloom_filter.bf -k 30 -o exome.gfa',
     description='Store the predicted exome in GFA format',
     epilog='Jorge Langa. Send issues and pull requests to github.com/jlanga/'
            'exfi',
@@ -71,7 +73,7 @@ parser.add_argument(
     '-k',
     type=int,
     required=True,
-    help='The size of the k-mer (enter the same as in the bloom filter)',
+    help='The size of the k-mer (enter the same as in the bloom filter) [27]',
     dest='kmer',
     metavar='KMER',
     default=27
@@ -93,7 +95,7 @@ parser.add_argument(
     '-l',
     type=int,
     required=False,
-    help='Maximum overlap in bp between pconsecutive exons (0 <= l <= k)',
+    help='Maximum overlap in bp between pconsecutive exons (0 <= l <= k) [10]',
     dest='max_overlap',
     metavar='INT',
     default=10
@@ -104,7 +106,7 @@ parser.add_argument(
     '-g',
     type=int,
     required=False,
-    help="Maximum gap size between predicted exons to try to fill with sealer",
+    help="Maximum gap size between predicted exons to try to fill with sealer [10]",
     dest="max_gap_size",
     metavar='INT',
     default=10
@@ -120,6 +122,30 @@ parser.add_argument(
     metavar="FILE"
 )
 
+parser.add_argument(
+    '--collapse',
+    '-c',
+    help='Collapse splice graph by exon sequence [False]',
+    dest='collapse',
+    action="store_true"
+)
+
+parser.add_argument(
+    '--correct',
+    '-C',
+    help='Correct splice graph by using sealer between exons that seem nearby [False]',
+    dest='correct',
+    action="store_true"
+)
+
+parser.add_argument(
+    "-v", "--verbose",
+    action="store_true",
+    dest="verbose",
+    help="Increase output verbosity"
+)
+
+
 args = parser.parse_args()
 
 if __name__ == "__main__":
@@ -128,6 +154,12 @@ if __name__ == "__main__":
     args["input_bloom"] = abspath(args["input_bloom"])
     args["input_fasta"] = abspath(args["input_fasta"])
     args["output_gfa"] = abspath(args["output_gfa"])
+
+    # Set up logger
+    if args["verbose"]:
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
+    else:
+        logging.basicConfig(level=logging.CRITICAL, format='%(asctime)s %(message)s')
 
     # Get predicted exons in bed format
     positive_exons_bed = _find_exons_pipeline(args)
@@ -138,7 +170,15 @@ if __name__ == "__main__":
     # Transcriptome_dict
     transcriptome_dict = index_fasta(args["input_fasta"])
 
-    splice_graph = correct_splice_graph(splice_graph, args)
+    if args["correct"]:
+        splice_graph = correct_splice_graph(splice_graph, args)
+
+    if args["collapse"]:
+        splice_graph = collapse_splice_graph(
+            splice_graph=splice_graph,
+            transcriptome_dict={x.id: str(x.seq) for x in transcriptome_dict.values()
+        }
+    )
 
     # Write to GFA1
     splice_graph_to_gfa1(

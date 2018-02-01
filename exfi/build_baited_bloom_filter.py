@@ -100,10 +100,9 @@ def build_baited_bloom_filter(args):
 
     # Imports
     from subprocess import Popen, PIPE
-    from os.path import dirname
+    from os.path import dirname, abspath
 
-    output_dir = dirname(args["output_bloom"])
-
+    output_dir = dirname(abspath(args["output_bloom"]))
     # Convert single read library to list
     if isinstance(args["reads"], str):
         args["reads"] = [args["reads"]]

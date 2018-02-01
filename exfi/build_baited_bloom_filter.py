@@ -119,6 +119,12 @@ def build_baited_bloom_filter(args):
         "\n\nRunning command: %s\n", " ".join(build_transcriptome_bf)
     )
 
+    # Create links to /dev/null for categories_{match,nomatch,multi}.fa and summary
+    os.symlink("/dev/null", output_dir + "/categories_transcriptome.fa")
+    os.symlink("/dev/null", output_dir + "/categories_noMatch.fa")
+    os.symlink("/dev/null", output_dir + "/categories_multiMatch.fa")
+    os.symlink("/dev/null", output_dir + "/categories_summary.tsv")
+
     p_build_transcriptome_bf = Popen(build_transcriptome_bf, shell=False)
 
     p_build_transcriptome_bf.wait()
@@ -134,7 +140,14 @@ def build_baited_bloom_filter(args):
     p_categorize.wait()
     p_build_bf.wait()
 
+    # Clean up files from biobloommaker
     if os.path.isfile(output_dir + "/transcriptome.bf"):
         os.remove(output_dir + "/transcriptome.bf")
     if os.path.isfile(output_dir + "/transcriptome.txt"):
         os.remove(output_dir + "/transcriptome.txt")
+
+    # Clean up files from biobloomcategorizer
+    os.remove(output_dir + "/categories_transcriptome.fa")
+    os.remove(output_dir + "/categories_noMatch.fa")
+    os.remove(output_dir + "/categories_multiMatch.fa")
+    os.remove(output_dir + "/categories_summary.tsv")

@@ -151,10 +151,6 @@ def tearDownModule():
     # pylint: disable=invalid-name
     remove(TEMP[1])
     remove(TEMP_BLOOM)
-    remove(TEMPDIR + "/categories_multiMatch.fa")
-    remove(TEMPDIR + "/categories_noMatch.fa")
-    remove(TEMPDIR + "/categories_summary.tsv")
-    remove(TEMPDIR + "/categories_transcriptome.fa")
 
 
 

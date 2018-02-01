@@ -119,10 +119,10 @@ def build_baited_bloom_filter(args):
     )
 
     # Create links to /dev/null for categories_{match,nomatch,multi}.fa and summary
-    os.system("ln -s /dev/null " + output_dir + "/categories_transcriptome.fa")
-    os.system("ln -s /dev/null " + output_dir + "/categories_noMatch.fa")
-    os.system("ln -s /dev/null " + output_dir + "/categories_multiMatch.fa")
-    os.system("ln -s /dev/null " + output_dir + "/categories_summary.tsv")
+    os.symlink(os.devnull, output_dir + "/categories_transcriptome.fa")
+    os.symlink(os.devnull, output_dir + "/categories_noMatch.fa")
+    os.symlink(os.devnull, output_dir + "/categories_multiMatch.fa")
+    os.symlink(os.devnull, output_dir + "/categories_summary.tsv")
 
     p_build_transcriptome_bf = Popen(build_transcriptome_bf, shell=False)
 

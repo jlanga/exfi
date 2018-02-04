@@ -22,6 +22,9 @@ def split_into_components(splice_graph: nx.DiGraph) -> dict:
 
     component_dict = {}
 
+    node2coord_big = nx.get_node_attributes(G=splice_graph, name="coordinates")
+    edge2overlap_big = nx.get_edge_attributes(G=splice_graph, name="overlaps")
+
     logging.info("\t\tComputing directed components")
     for undirected_component in undirected_components:
 
@@ -31,19 +34,36 @@ def split_into_components(splice_graph: nx.DiGraph) -> dict:
         transcript = undirected_component.node[a_node]["coordinates"][0][0]
         logging.info("\t\t\tProcessing component %s", transcript)
         # Get node data as is
-        node2coord = nx.get_node_attributes(
-            G=undirected_component,
-            name="coordinates"
-        )
+        # node2coord = nx.get_node_attributes(
+        #     G=undirected_component,
+        #     name="coordinates"
+        # )
+
+        logging.info("\t\t\t\tGetting node2coord")
+        node2coord = {
+            node: node2coord_big[node]
+            for node in undirected_component.nodes()
+        }
 
         # Get edge data. Be careful because each edge is twice: one in each direction
         # Use natsorted to get the correct direction
-        edge2overlap = {}
-        for node_u, node_v in undirected_component.edges():
-            node_u, node_v = natsorted([node_u, node_v])
-            edge2overlap[(node_u, node_v)] = splice_graph[node_u][node_v]["overlaps"]
+        # edge2overlap = {}
+        # for node_u, node_v in undirected_component.edges():
+        #     node_u, node_v = natsorted([node_u, node_v])
+        #     edge2overlap[(node_u, node_v)] = edge2overlap
+
+        logging.info("\t\t\t\tGetting edge2overlap")
+        edges = {
+            tuple(natsorted([node_u, node_v]))
+            for node_u, node_v in undirected_component.edges()
+        }
+        edge2overlap = {
+            edge: edge2overlap_big[edge]
+            for edge in edges
+        }
 
         # Re-create directed graph
+        logging.info("\t\t\t\tRecreating graph")
         # Nodes
         directed_component = nx.DiGraph()
         directed_component.add_nodes_from(node2coord.keys())

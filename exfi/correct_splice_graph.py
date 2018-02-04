@@ -305,7 +305,6 @@ def _sculpt_graph(splice_graph: nx.DiGraph, filled_edges: set) -> nx.DiGraph:
     # Rename nodes (frozensets are tricky)
     mapping_sg_to_partition = _rename_nodes_from_collapse(quotient)
     quotient_relabeled = nx.relabel_nodes(
-        copy=True,
         G=quotient,
         mapping=mapping_sg_to_partition
     )
@@ -319,7 +318,6 @@ def _sculpt_graph(splice_graph: nx.DiGraph, filled_edges: set) -> nx.DiGraph:
     nx.set_node_attributes(G=quotient_relabeled, name="coordinates", values=node2coord)
     nx.set_edge_attributes(G=quotient_relabeled, name="overlaps", values=edge2overlap)
     component_final = nx.relabel_nodes(
-        copy=True,
         G=quotient_relabeled,
         mapping=node_ids
     )

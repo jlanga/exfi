@@ -29,6 +29,7 @@ def split_into_components(splice_graph: nx.DiGraph) -> dict:
     for undirected_component in undirected_components:
 
         # Get the transcript_id of the component
+        logging.info("\t\t\tGetting component info")
         nodes = tuple(x for x in undirected_component.nodes())
         a_node = nodes[0]
         transcript = undirected_component.node[a_node]["coordinates"][0][0]
@@ -63,9 +64,11 @@ def split_into_components(splice_graph: nx.DiGraph) -> dict:
         }
 
         # Re-create directed graph
-        logging.info("\t\t\t\tRecreating graph")
         # Nodes
+        logging.info("\t\t\t\tCreating empty graph")
         directed_component = nx.DiGraph()
+
+        logging.info("\t\t\t\tAdding nodes")
         directed_component.add_nodes_from(node2coord.keys())
         nx.set_node_attributes(
             G=directed_component,
@@ -73,6 +76,7 @@ def split_into_components(splice_graph: nx.DiGraph) -> dict:
             values=node2coord
         )
         # Edges
+        logging.info("\t\t\t\tAdding edges")
         directed_component.add_edges_from(edge2overlap.keys())
         nx.set_edge_attributes(
             G=directed_component,

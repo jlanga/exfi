@@ -8,7 +8,8 @@ from unittest import TestCase, main
 
 from exfi.io.gfa1_to_splice_graph import gfa1_to_splice_graph
 
-from tests.auxiliary_functions import CustomAssertions
+from tests.custom_assertions import \
+    CustomAssertions
 
 from tests.test_data import \
     SPLICE_GRAPH_EMPTY, SPLICE_GRAPH_SIMPLE, SPLICE_GRAPH_COMPLEX, \

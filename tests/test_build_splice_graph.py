@@ -17,7 +17,8 @@ from exfi.build_splice_graph import \
     compute_edge_overlaps, \
     build_splice_graph
 
-from tests.auxiliary_functions import CustomAssertions
+from tests.custom_assertions import \
+    CustomAssertions
 
 from tests.test_data import \
     BED3RECORDS_EMPTY, BED3RECORDS_SIMPLE, BED3RECORDS_COMPLEX, \

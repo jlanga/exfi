@@ -8,12 +8,14 @@ Tests form the find_exons submodule
 import unittest
 
 from tests.auxiliary_functions import \
-    CustomAssertions, \
     _command_to_list, \
     _fasta_to_dict, \
     _fasta_to_list, \
     _getfasta_to_list, \
     _bf_and_process
+
+from tests.custom_assertions import \
+    CustomAssertions
 
 from tests.test_data import \
     BED3RECORDS_EMPTY, BED3RECORDS_SIMPLE, BED3RECORDS_COMPLEX, \

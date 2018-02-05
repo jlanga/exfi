@@ -7,7 +7,8 @@ Constant values for testing
 import pandas as pd
 import networkx as nx
 
-from exfi.io import index_fasta
+from exfi.io import \
+    index_fasta
 
 BED6_COLS = ["chrom", "start", "end", "name", "score", "strand"]
 

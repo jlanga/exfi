@@ -10,7 +10,8 @@ import filecmp
 import tempfile
 import os
 
-from exfi.io.gfa1_to_exons import gfa1_to_exons
+from exfi.io.gfa1_to_exons import \
+    gfa1_to_exons
 
 from tests.test_data import \
     EXONS_EMPTY_FN, EXONS_SIMPLE_FN, \

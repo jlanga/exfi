@@ -42,9 +42,7 @@ from exfi.correct_splice_graph import \
     _sculpt_graph, \
     correct_splice_graph
 
-
-
-from tests.auxiliary_functions import \
+from tests.custom_assertions import \
     CustomAssertions
 
 

@@ -13,7 +13,7 @@ from exfi.collapse_splice_graph import \
     _compute_new_link2overlap, \
     collapse_splice_graph
 
-from tests.auxiliary_functions import \
+from tests.custom_assertions import \
     CustomAssertions
 
 from tests.test_data import \

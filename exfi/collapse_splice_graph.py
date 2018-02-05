@@ -75,15 +75,44 @@ def _compute_new_link2overlap(old2new, link2overlap):
     return new_link2overlap
 
 
-def collapse_splice_graph(splice_graph, transcriptome_dict):
-    """(nx.DiGraph, dict) -> nx.DiGraph
+def _merge_node2coords(splice_graph_dict):
+    """Take all node2coord from every graph and merge into a single dict"""
+    node2coord_big = {}
+    for splice_graph in splice_graph_dict.values():
+        # Get node and edge data
+        node2coord = nx.get_node_attributes(G=splice_graph, name="coordinates")
+
+        for node, coordinate in node2coord.items():
+            if node not in node2coord_big:
+                node2coord_big[node] = tuple()
+            node2coord_big[node] += coordinate
+
+    return node2coord_big
+
+
+
+def _merge_link2overlap(splice_graph_dict):
+    """Take all link2overlap from every graph and merge into a single dict"""
+    link2overlap_big = {}
+
+    for splice_graph in splice_graph_dict.values():
+        link2overlap = nx.get_edge_attributes(G=splice_graph, name="overlaps")
+        for edge, overlap in link2overlap.items():
+            link2overlap_big[edge] = overlap
+
+    return link2overlap_big
+
+
+
+def collapse_splice_graph(splice_graph_dict, transcriptome_dict):
+    """(dict nx.DiGraph, dict) -> nx.DiGraph
 
     Collapse nodes by sequence identity
     """
     logging.info("Collapsing graph by sequence")
-    # Get node and edge data
-    node2coord = nx.get_node_attributes(G=splice_graph, name="coordinates")
-    link2overlap = nx.get_edge_attributes(G=splice_graph, name="overlaps")
+
+    node2coord = _merge_node2coords(splice_graph_dict)
+    link2overlap = _merge_link2overlap(splice_graph_dict)
 
     seq2node = _compute_seq2node(node2coord, transcriptome_dict)
     old2new = _compute_old2new(seq2node)

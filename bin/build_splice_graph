@@ -25,8 +25,8 @@ from exfi.correct_splice_graph import \
 from exfi.io.fasta_to_dict import \
     fasta_to_dict
 
-from exfi.io.splice_graph_to_gfa1 import \
-    splice_graph_to_gfa1
+from exfi.io.splice_graph_dict_to_gfa1 import \
+    splice_graph_dict_to_gfa1
 
 from exfi.collapse_splice_graph import collapse_splice_graph
 
@@ -165,23 +165,23 @@ if __name__ == "__main__":
     positive_exons_bed = _find_exons_pipeline(args)
 
     # Build splice graph
-    splice_graph = build_splice_graph(positive_exons_bed)
+    splice_graph_dict = build_splice_graph(positive_exons_bed)
 
     # Transcriptome_dict
     transcriptome_dict = fasta_to_dict(args["input_fasta"])
 
     if args["correct"]:
-        splice_graph = correct_splice_graph(splice_graph, args)
+        splice_graph_dict = correct_splice_graph(splice_graph_dict, args)
 
     if args["collapse"]:
         splice_graph = collapse_splice_graph(
-            splice_graph=splice_graph,
+            splice_graph_dict=splice_graph_dict,
             transcriptome_dict=transcriptome_dict
     )
 
     # Write to GFA1
-    splice_graph_to_gfa1(
-        splice_graph=splice_graph,
+    splice_graph_dict_to_gfa1(
+        splice_graph_dict=splice_graph_dict,
         transcriptome_dict=transcriptome_dict,
         filename=args["output_gfa"]
     )

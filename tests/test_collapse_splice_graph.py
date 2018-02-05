@@ -19,7 +19,7 @@ from tests.custom_assertions import \
 from tests.test_data import \
     NODE2COORDS_EMPTY, NODE2COORDS_SIMPLE, NODE2COORDS_COMPLEX, \
     TRANSCRIPTOME_EMPTY_DICT, TRANSCRIPTOME_SIMPLE_DICT, TRANSCRIPTOME_COMPLEX_DICT, \
-    SPLICE_GRAPH_EMPTY, SPLICE_GRAPH_SIMPLE, SPLICE_GRAPH_COMPLEX, \
+    SPLICE_GRAPH_EMPTY_DICT, SPLICE_GRAPH_SIMPLE_DICT, SPLICE_GRAPH_COMPLEX_DICT, \
     SEQ2NODE_EMPTY, SEQ2NODE_SIMPLE, SEQ2NODE_COMPLEX, \
     OLD2NEW_EMPTY, OLD2NEW_SIMPLE, OLD2NEW_COMPLEX, \
     NEW_NODE2COORD_EMPTY, NEW_NODE2COORD_SIMPLE, NEW_NODE2COORD_COMPLEX, \
@@ -140,21 +140,21 @@ class TestCollapseSpliceGraph(TestCase, CustomAssertions):
     def test_empty(self):
         """exfi.collapse_splice_graph.collapse_splice_graph: empty case"""
         self.assertEqualSpliceGraphs(
-            collapse_splice_graph(SPLICE_GRAPH_EMPTY, TRANSCRIPTOME_EMPTY_DICT),
+            collapse_splice_graph(SPLICE_GRAPH_EMPTY_DICT, TRANSCRIPTOME_EMPTY_DICT),
             COLLAPSED_EMPTY
         )
 
     def test_simple(self):
         """exfi.collapse_splice_graph.collapse_splice_graph: simple case"""
         self.assertEqualSpliceGraphs(
-            collapse_splice_graph(SPLICE_GRAPH_SIMPLE, TRANSCRIPTOME_SIMPLE_DICT),
+            collapse_splice_graph(SPLICE_GRAPH_SIMPLE_DICT, TRANSCRIPTOME_SIMPLE_DICT),
             COLLAPSED_SIMPLE
         )
 
     def test_complex(self):
         """exfi.collapse_splice_graph.collapse_splice_graph: complex case"""
         self.assertEqualSpliceGraphs(
-            collapse_splice_graph(SPLICE_GRAPH_COMPLEX, TRANSCRIPTOME_COMPLEX_DICT),
+            collapse_splice_graph(SPLICE_GRAPH_COMPLEX_DICT, TRANSCRIPTOME_COMPLEX_DICT),
             COLLAPSED_COMPLEX
         )
 

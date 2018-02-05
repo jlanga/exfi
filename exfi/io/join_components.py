@@ -27,7 +27,6 @@ def join_components(dict_of_components: dict) -> nx.DiGraph:
 
     joint.add_nodes_from(node2coordinate.keys())
     nx.set_node_attributes(G=joint, name="coordinates", values=node2coordinate)
-    del node2coordinate
 
     # Edges
     logging.info("\t\tProcessing edges")
@@ -38,6 +37,5 @@ def join_components(dict_of_components: dict) -> nx.DiGraph:
     }
     joint.add_edges_from(edge2overlap.keys())
     nx.set_edge_attributes(G=joint, name="overlaps", values=edge2overlap)
-    del edge2overlap
 
     return joint

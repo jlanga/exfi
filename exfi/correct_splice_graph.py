@@ -28,30 +28,25 @@ from natsort import \
 from exfi.io.fasta_to_dict import \
     fasta_to_dict
 
-from exfi.io.join_components import \
-    join_components
-
-from exfi.io.split_into_components import \
-    split_into_components
-
-def _get_node2sequence(splice_graph: nx.DiGraph, transcriptome_dict: dict) -> dict:
+def _get_node2sequence(splice_graph: dict, transcriptome_dict: dict) -> dict:
     """From the splice graph and a transcriptome, get the exon: sequence dictionary"""
     logging.info("\tComputing the exon to sequence dictionary")
+    node2sequence = {}
+
     node2coordinates = nx.get_node_attributes(
         G=splice_graph,
         name="coordinates"
     )
 
-    node2sequence = {key: None for key in node2coordinates.keys()}
-
     for node, coordinates in node2coordinates.items():
         for (transcript_id, start, end) in coordinates:
-            sequence = str(transcriptome_dict[transcript_id][start:end])
+            sequence = transcriptome_dict[transcript_id][start:end]
             node2sequence[node] = sequence
     return node2sequence
 
 
-def _prepare_sealer(splice_graph: nx.DiGraph, args: dict) -> str:
+
+def _prepare_sealer(splice_graph_dict: nx.DiGraph, args: dict) -> str:
     """Prepare fasta file with candidates to be filled with sealer. Return the path
     of the fasta file to be sealed.
 
@@ -70,50 +65,53 @@ def _prepare_sealer(splice_graph: nx.DiGraph, args: dict) -> str:
 
     logging.info("\tPreparing input for abyss-sealer")
     transcriptome_dict = fasta_to_dict(args["input_fasta"])
-    # Get overlap and sequence data
-    edge2overlap = nx.get_edge_attributes(G=splice_graph, name="overlaps")
-    node2sequence = _get_node2sequence(
-        splice_graph=splice_graph,
-        transcriptome_dict=transcriptome_dict
-    )
 
     # Prepare fasta for sealer
     # Make temporary fasta where to write sequences for sealer
     sealer_input = mkstemp()
     sequences_to_seal = list()
 
-    for (node1, node2), overlap in edge2overlap.items():
-        overlap = edge2overlap[(node1, node2)]
-        if overlap < 0 and overlap <= args["max_gap_size"]:  # Small gap
-            identifier = node1 + "~" + node2
-            sequence = Seq.Seq(
-                node2sequence[node1][0:-args["max_fp_bases"]] \
-                + "N" * 100 \
-                + node2sequence[node2][args["max_fp_bases"]:]
-            )
-            seqrecord = SeqRecord.SeqRecord(
-                id=identifier,
-                description="",
-                seq=sequence
-            )
-            sequences_to_seal.append(seqrecord)
-        elif overlap >= 0:
-            # Trim overlap bases from one of the threads
-            identifier = node1 + "~" + node2
-            # Cut overlap from one end, again from the other, and from both to see what happens
+    for splice_graph in splice_graph_dict.values():
 
-            ## Both
-            sequence = Seq.Seq(
-                node2sequence[node1][0:-overlap-args["max_fp_bases"]] \
-                + "N" * 100 \
-                + node2sequence[node2][overlap+args["max_fp_bases"]:]
-            )
-            seqrecord = SeqRecord.SeqRecord(
-                id=identifier,
-                description="",
-                seq=sequence
-            )
-            sequences_to_seal.append(seqrecord)
+        # Get overlap and sequence data
+        edge2overlap = nx.get_edge_attributes(G=splice_graph, name="overlaps")
+        node2sequence = _get_node2sequence(
+            splice_graph=splice_graph,
+            transcriptome_dict=transcriptome_dict
+        )
+
+        for (node1, node2), overlap in edge2overlap.items():
+            overlap = edge2overlap[(node1, node2)]
+            if overlap < 0 and overlap <= args["max_gap_size"]:  # Small gap
+                identifier = node1 + "~" + node2
+                sequence = Seq.Seq(
+                    node2sequence[node1][0:-args["max_fp_bases"]] \
+                    + "N" * 100 \
+                    + node2sequence[node2][args["max_fp_bases"]:]
+                )
+                seqrecord = SeqRecord.SeqRecord(
+                    id=identifier,
+                    description="",
+                    seq=sequence
+                )
+                sequences_to_seal.append(seqrecord)
+            elif overlap >= 0:
+                # Trim overlap bases from one of the threads
+                identifier = node1 + "~" + node2
+                # Cut overlap from one end, again from the other, and from both to see what happens
+
+                ## Both
+                sequence = Seq.Seq(
+                    node2sequence[node1][0:-overlap-args["max_fp_bases"]] \
+                    + "N" * 100 \
+                    + node2sequence[node2][overlap+args["max_fp_bases"]:]
+                )
+                seqrecord = SeqRecord.SeqRecord(
+                    id=identifier,
+                    description="",
+                    seq=sequence
+                )
+                sequences_to_seal.append(seqrecord)
 
     SeqIO.write(
         format="fasta",
@@ -169,20 +167,34 @@ def _collect_sealer_results(handle: str) -> set:
     logging.info("\tCollecting abyss-sealer results")
     # Collect results
     filled_edges = set()
-    for corrected in SeqIO.parse(format="fasta", handle=handle):
-        node1, node2 = corrected.id.rsplit("_", 2)[0].split("~")
+    for corrected in fasta_to_dict(handle).keys():
+        node1, node2 = corrected.rsplit("_", 2)[0].split("~")
         filled_edges.add((node1, node2))
     return filled_edges
 
 
 
-def _filled_edges_by_transcript(splice_graph: nx.DiGraph, filled_edges: str) -> dict:
+# def _filled_edges_by_transcript(splice_graph: nx.DiGraph, filled_edges: str) -> dict:
+#     """Split the edge2fill by the transcript they belong. Result is
+#     dict(transcript_id: set)"""
+#     logging.info("\tSplitting sealer results by transcript")
+#     filled_edges_by_transcript = {}
+#     for node_u, node_v in filled_edges:
+#         transcript = splice_graph.nodes[node_u]["coordinates"][0][0]
+#         if transcript not in filled_edges_by_transcript:
+#             filled_edges_by_transcript[transcript] = set()
+#         filled_edges_by_transcript[transcript].add((node_u, node_v))
+#     return filled_edges_by_transcript
+
+
+
+def _filled_edges_by_transcript(filled_edges: str) -> dict:
     """Split the edge2fill by the transcript they belong. Result is
     dict(transcript_id: set)"""
     logging.info("\tSplitting sealer results by transcript")
     filled_edges_by_transcript = {}
     for node_u, node_v in filled_edges:
-        transcript = splice_graph.nodes[node_u]["coordinates"][0][0]
+        transcript = node_u.rsplit(":")[0]
         if transcript not in filled_edges_by_transcript:
             filled_edges_by_transcript[transcript] = set()
         filled_edges_by_transcript[transcript].add((node_u, node_v))
@@ -330,8 +342,8 @@ def _sculpt_graph(splice_graph: nx.DiGraph, filled_edges: set) -> nx.DiGraph:
 
 
 
-def correct_splice_graph(splice_graph: nx.DiGraph, args: dict) -> nx.DiGraph:
-    """Try to correct small gaps (SNPs and indels) with abyss-sealer
+def correct_splice_graph(splice_graph_dict: nx.DiGraph, args: dict) -> nx.DiGraph:
+    """Try to correct small gaps and some overlaps (SNPs and indels) with abyss-sealer
 
     args = {
         "kmer": int,
@@ -344,7 +356,7 @@ def correct_splice_graph(splice_graph: nx.DiGraph, args: dict) -> nx.DiGraph:
 
     # Compose fasta with candidates to be filled
     sealer_input_fn = _prepare_sealer(
-        splice_graph=splice_graph,
+        splice_graph_dict=splice_graph_dict,
         args=args
     )
 
@@ -358,30 +370,20 @@ def correct_splice_graph(splice_graph: nx.DiGraph, args: dict) -> nx.DiGraph:
     filled_edges = _collect_sealer_results(handle=sealer_output_fn)
     remove(sealer_input_fn)
     remove(sealer_output_fn)
-    filled_edges_by_transcript = _filled_edges_by_transcript(
-        splice_graph=splice_graph,
-        filled_edges=filled_edges
-    )
+    filled_edges_by_transcript = _filled_edges_by_transcript(filled_edges=filled_edges)
     del filled_edges
 
-    # Split Splice graph into subgraphs
-    transcript2component = split_into_components(splice_graph=splice_graph)
-
     # Complete the filled_edges_by_transcript dict
-    for transcript in transcript2component:
+    for transcript in splice_graph_dict:
         if transcript not in filled_edges_by_transcript:
             filled_edges_by_transcript[transcript] = {}
 
     # Process each component separatedly
-    processed_splice_graph = {transcript_id: None for transcript_id in transcript2component}
-    for component_id in processed_splice_graph:
-        logging.info("\tProcessing component %s", component_id)
-        processed_splice_graph[component_id] = _sculpt_graph(
-            transcript2component[component_id],
-            filled_edges_by_transcript[component_id]
+    for transcript_id, splice_graph in splice_graph_dict.items():
+        logging.info("\tProcessing component %s", transcript_id)
+        splice_graph_dict[transcript_id] = _sculpt_graph(
+            splice_graph,
+            filled_edges_by_transcript[transcript_id]
         )
 
-    # Join everything into a splice_graph
-    joint = join_components(processed_splice_graph)
-
-    return joint
+    return splice_graph_dict

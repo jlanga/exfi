@@ -73,3 +73,41 @@ class CustomAssertions:
         if are_isomorphic and same_coordinates and same_overlaps:
             return True
         return False
+
+    @classmethod
+    def assertEqualDictOfDF(self, dict1, dict2):
+        """Check if two dicts of pd.DataFrame are equal"""
+        # pylint: disable=invalid-name,bad-classmethod-argument
+
+        for key, dataframe in dict1.items():
+
+            if key not in dict2:
+                raise KeyError("Key %s not in dict2" % key)
+            else:
+                if dataframe.equals(dict2[key]):
+                    return True
+                return False
+
+    @classmethod
+    def assertEqualDictOfSpliceGraphs(self, dict1, dict2):
+        """Check if two dicts of nx.DiGraph and some data attached to nodes and edges are equal"""
+        # pylint: disable=invalid-name, bad-classmethod-argument
+
+        for key, sg1 in dict1.items():
+            if key not in dict2:
+                raise KeyError("Key %s not in dict2" % key)
+            else:
+                sg2 = dict2[key]
+
+                import networkx as nx
+
+                coordinates1 = nx.get_node_attributes(G=sg1, name="coordinates")
+                coordinates2 = nx.get_node_attributes(G=sg1, name="coordinates")
+                overlaps1 = nx.get_edge_attributes(G=sg1, name="overlaps")
+                overlaps2 = nx.get_edge_attributes(G=sg1, name="overlaps")
+                same_coordinates = coordinates1 == coordinates2
+                same_overlaps = overlaps1 == overlaps2
+                are_isomorphic = nx.is_isomorphic(sg1, sg2)
+                if are_isomorphic and same_coordinates and same_overlaps:
+                    return True
+                return False

@@ -15,9 +15,6 @@ from os.path import dirname
 
 import networkx as nx
 
-from Bio import \
-    SeqIO
-
 from exfi.build_baited_bloom_filter import \
     build_baited_bloom_filter
 
@@ -27,8 +24,8 @@ from exfi.find_exons import \
 from exfi.build_splice_graph import \
     build_splice_graph
 
-from exfi.io.splice_graph_to_gfa1 import \
-    splice_graph_to_gfa1
+from exfi.io.fasta_to_dict import \
+    fasta_to_dict
 
 from exfi.correct_splice_graph import \
     _prepare_sealer, \
@@ -72,7 +69,8 @@ TEMP_GFA = TEMP[1] + ".gfa"
 ARGS = _compose_args(TEMP_BLOOM, TEMP_GFA)
 build_baited_bloom_filter(ARGS)
 POSITIVE_EXONS_BED = list(_find_exons_pipeline(ARGS))
-SPLICE_GRAPH = build_splice_graph(POSITIVE_EXONS_BED)
+SPLICE_GRAPH_DICT = build_splice_graph(POSITIVE_EXONS_BED)
+SPLICE_GRAPH = SPLICE_GRAPH_DICT["ENSDART00000149335.2"]
 EDGE2FILL = {
     ('ENSDART00000149335.2:485-1715', 'ENSDART00000149335.2:1717-2286'),
     ('ENSDART00000149335.2:1717-2286', 'ENSDART00000149335.2:2288-3379')
@@ -80,9 +78,7 @@ EDGE2FILL = {
 FILLED_EDGE_BY_TRANSCRIPT = {
     'ENSDART00000149335.2': EDGE2FILL
 }
-SPLITTED_SPLICE_GRAPH = {
-    'ENSDART00000149335.2': SPLICE_GRAPH
-}
+
 
 def partition(node_u, node_v, edge2fill):
     """Define partitions as how the graph should be filled"""
@@ -96,6 +92,7 @@ def partition(node_u, node_v, edge2fill):
 
 FULL_PARTITION = lambda u, v: partition(u, v, EDGE2FILL)
 COLLAPSED_GRAPH = nx.quotient_graph(SPLICE_GRAPH, partition=FULL_PARTITION)
+
 QUOTIENT_RELABELING = {
     frozenset({
         'ENSDART00000149335.2:0-486'
@@ -159,11 +156,11 @@ class TestPrepareSealer(TestCase, CustomAssertions):
 
     def test_file_creation(self):
         """exfi.correct_splice_graph._prepare_sealer: test creation"""
-        sealer_input_fn = _prepare_sealer(SPLICE_GRAPH, ARGS)
-        actual = list(SeqIO.parse(sealer_input_fn, format="fasta"))
-        expected = list(SeqIO.parse("tests/correct_splice_graph/to_seal.fa", format="fasta"))
+        sealer_input_fn = _prepare_sealer(SPLICE_GRAPH_DICT, ARGS)
+        actual = fasta_to_dict(sealer_input_fn)
+        expected = fasta_to_dict("tests/correct_splice_graph/to_seal.fa")
         remove(sealer_input_fn)
-        self.assertEqualListOfSeqrecords(actual, expected)
+        self.assertEqual(actual, expected)
 
 
 
@@ -174,13 +171,13 @@ class TestRunSealer(TestCase, CustomAssertions):
 
     def test_run(self):
         """exfi.correct_splice_graph._run_sealer: test if runs"""
-        sealer_in_fn = _prepare_sealer(SPLICE_GRAPH, ARGS)
+        sealer_in_fn = _prepare_sealer(SPLICE_GRAPH_DICT, ARGS)
         sealer_out_fn = _run_sealer(sealer_input_fn=sealer_in_fn, args=ARGS)
-        actual = list(SeqIO.parse("tests/correct_splice_graph/sealed.fa", format="fasta"))
-        expected = list(SeqIO.parse(sealer_out_fn, "fasta"))
+        actual = fasta_to_dict("tests/correct_splice_graph/sealed.fa")
+        expected = fasta_to_dict(sealer_out_fn)
         remove(sealer_in_fn)
         remove(sealer_out_fn)
-        self.assertEqualListOfSeqrecords(actual, expected)
+        self.assertEqual(actual, expected)
 
 
 
@@ -213,7 +210,7 @@ class TestFilledEdgeByTranscript(TestCase):
     def test_empty(self):
         """exfi.correct_splice_graph._filled_edge_by_transcript: empty case"""
         initial = {}
-        actual = _filled_edges_by_transcript(splice_graph=SPLICE_GRAPH, filled_edges=initial)
+        actual = _filled_edges_by_transcript(filled_edges=initial)
         expected = {}
         self.assertEqual(actual, expected)
 
@@ -222,7 +219,7 @@ class TestFilledEdgeByTranscript(TestCase):
         initial = _collect_sealer_results(
             handle="tests/correct_splice_graph/sealed.fa"
         )
-        actual = _filled_edges_by_transcript(splice_graph=SPLICE_GRAPH, filled_edges=initial)
+        actual = _filled_edges_by_transcript(filled_edges=initial)
         expected = FILLED_EDGE_BY_TRANSCRIPT
         self.assertEqual(actual, expected)
 
@@ -350,7 +347,7 @@ class TestSculptGraph(TestCase):
 
 
 
-class TestCorrectSpliceGraph(TestCase):
+class TestCorrectSpliceGraph(TestCase, CustomAssertions):
     """Tests for exfi.correct_splice_graph.correct_splice_graph.
 
     correct_splice_graph(splice_graph: nx.DiGraph, args: dict) -> nx.DiGraph
@@ -363,16 +360,13 @@ class TestCorrectSpliceGraph(TestCase):
             u="ENSDART00000149335.2:0-486",
             v="ENSDART00000149335.2:485-3379"
         )
-        splice_graph = build_splice_graph(POSITIVE_EXONS_BED)
-        splice_graph_to_gfa1(
-            splice_graph,
-            filename="unsealed.gfa",
-            transcriptome_dict=SeqIO.index("tests/correct_splice_graph/transcript.fa", "fasta"))
-        sealed_graph = correct_splice_graph(splice_graph, ARGS)
-        self.assertTrue(nx.is_isomorphic(
-            sealed_graph,
-            test_graph
-        ))
+        test_graph_dict = {"ENSDART00000149335.2": test_graph}
+        splice_graph_dict = build_splice_graph(POSITIVE_EXONS_BED)
+        sealed_graph_dict = correct_splice_graph(splice_graph_dict, ARGS)
+        self.assertEqualDictOfSpliceGraphs(
+            sealed_graph_dict,
+            test_graph_dict
+        )
 
 
 

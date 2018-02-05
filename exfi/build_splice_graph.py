@@ -9,6 +9,8 @@ import logging
 import networkx as nx
 import pandas as pd
 
+
+
 def _bed3_to_str(bed3_record):
     """(str, int, int) -> str
 
@@ -21,7 +23,24 @@ def _bed3_to_str(bed3_record):
 
 
 
-def bed3_records_to_bed6df(iterable_of_bed3):
+# def bed3_records_to_bed6df(iterable_of_bed3):
+#     """(iterable of tuples) -> pd.dataframe
+#
+#     Convert an iterable of bed3 records to a bed6 as dataframe
+#     bed6 =[seqid, start, end, name, strand, score]
+#     """
+#     logging.info("\tbed3 -> bed6")
+#     bed6_cols = ['chrom', 'start', 'end', 'name', 'score', 'strand']
+#     return pd.DataFrame(
+#         data=(bed3_record + (_bed3_to_str((bed3_record)), 0, '+')
+#               for bed3_record in iterable_of_bed3),
+#         columns=bed6_cols
+#     )\
+#     .sort_values(by=bed6_cols[0:2])
+
+
+
+def bed3_records_to_bed6df_dict(iterable_of_bed3):
     """(iterable of tuples) -> pd.dataframe
 
     Convert an iterable of bed3 records to a bed6 as dataframe
@@ -29,12 +48,19 @@ def bed3_records_to_bed6df(iterable_of_bed3):
     """
     logging.info("\tbed3 -> bed6")
     bed6_cols = ['chrom', 'start', 'end', 'name', 'score', 'strand']
-    return pd.DataFrame(
+    bed6_df = pd.DataFrame(
         data=(bed3_record + (_bed3_to_str((bed3_record)), 0, '+')
               for bed3_record in iterable_of_bed3),
         columns=bed6_cols
     )\
-    .sort_values(by=bed6_cols[0:2])
+    .sort_values(by=bed6_cols[0:2])\
+
+    bed6df_dict = {
+        transcript_id: dataframe
+        for transcript_id, dataframe in bed6_df.groupby("chrom")
+    }
+
+    return bed6df_dict
 
 
 
@@ -142,30 +168,39 @@ def build_splice_graph(positive_exons_bed):
             - negative means a gap of that number of bases
     """
     logging.info("Building splice graph")
-    # Initialize graph
-    splice_graph = nx.DiGraph()
 
     # Process bed records
-    bed6df = bed3_records_to_bed6df(positive_exons_bed)
+    bed6df_dict = bed3_records_to_bed6df_dict(positive_exons_bed)
 
-    # Add nodes
-    logging.info("Adding nodes")
-    splice_graph.add_nodes_from(bed6df["name"].tolist())
-    nx.set_node_attributes(  # Add coordinates
-        G=splice_graph,
-        name="coordinates",
-        values=bed6df_to_node2coordinates(bed6df)
-    )
+    sg_dict = {}
 
-    # Edges
-    logging.info("Adding edges")
-    transcript2path = bed6df_to_path2node(bed6df)
-    for path in transcript2path.values():
-        splice_graph.add_path(path)
-    nx.set_edge_attributes(
-        G=splice_graph,
-        name='overlaps',
-        values=compute_edge_overlaps(splice_graph)
-    )
+    # Process each transcript
+    for transcript, bed6df in bed6df_dict.items():
+        logging.info("Building raw component %s", transcript)
 
-    return splice_graph
+        # Initialize graph
+        splice_graph = nx.DiGraph()
+
+        # Add nodes
+        logging.info("\tAdding nodes")
+        splice_graph.add_nodes_from(bed6df["name"].tolist())
+        nx.set_node_attributes(  # Add coordinates
+            G=splice_graph,
+            name="coordinates",
+            values=bed6df_to_node2coordinates(bed6df)
+        )
+
+        # Edges
+        logging.info("\tAdding edges")
+        transcript2path = bed6df_to_path2node(bed6df)
+        for path in transcript2path.values():
+            splice_graph.add_path(path)
+            nx.set_edge_attributes(
+                G=splice_graph,
+                name='overlaps',
+                values=compute_edge_overlaps(splice_graph)
+            )
+
+        sg_dict[transcript] = splice_graph
+
+    return sg_dict

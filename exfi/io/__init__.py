@@ -35,28 +35,3 @@ def _coordinate_tuple_to_str(transcript_id, start, end):
         start=start,
         end=end
     )
-
-def _clean_seqrecord(seqrecord):
-    """Delete the identifier from the description"""
-    seqrecord.description = " ".join(seqrecord.description.split(" ")[1:])
-    return seqrecord
-
-
-
-def _clean_index(index):
-    """Clean all elements from an indexed fasta"""
-    index_clean = {}
-    for key, value in index.items():
-        index_clean[key] = _clean_seqrecord(value)
-    return index_clean
-
-
-
-def index_fasta(filename):
-    """Create a fasta dict, with clean descriptions, key=id, value=seqrecord"""
-    logging.info("Indexing fasta file %s", filename)
-    index = SeqIO.index(
-        filename=filename,
-        format="fasta"
-    )
-    return _clean_index(index)

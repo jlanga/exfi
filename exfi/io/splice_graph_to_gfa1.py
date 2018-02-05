@@ -26,7 +26,7 @@ def _compute_segments(splice_graph, transcriptome_dict):
         logging.debug("\t\tProcessing node %s", node_id)
         coordinate = coordinates[0]
         transcript_id, start, end = coordinate
-        sequence = str(transcriptome_dict[transcript_id].seq[start:end])
+        sequence = str(transcriptome_dict[transcript_id][start:end])
         yield "S\t{node}\t{sequence}\tLN:i:{length}\n".format(
             node=node_id,
             sequence=sequence,

@@ -7,8 +7,8 @@ Constant values for testing
 import pandas as pd
 import networkx as nx
 
-from exfi.io import \
-    index_fasta
+from exfi.io.fasta_to_dict import \
+    fasta_to_dict
 
 BED6_COLS = ["chrom", "start", "end", "name", "score", "strand"]
 
@@ -162,9 +162,9 @@ TRANSCRIPTOME_EMPTY_FN = "tests/build_splice_graph/transcriptome_empty.fa"
 TRANSCRIPTOME_SIMPLE_FN = "tests/build_splice_graph/transcriptome_simple.fa"
 TRANSCRIPTOME_COMPLEX_FN = "tests/build_splice_graph/transcriptome_complex.fa"
 
-TRANSCRIPTOME_EMPTY = index_fasta(TRANSCRIPTOME_EMPTY_FN)
-TRANSCRIPTOME_SIMPLE = index_fasta(TRANSCRIPTOME_SIMPLE_FN)
-TRANSCRIPTOME_COMPLEX = index_fasta(TRANSCRIPTOME_COMPLEX_FN)
+TRANSCRIPTOME_EMPTY = fasta_to_dict(TRANSCRIPTOME_EMPTY_FN)
+TRANSCRIPTOME_SIMPLE = fasta_to_dict(TRANSCRIPTOME_SIMPLE_FN)
+TRANSCRIPTOME_COMPLEX = fasta_to_dict(TRANSCRIPTOME_COMPLEX_FN)
 
 SEGMENTS_EMPTY = []
 SEGMENTS_SIMPLE = [
@@ -343,10 +343,11 @@ EXONS_COMPLEX_FN = "tests/io/exons_complex.fa"
 EXONS_COMPLEX_SOFT_FN = "tests/io/exons_complex_soft.fa"
 EXONS_COMPLEX_HARD_FN = "tests/io/exons_complex_hard.fa"
 
-
-EXONS_COMPLEX_DICT = {x.id: str(x.seq) for x  in index_fasta(EXONS_COMPLEX_FN).values()}
-EXONS_COMPLEX_SOFT_DICT = {x.id: str(x.seq) for x in index_fasta(EXONS_COMPLEX_SOFT_FN).values()}
-EXONS_COMPLEX_HARD_DICT = {x.id: str(x.seq) for x in index_fasta(EXONS_COMPLEX_HARD_FN).values()}
+EXONS_EMPTY_DICT = SEGMENTS_EMPTY_DICT
+EXONS_SIMPLE_DICT = SEGMENTS_SIMPLE_DICT
+EXONS_COMPLEX_DICT = SEGMENTS_COMPLEX_DICT
+EXONS_COMPLEX_SOFT_DICT = fasta_to_dict(EXONS_COMPLEX_SOFT_FN)
+EXONS_COMPLEX_HARD_DICT = fasta_to_dict(EXONS_COMPLEX_HARD_FN)
 
 GAPPED_EMPTY_FN = "tests/io/gapped_empty.fa"
 GAPPED_SIMPLE_FN = "tests/io/gapped_simple.fa"
@@ -354,9 +355,9 @@ GAPPED_COMPLEX_FN = "tests/io/gapped_complex.fa"
 GAPPED_COMPLEX_SOFT_FN = "tests/io/gapped_complex_soft.fa"
 GAPPED_COMPLEX_HARD_FN = "tests/io/gapped_complex_hard.fa"
 
-TRANSCRIPTOME_EMPTY_DICT = {x.id : str(x.seq) for x in TRANSCRIPTOME_EMPTY.values()}
-TRANSCRIPTOME_SIMPLE_DICT = {x.id : str(x.seq) for x in TRANSCRIPTOME_SIMPLE.values()}
-TRANSCRIPTOME_COMPLEX_DICT = {x.id : str(x.seq) for x in TRANSCRIPTOME_COMPLEX.values()}
+TRANSCRIPTOME_EMPTY_DICT = TRANSCRIPTOME_EMPTY
+TRANSCRIPTOME_SIMPLE_DICT = TRANSCRIPTOME_SIMPLE
+TRANSCRIPTOME_COMPLEX_DICT = TRANSCRIPTOME_COMPLEX
 
 SEQ2NODE_EMPTY = {}
 SEQ2NODE_SIMPLE = {

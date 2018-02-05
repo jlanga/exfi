@@ -25,10 +25,14 @@ from Bio import \
 from natsort import \
     natsorted
 
+from exfi.io.fasta_to_dict import \
+    fasta_to_dict
+
 from exfi.io.join_components import \
     join_components
 
-from exfi.io.split_into_components import split_into_components
+from exfi.io.split_into_components import \
+    split_into_components
 
 def _get_node2sequence(splice_graph: nx.DiGraph, transcriptome_dict: dict) -> dict:
     """From the splice graph and a transcriptome, get the exon: sequence dictionary"""
@@ -42,7 +46,7 @@ def _get_node2sequence(splice_graph: nx.DiGraph, transcriptome_dict: dict) -> di
 
     for node, coordinates in node2coordinates.items():
         for (transcript_id, start, end) in coordinates:
-            sequence = str(transcriptome_dict[transcript_id][start:end].seq)
+            sequence = str(transcriptome_dict[transcript_id][start:end])
             node2sequence[node] = sequence
     return node2sequence
 
@@ -65,7 +69,7 @@ def _prepare_sealer(splice_graph: nx.DiGraph, args: dict) -> str:
     """
 
     logging.info("\tPreparing input for abyss-sealer")
-    transcriptome_dict = SeqIO.index(args["input_fasta"], format="fasta")
+    transcriptome_dict = fasta_to_dict(args["input_fasta"])
     # Get overlap and sequence data
     edge2overlap = nx.get_edge_attributes(G=splice_graph, name="overlaps")
     node2sequence = _get_node2sequence(

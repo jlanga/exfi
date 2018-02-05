@@ -14,7 +14,7 @@ Module to compute positive exons in the bloom filter as follos:
 import logging
 
 from subprocess import Popen, PIPE
-from Bio.SeqRecord import SeqRecord
+
 
 
 def _process_output(process):
@@ -26,21 +26,21 @@ def _process_output(process):
     process.wait()
 
 
-def _get_fasta(transcriptome_dict, iterable_of_bed):
+def _get_fasta(transcriptome_dict: dict, iterable_of_bed: list):
     """Extract subsequences in trancriptome_fn according to locis.
 
-    (fasta file, list of lists) -> seqrecord
+    (fasta_dict, list of lists) -> yield tuple
     """
     for bed in iterable_of_bed:
         chromosome, start, end = bed
         if chromosome in transcriptome_dict:
-            seq = transcriptome_dict[chromosome][start:end].seq
+            seq = transcriptome_dict[chromosome][start:end]
             identifier = "{0}:{1}-{2}".format(chromosome, start, end)
-            description = identifier
-            yield SeqRecord(id=identifier, seq=seq, description=description)
+            yield(identifier, seq)
 
 
-def _find_exons_pipeline(args):
+
+def _find_exons_pipeline(args: dict):
     """(dict) -> iterable of tuples
 
     Find exons according to the Bloom filter -> BED

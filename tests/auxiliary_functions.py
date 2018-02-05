@@ -9,7 +9,7 @@ import shutil
 from subprocess import \
     Popen, PIPE
 
-from Bio import SeqIO
+from Bio.SeqIO.FastaIO import SimpleFastaParser
 
 from exfi.find_exons import \
     _process_output, \
@@ -21,27 +21,26 @@ from exfi.build_baited_bloom_filter import \
 
 
 
-
-
-
 def _command_to_list(command):
     """Execute command and return output as list of strings"""
     process = Popen(command, stdout=PIPE, shell=False)
     results = list(_process_output(process))
     return results
 
-def _fasta_to_dict(filename):
-    """SeqIO.index wrapper for fasta files"""
-    return SeqIO.index(filename=filename, format="fasta")
 
 
-def _fasta_to_list(filename):
-    """SeqIO.parse wrapper for fasta files"""
-    return list(SeqIO.parse(handle=filename, format="fasta"))
+def _fasta_to_list(filename: str) -> list:
+    """fasta to list with SimpleFastaParser"""
+    with open(filename, "r") as handle:
+        return [record for record in SimpleFastaParser(handle)]
 
-def _getfasta_to_list(transcriptome_dict, iterable_of_bed):
+
+
+def _getfasta_to_list(transcriptome_dict: dict, iterable_of_bed: list) -> list:
     """Convert to a list the generator from getfasta"""
     return list(_get_fasta(transcriptome_dict, iterable_of_bed))
+
+
 
 def _silent_popen(command):
     """Create a Popen with no stderr and stdout"""
@@ -52,7 +51,9 @@ def _silent_popen(command):
         shell=False
     )
 
-def _bf_and_process(reads_fns, transcriptome_fn):
+
+
+def _bf_and_process(reads_fns: list, transcriptome_fn: str) -> list:
     """(list of str, str) -> list
 
     Build the BF and process the reads

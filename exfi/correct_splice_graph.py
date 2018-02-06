@@ -174,20 +174,6 @@ def _collect_sealer_results(handle: str) -> set:
 
 
 
-# def _filled_edges_by_transcript(splice_graph: nx.DiGraph, filled_edges: str) -> dict:
-#     """Split the edge2fill by the transcript they belong. Result is
-#     dict(transcript_id: set)"""
-#     logging.info("\tSplitting sealer results by transcript")
-#     filled_edges_by_transcript = {}
-#     for node_u, node_v in filled_edges:
-#         transcript = splice_graph.nodes[node_u]["coordinates"][0][0]
-#         if transcript not in filled_edges_by_transcript:
-#             filled_edges_by_transcript[transcript] = set()
-#         filled_edges_by_transcript[transcript].add((node_u, node_v))
-#     return filled_edges_by_transcript
-
-
-
 def _filled_edges_by_transcript(filled_edges: str) -> dict:
     """Split the edge2fill by the transcript they belong. Result is
     dict(transcript_id: set)"""

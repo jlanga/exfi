@@ -21,8 +21,8 @@ from exfi.build_baited_bloom_filter import \
 from exfi.find_exons import \
     _find_exons_pipeline
 
-from exfi.build_splice_graph import \
-    build_splice_graph
+from exfi.build_splice_graph_dict import \
+    build_splice_graph_dict
 
 from exfi.io.fasta_to_dict import \
     fasta_to_dict
@@ -58,7 +58,7 @@ def _compose_args(bloom_fn, gfa_fn):
         "max_gap_size": 10,
         "reads": ["tests/correct_splice_graph/reads.fa"],
         "output_bloom" : bloom_fn,
-        "bloom_filter": bloom_fn
+        "bloom_filter": bloom_fn,
     }
 
 
@@ -69,7 +69,7 @@ TEMP_GFA = TEMP[1] + ".gfa"
 ARGS = _compose_args(TEMP_BLOOM, TEMP_GFA)
 build_baited_bloom_filter(ARGS)
 POSITIVE_EXONS_BED = list(_find_exons_pipeline(ARGS))
-SPLICE_GRAPH_DICT = build_splice_graph(POSITIVE_EXONS_BED)
+SPLICE_GRAPH_DICT = build_splice_graph_dict(POSITIVE_EXONS_BED, ARGS)
 SPLICE_GRAPH = SPLICE_GRAPH_DICT["ENSDART00000149335.2"]
 EDGE2FILL = {
     ('ENSDART00000149335.2:485-1715', 'ENSDART00000149335.2:1717-2286'),
@@ -361,7 +361,7 @@ class TestCorrectSpliceGraph(TestCase, CustomAssertions):
             v="ENSDART00000149335.2:485-3379"
         )
         test_graph_dict = {"ENSDART00000149335.2": test_graph}
-        splice_graph_dict = build_splice_graph(POSITIVE_EXONS_BED)
+        splice_graph_dict = build_splice_graph_dict(POSITIVE_EXONS_BED, ARGS)
         sealed_graph_dict = correct_splice_graph(splice_graph_dict, ARGS)
         self.assertEqualDictOfSpliceGraphs(
             sealed_graph_dict,

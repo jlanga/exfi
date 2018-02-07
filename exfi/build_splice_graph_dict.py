@@ -8,7 +8,7 @@ import logging
 
 import networkx as nx
 import pandas as pd
-
+import pathos.multiprocessing as mp
 
 
 def _bed3_to_str(bed3_record):
@@ -20,23 +20,6 @@ def _bed3_to_str(bed3_record):
         return "{0}:{1}-{2}".format(*bed3_record)
     else:
         raise IndexError("Incorrect number of elements in record")
-
-
-
-# def bed3_records_to_bed6df(iterable_of_bed3):
-#     """(iterable of tuples) -> pd.dataframe
-#
-#     Convert an iterable of bed3 records to a bed6 as dataframe
-#     bed6 =[seqid, start, end, name, strand, score]
-#     """
-#     logging.info("\tbed3 -> bed6")
-#     bed6_cols = ['chrom', 'start', 'end', 'name', 'score', 'strand']
-#     return pd.DataFrame(
-#         data=(bed3_record + (_bed3_to_str((bed3_record)), 0, '+')
-#               for bed3_record in iterable_of_bed3),
-#         columns=bed6_cols
-#     )\
-#     .sort_values(by=bed6_cols[0:2])
 
 
 
@@ -69,31 +52,30 @@ def bed6df_to_node2coordinates(bed6df):
 
     Get from the BED6 dataframe the correspondece of name -> (chrom, start, end)
     """
-    logging.info("\tbed6df -> node2coordinates")
     # Check for extreme case:
-    if bed6df.shape[0] > 0:
+    if bed6df.shape[0] == 0:
+        return {}
+    # Compute the node_id: coordinates dict
+    node2coordinate = bed6df\
+        .sort_values(['chrom', 'start', 'end'])\
+        .drop(["score", "strand"], axis=1)\
+        .assign(
+            coordinates=bed6df\
+                [["chrom", "start", "end"]]\
+                .apply(tuple, axis=1)
+        )\
+        .drop(["chrom", "start", "end"], axis=1)\
+        .set_index("name", "coordinates")\
+        .to_dict()["coordinates"]
 
-        # Compute the node_id: coordinates dict
-        node2coordinate = bed6df\
-            .sort_values(['chrom', 'start', 'end'])\
-            .drop(["score", "strand"], axis=1)\
-            .assign(
-                coordinates=bed6df\
-                    [["chrom", "start", "end"]]\
-                    .apply(tuple, axis=1)
-            )\
-            .drop(["chrom", "start", "end"], axis=1)\
-            .set_index("name", "coordinates")\
-            .to_dict()["coordinates"]
+    # Reprocess the dict, one node may be in multiple transcripts at once
+    node2coordinate = {
+        key: (value,)
+        for key, value in node2coordinate.items()
+    }
 
-        # Reprocess the dict, one node may be in multiple transcripts at once
-        node2coordinate = {
-            key: (value,)
-            for key, value in node2coordinate.items()
-        }
+    return node2coordinate
 
-        return node2coordinate
-    return {}
 
 
 
@@ -151,10 +133,10 @@ def compute_edge_overlaps(splice_graph):
 
 
 
-def build_splice_graph(positive_exons_bed):
-    """(Iterable of (str, int, int)) -> Nx.DiGraph
+def _build_splice_graph(bed6df):
+    """(pd.DataFrame) -> nx.Digraph
 
-    Build the splice_graph from a list of bed records
+    Build the splice_graph from a dataframe of bed6 records
 
     splice_graph is a directed graph, whose nodes
         - are an identifier, the tuple in string format
@@ -167,40 +149,54 @@ def build_splice_graph(positive_exons_bed):
             - zero means no overlap
             - negative means a gap of that number of bases
     """
+    # Initialize graph
+    splice_graph = nx.DiGraph()
+
+    # Process nodes
+    logging.info("\tAdding nodes")
+    splice_graph.add_nodes_from(bed6df["name"].tolist())
+    nx.set_node_attributes(  # Add coordinates
+        G=splice_graph,
+        name="coordinates",
+        values=bed6df_to_node2coordinates(bed6df)
+    )
+
+    # Process edges
+    logging.info("\tAdding edges")
+    transcript2path = bed6df_to_path2node(bed6df)
+    for path in transcript2path.values():
+        splice_graph.add_path(path)
+        nx.set_edge_attributes(
+            G=splice_graph,
+            name='overlaps',
+            values=compute_edge_overlaps(splice_graph)
+        )
+
+    return splice_graph
+
+
+
+def build_splice_graph_dict(bed3records, args):
+    """(Iterable of (str, int, int)) -> Nx.DiGraph"""
     logging.info("Building splice graph")
 
     # Process bed records
-    bed6df_dict = bed3_records_to_bed6df_dict(positive_exons_bed)
+    bed6df_dict = bed3_records_to_bed6df_dict(bed3records)
 
-    sg_dict = {}
+    # Initialize pool of workers
+    pool = mp.Pool(args["threads"])
 
-    # Process each transcript
-    for transcript, bed6df in bed6df_dict.items():
-        logging.info("Building raw component %s", transcript)
+    # Initialize splice_graph_dict
+    splice_graph_dict = {transcript: None for transcript in bed6df_dict}
 
-        # Initialize graph
-        splice_graph = nx.DiGraph()
+    # Build graphs in parallel
+    results = pool.map(
+        func=_build_splice_graph,
+        iterable=bed6df_dict.values(),
+        chunksize=1000
+    )
 
-        # Add nodes
-        logging.info("\tAdding nodes")
-        splice_graph.add_nodes_from(bed6df["name"].tolist())
-        nx.set_node_attributes(  # Add coordinates
-            G=splice_graph,
-            name="coordinates",
-            values=bed6df_to_node2coordinates(bed6df)
-        )
+    for i, transcript in enumerate(splice_graph_dict.keys()):
+        splice_graph_dict[transcript] = results[i]
 
-        # Edges
-        logging.info("\tAdding edges")
-        transcript2path = bed6df_to_path2node(bed6df)
-        for path in transcript2path.values():
-            splice_graph.add_path(path)
-            nx.set_edge_attributes(
-                G=splice_graph,
-                name='overlaps',
-                values=compute_edge_overlaps(splice_graph)
-            )
-
-        sg_dict[transcript] = splice_graph
-
-    return sg_dict
+    return splice_graph_dict

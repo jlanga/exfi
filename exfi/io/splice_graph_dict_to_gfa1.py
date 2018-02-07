@@ -11,7 +11,7 @@ from itertools import chain
 import networkx as nx
 import pandas as pd
 
-from exfi.build_splice_graph import \
+from exfi.build_splice_graph_dict import \
     bed6df_to_path2node
 
 def _compute_segments(splice_graph_dict, transcriptome_dict):

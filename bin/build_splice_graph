@@ -16,8 +16,8 @@ from exfi.find_exons import \
     _get_fasta, \
     _find_exons_pipeline
 
-from exfi.build_splice_graph import \
-    build_splice_graph
+from exfi.build_splice_graph_dict import \
+    build_splice_graph_dict
 
 from exfi.correct_splice_graph import \
     correct_splice_graph
@@ -28,7 +28,8 @@ from exfi.io.fasta_to_dict import \
 from exfi.io.splice_graph_dict_to_gfa1 import \
     splice_graph_dict_to_gfa1
 
-from exfi.collapse_splice_graph import collapse_splice_graph
+from exfi.collapse_splice_graph import \
+    collapse_splice_graph
 
 
 
@@ -145,6 +146,14 @@ parser.add_argument(
     help="Increase output verbosity"
 )
 
+parser.add_argument(
+    "-t", "--threads",
+    type=int,
+    help='number of threads to use when possible [1]',
+    dest="threads",
+    metavar="INT",
+    default=1
+)
 
 args = parser.parse_args()
 
@@ -165,7 +174,7 @@ if __name__ == "__main__":
     positive_exons_bed = _find_exons_pipeline(args)
 
     # Build splice graph
-    splice_graph_dict = build_splice_graph(positive_exons_bed)
+    splice_graph_dict = build_splice_graph_dict(positive_exons_bed, args)
 
     # Transcriptome_dict
     transcriptome_dict = fasta_to_dict(args["input_fasta"])

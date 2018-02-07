@@ -17,6 +17,8 @@ from os import remove
 
 import networkx as nx
 
+import pathos.multiprocessing as mp
+
 from Bio import \
     SeqIO, \
     Seq, \
@@ -30,7 +32,7 @@ from exfi.io.fasta_to_dict import \
 
 def _get_node2sequence(splice_graph: dict, transcriptome_dict: dict) -> dict:
     """From the splice graph and a transcriptome, get the exon: sequence dictionary"""
-    logging.info("\tComputing the exon to sequence dictionary")
+    logging.debug("\tComputing the exon to sequence dictionary")
     node2sequence = {}
 
     node2coordinates = nx.get_node_attributes(
@@ -63,7 +65,7 @@ def _prepare_sealer(splice_graph_dict: nx.DiGraph, args: dict) -> str:
     }
     """
 
-    logging.info("\tPreparing input for abyss-sealer")
+    logging.debug("\tPreparing input for abyss-sealer")
     transcriptome_dict = fasta_to_dict(args["input_fasta"])
 
     # Prepare fasta for sealer
@@ -133,7 +135,7 @@ def _run_sealer(sealer_input_fn: str, args: dict) -> str:
         "input_bloom": str,
     }
     """
-    logging.info("\tRunning abyss-sealer")
+    logging.debug("\tRunning abyss-sealer")
     # Run sealer
     sealer_output_prefix = mkstemp()
     c_sealer = [
@@ -164,7 +166,7 @@ def _run_sealer(sealer_input_fn: str, args: dict) -> str:
 def _collect_sealer_results(handle: str) -> set:
     """Process extensions from sealer and return the computed extensions in a set of pairs of
     tuples: set((node1, node2), ... , (nodeN-1, nodeN))"""
-    logging.info("\tCollecting abyss-sealer results")
+    logging.debug("\tCollecting abyss-sealer results")
     # Collect results
     filled_edges = set()
     for corrected in fasta_to_dict(handle).keys():
@@ -177,7 +179,7 @@ def _collect_sealer_results(handle: str) -> set:
 def _filled_edges_by_transcript(filled_edges: str) -> dict:
     """Split the edge2fill by the transcript they belong. Result is
     dict(transcript_id: set)"""
-    logging.info("\tSplitting sealer results by transcript")
+    logging.debug("\tSplitting sealer results by transcript")
     filled_edges_by_transcript = {}
     for node_u, node_v in filled_edges:
         transcript = node_u.rsplit(":")[0]
@@ -190,7 +192,7 @@ def _filled_edges_by_transcript(filled_edges: str) -> dict:
 
 def _rename_nodes_from_collapse(quotient_graph: nx.DiGraph) -> dict:
     """Compose the new_node ids from nx.quotient to str or tuples of strs"""
-    logging.info("\tRenaming collapsed nodes")
+    logging.debug("\tRenaming collapsed nodes")
     # Main dict
     mapping = {  # Old -> New
         node_id: tuple(natsorted(node for node in node_id))
@@ -206,7 +208,7 @@ def _rename_nodes_from_collapse(quotient_graph: nx.DiGraph) -> dict:
 
 def _recompute_node2coord(component: nx.DiGraph, quotient_relabeled: nx.DiGraph) -> dict:
     """Compute the new node2coord for the quotient graph"""
-    logging.info("\tRecomputing node2coord")
+    logging.debug("\tRecomputing node2coord")
     # Get the new_node2coord data
     old_node2coord = nx.get_node_attributes(G=component, name="coordinates")
     new_node2coord = {}
@@ -225,7 +227,7 @@ def _recompute_node2coord(component: nx.DiGraph, quotient_relabeled: nx.DiGraph)
 
 def _recompute_edge2overlap(component: nx.DiGraph, quotient_relabeled: nx.DiGraph) -> dict:
     """Compute the new node2coord for the quotient graph"""
-    logging.info("\tRecomputing edge2overlap")
+    logging.debug("\tRecomputing edge2overlap")
 
     old_edge2overlap = nx.get_edge_attributes(G=component, name="overlaps")
     new_edge2overlap = {}
@@ -252,7 +254,7 @@ def _recompute_edge2overlap(component: nx.DiGraph, quotient_relabeled: nx.DiGrap
 def _compute_new_node_ids(quotient_relabeled: nx.DiGraph, component: nx.DiGraph) -> dict:
     """Compose the new node id for every collapsed node in nx.quotient_graph"""
 
-    logging.info("\tRecomputing final node identifiers")
+    logging.debug("\tRecomputing final node identifiers")
 
     quotient_mapping = {}
     old_node2coord = nx.get_node_attributes(G=component, name="coordinates")
@@ -285,7 +287,7 @@ def _compute_new_node_ids(quotient_relabeled: nx.DiGraph, component: nx.DiGraph)
 def _sculpt_graph(splice_graph: nx.DiGraph, filled_edges: set) -> nx.DiGraph:
     """Apply sealer corrections in filled_edges to the splice graph"""
 
-    logging.info("\tSculpting graph")
+    logging.debug("\tSculpting graph")
 
     if not filled_edges:
         return splice_graph
@@ -328,7 +330,10 @@ def _sculpt_graph(splice_graph: nx.DiGraph, filled_edges: set) -> nx.DiGraph:
 
 
 
-def correct_splice_graph(splice_graph_dict: nx.DiGraph, args: dict) -> nx.DiGraph:
+
+
+
+def correct_splice_graph_dict(splice_graph_dict: nx.DiGraph, args: dict) -> dict:
     """Try to correct small gaps and some overlaps (SNPs and indels) with abyss-sealer
 
     args = {
@@ -353,6 +358,7 @@ def correct_splice_graph(splice_graph_dict: nx.DiGraph, args: dict) -> nx.DiGrap
     )
 
     # Collect results
+    logging.info("\tCollecting results")
     filled_edges = _collect_sealer_results(handle=sealer_output_fn)
     remove(sealer_input_fn)
     remove(sealer_output_fn)
@@ -364,12 +370,22 @@ def correct_splice_graph(splice_graph_dict: nx.DiGraph, args: dict) -> nx.DiGrap
         if transcript not in filled_edges_by_transcript:
             filled_edges_by_transcript[transcript] = {}
 
-    # Process each component separatedly
-    for transcript_id, splice_graph in splice_graph_dict.items():
-        logging.info("\tProcessing component %s", transcript_id)
-        splice_graph_dict[transcript_id] = _sculpt_graph(
-            splice_graph,
-            filled_edges_by_transcript[transcript_id]
-        )
+    # Initialize pool of workers
+    pool = mp.Pool(args["threads"])
 
+    # Process each graph in parallel
+    logging.info("\tCorrecting each splice graph")
+    results = pool.starmap(
+        func=_sculpt_graph,
+        iterable=zip(
+            splice_graph_dict.values(),
+            filled_edges_by_transcript.values()
+        ),
+        chunksize=1000
+    )
+
+    for i, transcript in enumerate(splice_graph_dict.keys()):
+        splice_graph_dict[transcript] = results[i]
+
+    logging.info("\tDone correcting")
     return splice_graph_dict

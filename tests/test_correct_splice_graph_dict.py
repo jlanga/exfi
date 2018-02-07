@@ -27,7 +27,7 @@ from exfi.build_splice_graph_dict import \
 from exfi.io.fasta_to_dict import \
     fasta_to_dict
 
-from exfi.correct_splice_graph import \
+from exfi.correct_splice_graph_dict import \
     _prepare_sealer, \
     _run_sealer, \
     _collect_sealer_results, \
@@ -37,7 +37,7 @@ from exfi.correct_splice_graph import \
     _recompute_edge2overlap, \
     _compute_new_node_ids, \
     _sculpt_graph, \
-    correct_splice_graph
+    correct_splice_graph_dict
 
 from tests.custom_assertions import \
     CustomAssertions
@@ -353,7 +353,7 @@ class TestCorrectSpliceGraph(TestCase, CustomAssertions):
     correct_splice_graph(splice_graph: nx.DiGraph, args: dict) -> nx.DiGraph
     """
 
-    def test_correct_splice_graph(self):
+    def test_correct_splice_graph_dict(self):
         """exfi.correct_splice_graph.correct_splice_graph: some data"""
         test_graph = nx.DiGraph()
         test_graph.add_edge(
@@ -362,7 +362,7 @@ class TestCorrectSpliceGraph(TestCase, CustomAssertions):
         )
         test_graph_dict = {"ENSDART00000149335.2": test_graph}
         splice_graph_dict = build_splice_graph_dict(POSITIVE_EXONS_BED, ARGS)
-        sealed_graph_dict = correct_splice_graph(splice_graph_dict, ARGS)
+        sealed_graph_dict = correct_splice_graph_dict(splice_graph_dict, ARGS)
         self.assertEqualDictOfSpliceGraphs(
             sealed_graph_dict,
             test_graph_dict

@@ -19,8 +19,8 @@ from exfi.find_exons import \
 from exfi.build_splice_graph_dict import \
     build_splice_graph_dict
 
-from exfi.correct_splice_graph import \
-    correct_splice_graph
+from exfi.correct_splice_graph_dict import \
+    correct_splice_graph_dict
 
 from exfi.io.fasta_to_dict import \
     fasta_to_dict
@@ -180,13 +180,13 @@ if __name__ == "__main__":
     transcriptome_dict = fasta_to_dict(args["input_fasta"])
 
     if args["correct"]:
-        splice_graph_dict = correct_splice_graph(splice_graph_dict, args)
+        splice_graph_dict = correct_splice_graph_dict(splice_graph_dict, args)
 
     if args["collapse"]:
         splice_graph = collapse_splice_graph(
             splice_graph_dict=splice_graph_dict,
             transcriptome_dict=transcriptome_dict
-    )
+        )
 
     # Write to GFA1
     splice_graph_dict_to_gfa1(

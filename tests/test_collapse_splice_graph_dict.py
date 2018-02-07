@@ -6,12 +6,12 @@ Tests for exfi.collapse_splice_graph
 
 from unittest import TestCase, main
 
-from exfi.collapse_splice_graph import \
+from exfi.collapse_splice_graph_dict import \
     _compute_seq2node, \
     _compute_old2new, \
     _compute_new_node2coord, \
     _compute_new_link2overlap, \
-    collapse_splice_graph
+    collapse_splice_graph_dict
 
 from tests.custom_assertions import \
     CustomAssertions
@@ -34,24 +34,21 @@ class TestComputeSeq2Node(TestCase):
 
     def test_empty(self):
         """exfi.collapse_splice_graph._compute_seq2node: empty case"""
-        self.assertEqual(
-            _compute_seq2node(NODE2COORDS_EMPTY, TRANSCRIPTOME_EMPTY_DICT),
-            SEQ2NODE_EMPTY
-        )
+        actual = _compute_seq2node(NODE2COORDS_EMPTY, TRANSCRIPTOME_EMPTY_DICT)
+        expected = SEQ2NODE_EMPTY
+        self.assertEqual(actual, expected)
 
     def test_simple(self):
         """exfi.collapse_splice_graph._compute_seq2node: simple case"""
-        self.assertEqual(
-            _compute_seq2node(NODE2COORDS_SIMPLE, TRANSCRIPTOME_SIMPLE_DICT),
-            SEQ2NODE_SIMPLE
-        )
+        actual = _compute_seq2node(NODE2COORDS_SIMPLE, TRANSCRIPTOME_SIMPLE_DICT)
+        expected = SEQ2NODE_SIMPLE
+        self.assertEqual(actual, expected)
 
     def test_complex(self):
         """exfi.collapse_splice_graph._compute_seq2node: complex case"""
-        self.assertEqual(
-            _compute_seq2node(NODE2COORDS_COMPLEX, TRANSCRIPTOME_COMPLEX_DICT),
-            SEQ2NODE_COMPLEX
-        )
+        actual = _compute_seq2node(NODE2COORDS_COMPLEX, TRANSCRIPTOME_COMPLEX_DICT)
+        expected = SEQ2NODE_COMPLEX
+        self.assertEqual(actual, expected)
 
 
 
@@ -60,24 +57,21 @@ class TestComputeOld2New(TestCase):
 
     def test_empty(self):
         """exfi.collapse_splice_graph._compute_old2new: empty case"""
-        self.assertEqual(
-            _compute_old2new(SEQ2NODE_EMPTY),
-            OLD2NEW_EMPTY
-        )
+        actual = _compute_old2new(SEQ2NODE_EMPTY)
+        expected = OLD2NEW_EMPTY
+        self.assertEqual(actual, expected)
 
     def test_simple(self):
         """exfi.collapse_splice_graph._compute_seq2node: simple case"""
-        self.assertEqual(
-            _compute_old2new(SEQ2NODE_SIMPLE),
-            OLD2NEW_SIMPLE
-        )
+        actual = _compute_old2new(SEQ2NODE_SIMPLE)
+        expected = OLD2NEW_SIMPLE
+        self.assertEqual(actual, expected)
 
     def test_complex(self):
         """exfi.collapse_splice_graph._compute_seq2node: complex case"""
-        self.assertEqual(
-            _compute_old2new(SEQ2NODE_COMPLEX),
-            OLD2NEW_COMPLEX
-        )
+        actual = _compute_old2new(SEQ2NODE_COMPLEX)
+        expected = OLD2NEW_COMPLEX
+        self.assertEqual(actual, expected)
 
 
 
@@ -86,24 +80,21 @@ class TestComputeNewNode2Coord(TestCase):
 
     def test_empty(self):
         """exfi.collapse_splice_graph._compute_new_node2coord: empty case"""
-        self.assertEqual(
-            _compute_new_node2coord(OLD2NEW_EMPTY, NODE2COORDS_EMPTY),
-            NEW_NODE2COORD_EMPTY
-        )
+        actual = _compute_new_node2coord(OLD2NEW_EMPTY, NODE2COORDS_EMPTY)
+        expected = NEW_NODE2COORD_EMPTY
+        self.assertEqual(actual, expected)
 
     def test_simple(self):
         """exfi.collapse_splice_graph._compute_new_node2coord: simple case"""
-        self.assertEqual(
-            _compute_new_node2coord(OLD2NEW_SIMPLE, NODE2COORDS_SIMPLE),
-            NEW_NODE2COORD_SIMPLE
-        )
+        actual = _compute_new_node2coord(OLD2NEW_SIMPLE, NODE2COORDS_SIMPLE)
+        expected = NEW_NODE2COORD_SIMPLE
+        self.assertEqual(actual, expected)
 
     def test_complex(self):
         """exfi.collapse_splice_graph._compute_new_node2coord: complex case"""
-        self.assertEqual(
-            _compute_new_node2coord(OLD2NEW_COMPLEX, NODE2COORDS_COMPLEX),
-            NEW_NODE2COORD_COMPLEX
-        )
+        actual = _compute_new_node2coord(OLD2NEW_COMPLEX, NODE2COORDS_COMPLEX)
+        expected = NEW_NODE2COORD_COMPLEX
+        self.assertEqual(actual, expected)
 
 
 
@@ -112,51 +103,45 @@ class TestComputeNewLink2Overlap(TestCase):
 
     def test_empty(self):
         """exfi.collapse_splice_graph._compute_new_link2overlap: empty case"""
-        self.assertEqual(
-            _compute_new_link2overlap(OLD2NEW_EMPTY, LINK2OVERLAP_EMPTY),
-            NEW_LINK2OVERLAP_EMPTY
-        )
+        actual = _compute_new_link2overlap(OLD2NEW_EMPTY, LINK2OVERLAP_EMPTY)
+        expected = NEW_LINK2OVERLAP_EMPTY
+        self.assertEqual(actual, expected)
 
     def test_simple(self):
         """exfi.collapse_splice_graph._compute_new_link2overlap: simple case"""
-        self.assertEqual(
-            _compute_new_link2overlap(OLD2NEW_SIMPLE, LINK2OVERLAP_SIMPLE),
-            NEW_LINK2OVERLAP_SIMPLE
-        )
+        actual = _compute_new_link2overlap(OLD2NEW_SIMPLE, LINK2OVERLAP_SIMPLE)
+        expected = NEW_LINK2OVERLAP_SIMPLE
+        self.assertEqual(actual, expected)
 
     def test_complex(self):
         """exfi.collapse_splice_graph._compute_new_link2overlap: complex case"""
-        self.assertEqual(
-            _compute_new_link2overlap(OLD2NEW_COMPLEX, LINK2OVERLAP_COMPLEX),
-            NEW_LINK2OVERLAP_COMPLEX
-        )
+        actual = _compute_new_link2overlap(OLD2NEW_COMPLEX, LINK2OVERLAP_COMPLEX)
+        expected = NEW_LINK2OVERLAP_COMPLEX
+        self.assertEqual(actual, expected)
 
 
 
 
 class TestCollapseSpliceGraph(TestCase, CustomAssertions):
-    """Tests for exfi.collapse_splice_graph.collapse_splice_graph"""
+    """Tests for exfi.collapse_splice_graph_dict.collapse_splice_graph_dict"""
 
     def test_empty(self):
         """exfi.collapse_splice_graph.collapse_splice_graph: empty case"""
-        self.assertEqualSpliceGraphs(
-            collapse_splice_graph(SPLICE_GRAPH_EMPTY_DICT, TRANSCRIPTOME_EMPTY_DICT),
-            COLLAPSED_EMPTY
-        )
+        actual = collapse_splice_graph_dict(SPLICE_GRAPH_EMPTY_DICT, TRANSCRIPTOME_EMPTY_DICT)
+        expected = COLLAPSED_EMPTY
+        self.assertEqualSpliceGraphs(actual, expected)
 
     def test_simple(self):
         """exfi.collapse_splice_graph.collapse_splice_graph: simple case"""
-        self.assertEqualSpliceGraphs(
-            collapse_splice_graph(SPLICE_GRAPH_SIMPLE_DICT, TRANSCRIPTOME_SIMPLE_DICT),
-            COLLAPSED_SIMPLE
-        )
+        actual = collapse_splice_graph_dict(SPLICE_GRAPH_SIMPLE_DICT, TRANSCRIPTOME_SIMPLE_DICT)
+        expected = COLLAPSED_SIMPLE
+        self.assertEqualSpliceGraphs(actual, expected)
 
     def test_complex(self):
         """exfi.collapse_splice_graph.collapse_splice_graph: complex case"""
-        self.assertEqualSpliceGraphs(
-            collapse_splice_graph(SPLICE_GRAPH_COMPLEX_DICT, TRANSCRIPTOME_COMPLEX_DICT),
-            COLLAPSED_COMPLEX
-        )
+        actual = collapse_splice_graph_dict(SPLICE_GRAPH_COMPLEX_DICT, TRANSCRIPTOME_COMPLEX_DICT)
+        expected = COLLAPSED_COMPLEX
+        self.assertEqualSpliceGraphs(actual, expected)
 
 
 

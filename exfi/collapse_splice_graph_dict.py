@@ -104,7 +104,7 @@ def _merge_link2overlap(splice_graph_dict):
 
 
 
-def collapse_splice_graph(splice_graph_dict, transcriptome_dict):
+def collapse_splice_graph_dict(splice_graph_dict, transcriptome_dict):
     """(dict nx.DiGraph, dict) -> nx.DiGraph
 
     Collapse nodes by sequence identity

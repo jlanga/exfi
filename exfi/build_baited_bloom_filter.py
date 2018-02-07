@@ -110,7 +110,6 @@ def build_baited_bloom_filter(args):
     # Prepare the commands
     build_transcriptome_bf = _get_biobloommaker_command(args, output_dir)
     categorize = _get_categorize_command(args, output_dir)
-
     build_bf = _get_build_bf_command(args, ["/dev/stdin"])
 
     # Run the pipeline

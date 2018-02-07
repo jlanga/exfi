@@ -17,21 +17,18 @@ class TestFastaToDict(unittest.TestCase):
 
     def test_empty(self):
         """exfi.io.fasta_to_dict: process an empty fasta"""
-        self.assertEqual(
-            fasta_to_dict(EXONS_EMPTY_FN),
-            EXONS_EMPTY_DICT
-        )
+        actual = fasta_to_dict(EXONS_EMPTY_FN)
+        expected = EXONS_EMPTY_DICT
+        self.assertEqual(actual, expected)
 
     def test_simple(self):
         """exfi.io.fasta_to_dict: process a simple fasta"""
-        self.assertEqual(
-            fasta_to_dict(EXONS_SIMPLE_FN),
-            EXONS_SIMPLE_DICT
-        )
+        actual = fasta_to_dict(EXONS_SIMPLE_FN)
+        expected = EXONS_SIMPLE_DICT
+        self.assertEqual(actual, expected)
 
     def test_complex(self):
         """exfi.io.fasta_to_dict: process a complex fasta"""
-        self.assertEqual(
-            fasta_to_dict(EXONS_SIMPLE_FN),
-            EXONS_SIMPLE_DICT
-        )
+        actual = fasta_to_dict(EXONS_COMPLEX_FN)
+        expected = EXONS_COMPLEX_DICT
+        self.assertEqual(actual, expected)

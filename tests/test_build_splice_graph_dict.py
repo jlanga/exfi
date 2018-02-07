@@ -15,6 +15,7 @@ from exfi.build_splice_graph_dict import \
     bed6df_to_path2node, \
     bed6df_to_node2coordinates, \
     compute_edge_overlaps, \
+    build_splice_graph, \
     build_splice_graph_dict
 
 from tests.custom_assertions import \
@@ -27,6 +28,7 @@ from tests.test_data import \
     PATH_EMPTY, PATH_SIMPLE, PATH_COMPLEX, \
     NODE2COORDS_EMPTY, NODE2COORDS_SIMPLE, NODE2COORDS_COMPLEX, \
     OVERLAPS_EMPTY_DICT, OVERLAPS_SIMPLE_DICT, OVERLAPS_COMPLEX_DICT, \
+    SPLICE_GRAPH_EMPTY, SPLICE_GRAPH_SIMPLE, SPLICE_GRAPH_COMPLEX, \
     SPLICE_GRAPH_EMPTY_DICT, SPLICE_GRAPH_SIMPLE_DICT, SPLICE_GRAPH_COMPLEX_DICT
 
 BED3_COLS = ['chrom', 'start', 'end']
@@ -185,8 +187,33 @@ class TestComputeEdgeOverlaps(unittest.TestCase):
 
 
 
+class TestBuildSpliceGraph(unittest.TestCase, CustomAssertions):
+    """Tests for exfi.build_splice_graph_dict._build_splice_graph"""
+
+    def test_empty(self):
+        """exfi.build_splice_graph_dict.build_splice_graph_dict: compute the splice graph of an
+        empty set of exons"""
+        actual = build_splice_graph(bed6df=BED6DF_EMPTY)
+        expected = SPLICE_GRAPH_EMPTY
+        self.assertEqualSpliceGraphs(actual, expected)
+
+    def test_simple(self):
+        """exfi.build_splice_graph_dict.build_splice_graph_dict: compute the splice graph of a
+        single exon"""
+        actual = build_splice_graph(bed6df=BED6DF_SIMPLE)
+        expected = SPLICE_GRAPH_SIMPLE
+        self.assertEqualSpliceGraphs(actual, expected)
+
+    def test_multiple(self):
+        """exfi.build_splice_graph_dict.build_splice_graph_dict: compute the splice graph of a set
+        of exons"""
+        actual = build_splice_graph(bed6df=BED6DF_COMPLEX)
+        expected = SPLICE_GRAPH_COMPLEX
+        self.assertEqualSpliceGraphs(actual, expected)
+
+
 class TestBuildSpliceGraphDict(unittest.TestCase, CustomAssertions):
-    """Tests for build_splice_graph"""
+    """Tests for build_splice_graph_dict"""
 
     def test_empty(self):
         """exfi.build_splice_graph_dict.build_splice_graph_dict: compute the splice graph of an

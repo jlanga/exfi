@@ -29,7 +29,7 @@ def bed3_records_to_bed6df_dict(iterable_of_bed3):
     Convert an iterable of bed3 records to a bed6 as dataframe
     bed6 =[seqid, start, end, name, strand, score]
     """
-    logging.info("\tbed3 -> bed6")
+    logging.info("\tbed3_records_to_bed6df_dict")
     bed6_cols = ['chrom', 'start', 'end', 'name', 'score', 'strand']
     bed6_df = pd.DataFrame(
         data=(bed3_record + (_bed3_to_str((bed3_record)), 0, '+')
@@ -52,6 +52,7 @@ def bed6df_to_node2coordinates(bed6df):
 
     Get from the BED6 dataframe the correspondece of name -> (chrom, start, end)
     """
+    logging.debug("\tbed6bed6df_to_node2coordinates")
     # Check for extreme case:
     if bed6df.shape[0] == 0:
         return {}
@@ -84,7 +85,7 @@ def bed6df_to_path2node(bed6df):
 
     Get a dict containing transcript_id to the tuple of node names that compose
     it in order, indicating the path."""
-    logging.info("\tbed6df -> path2node")
+    logging.debug("\tbed6df -> path2node")
     if bed6df.shape[0] > 0:
         return bed6df\
             .sort_values(['chrom', 'start', 'end'])\
@@ -111,7 +112,7 @@ def compute_edge_overlaps(splice_graph):
 
     Hypothesis: node2coords.values should only hold one value
     """
-    logging.info("\tComputing edge overlaps")
+    logging.debug("\tComputing edge overlaps")
 
     #Init
     node2coords = nx.get_node_attributes(
@@ -133,7 +134,7 @@ def compute_edge_overlaps(splice_graph):
 
 
 
-def _build_splice_graph(bed6df):
+def build_splice_graph(bed6df):
     """(pd.DataFrame) -> nx.Digraph
 
     Build the splice_graph from a dataframe of bed6 records
@@ -149,11 +150,12 @@ def _build_splice_graph(bed6df):
             - zero means no overlap
             - negative means a gap of that number of bases
     """
+    logging.debug("Running build_splice_graph")
     # Initialize graph
     splice_graph = nx.DiGraph()
 
     # Process nodes
-    logging.info("\tAdding nodes")
+    logging.debug("\tAdding nodes")
     splice_graph.add_nodes_from(bed6df["name"].tolist())
     nx.set_node_attributes(  # Add coordinates
         G=splice_graph,
@@ -162,7 +164,7 @@ def _build_splice_graph(bed6df):
     )
 
     # Process edges
-    logging.info("\tAdding edges")
+    logging.debug("\tAdding edges")
     transcript2path = bed6df_to_path2node(bed6df)
     for path in transcript2path.values():
         splice_graph.add_path(path)
@@ -191,7 +193,7 @@ def build_splice_graph_dict(bed3records, args):
 
     # Build graphs in parallel
     results = pool.map(
-        func=_build_splice_graph,
+        func=build_splice_graph,
         iterable=bed6df_dict.values(),
         chunksize=1000
     )

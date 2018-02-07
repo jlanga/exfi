@@ -18,7 +18,7 @@ def _compute_seq2node(node2coord, transcriptome_dict):
     - node2seq = {node_id: str}
     """
     # Get the node -> sequence
-    logging.info("Computing the sequence to node_id dictionary")
+    logging.debug("\t_compute_seq2node")
     seq2node = {}
     for node_id, coordinates in node2coord.items():
         seqid, start, end = coordinates[0]  # Just take the first
@@ -35,7 +35,7 @@ def _compute_old2new(seq2node):
 
     Compute the dict of old identifiers to new
     """
-    logging.info("Computing mapping between new exon ids to the old ones")
+    logging.debug("\t_compute_old2new")
     old2new = {}
     for i, old_nodes in enumerate(seq2node.values()):
         new_node = "exon_{exon_number:08d}".format(exon_number=i)
@@ -50,7 +50,7 @@ def _compute_new_node2coord(old2new, node2coord):
 
     Recompute the node to coordinate dict
     """
-    logging.info("Computing new node -> coordinates dict")
+    logging.debug("\t_compute_new_node2coord")
     # Compute the new set coordinates of each node
     new_node2coord = {}
     for old_id, new_id in old2new.items():
@@ -65,7 +65,7 @@ def _compute_new_link2overlap(old2new, link2overlap):
 
     Recompute the link2overlaps dict accordint to the new node_ids
     """
-    logging.info("Computing new link -> overlap dict")
+    logging.debug("\t_compute_new_link2overlap")
     # Compute the new set of edges and overlaps
     new_link2overlap = {}
     for (node_from, node_to), overlap in link2overlap.items():
@@ -77,6 +77,7 @@ def _compute_new_link2overlap(old2new, link2overlap):
 
 def _merge_node2coords(splice_graph_dict):
     """Take all node2coord from every graph and merge into a single dict"""
+    logging.debug("\t_merge_node2coords")
     node2coord_big = {}
     for splice_graph in splice_graph_dict.values():
         # Get node and edge data
@@ -93,6 +94,9 @@ def _merge_node2coords(splice_graph_dict):
 
 def _merge_link2overlap(splice_graph_dict):
     """Take all link2overlap from every graph and merge into a single dict"""
+
+    logging.debug("\t_merge_link2overlap")
+
     link2overlap_big = {}
 
     for splice_graph in splice_graph_dict.values():

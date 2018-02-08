@@ -22,6 +22,9 @@ from exfi.build_splice_graph_dict import \
 from exfi.correct_splice_graph_dict import \
     correct_splice_graph_dict
 
+from exfi.polish_overlaps import \
+    polish_overlaps_dict
+
 from exfi.io.fasta_to_dict import \
     fasta_to_dict
 
@@ -155,6 +158,14 @@ parser.add_argument(
     default=1
 )
 
+parser.add_argument(
+    "-p", "--polish",
+    action="store_true",
+    dest="polish",
+    help="Polish overlaps in which a AG-GT signal is detected"
+)
+
+
 args = parser.parse_args()
 
 if __name__ == "__main__":
@@ -181,6 +192,9 @@ if __name__ == "__main__":
 
     if args["correct"]:
         splice_graph_dict = correct_splice_graph_dict(splice_graph_dict, args)
+
+    if args["polish"]:
+        splice_graph_dict = polish_overlaps_dict(splice_graph_dict, transcriptome_dict, args)
 
     if args["collapse"]:
         splice_graph_dict = {

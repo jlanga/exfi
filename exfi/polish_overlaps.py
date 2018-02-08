@@ -48,8 +48,8 @@ def polish_overlaps(splice_graph, fasta_dict):
 
                 # rename both transcripts (don't insert and delete)
                 ## u
-                new_node_u = _bed3_to_str(*coord_add_right(node_u_coord, difference))
-                new_node_v = _bed3_to_str(*coord_add_left(node_v_coord, difference))
+                new_node_u = _bed3_to_str(coord_add_right(node_u_coord, difference))
+                new_node_v = _bed3_to_str(coord_add_left(node_v_coord, difference))
 
                 # Update old -> new
                 node_mapping[node_u] = new_node_u

@@ -42,6 +42,8 @@ from exfi.correct_splice_graph_dict import \
 from tests.custom_assertions import \
     CustomAssertions
 
+from tests.test_data import SEALED_GRAPH_DICT
+
 
 def _compose_args(bloom_fn, gfa_fn):
     """Compose a dict of args with two variables"""
@@ -347,26 +349,15 @@ class TestSculptGraph(TestCase):
 
 
 
-class TestCorrectSpliceGraph(TestCase, CustomAssertions):
-    """Tests for exfi.correct_splice_graph.correct_splice_graph.
-
-    correct_splice_graph(splice_graph: nx.DiGraph, args: dict) -> nx.DiGraph
-    """
+class TestCorrectSpliceGraphDict(TestCase, CustomAssertions):
+    """Tests for exfi.correct_splice_graph_dict.correct_splice_graph_dict"""
 
     def test_correct_splice_graph_dict(self):
         """exfi.correct_splice_graph.correct_splice_graph: some data"""
-        test_graph = nx.DiGraph()
-        test_graph.add_edge(
-            u="ENSDART00000149335.2:0-486",
-            v="ENSDART00000149335.2:485-3379"
-        )
-        test_graph_dict = {"ENSDART00000149335.2": test_graph}
+
         splice_graph_dict = build_splice_graph_dict(POSITIVE_EXONS_BED, ARGS)
         sealed_graph_dict = correct_splice_graph_dict(splice_graph_dict, ARGS)
-        self.assertEqualDictOfSpliceGraphs(
-            sealed_graph_dict,
-            test_graph_dict
-        )
+        self.assertEqualDictOfSpliceGraphs(sealed_graph_dict, SEALED_GRAPH_DICT)
 
 
 

@@ -375,19 +375,17 @@ def correct_splice_graph_dict(splice_graph_dict: nx.DiGraph, args: dict) -> dict
 
     # Process each graph in parallel
     logging.info("\tCorrecting each splice graph")
-    results = pool.starmap(
+    corrected_splice_graphs = pool.starmap(
         func=_sculpt_graph,
         iterable=zip(
             splice_graph_dict.values(),
             filled_edges_by_transcript.values()
         ),
-        chunksize=1000
+        chunksize=100
     )
-
-    for i, transcript in enumerate(splice_graph_dict.keys()):
-        splice_graph_dict[transcript] = results[i]
-
     pool.close()
     pool.join()
+    splice_graph_dict = dict(zip(splice_graph_dict.keys(), corrected_splice_graphs))
+
     logging.info("\tDone correcting")
     return splice_graph_dict

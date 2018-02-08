@@ -188,20 +188,10 @@ def build_splice_graph_dict(bed3records, args):
     # Initialize pool of workers
     pool = mp.Pool(args["threads"])
 
-    # Initialize splice_graph_dict
-    splice_graph_dict = {transcript: None for transcript in bed6df_dict}
-
-    # Build graphs in parallel
-    results = pool.map(
-        func=build_splice_graph,
-        iterable=bed6df_dict.values(),
-        chunksize=1000
-    )
-
-    for i, transcript in enumerate(splice_graph_dict.keys()):
-        splice_graph_dict[transcript] = results[i]
-
+    # Build graphs in parallel and merge results
+    splice_graphs = pool.map(func=build_splice_graph, iterable=bed6df_dict.values(), chunksize=100)
     pool.close()
     pool.join()
+    splice_graph_dict = dict(zip(bed6df_dict.keys(), splice_graphs))
 
     return splice_graph_dict

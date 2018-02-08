@@ -101,6 +101,8 @@ class TestPolishOverlaps(TestCase, CustomAssertions):
         """exfi.polish_overlaps.polish_overlaps: complex case"""
         actual = polish_overlaps(SPLICE_GRAPH_COMPLEX, TRANSCRIPTOME_COMPLEX)
         expected = POLISHED_COMPLEX
+        print(actual)
+        print(expected)
         self.assertEqualSpliceGraphs(actual, expected)
 
 
@@ -124,7 +126,6 @@ class TestPolishOverlapsDict(TestCase, CustomAssertions):
         """exfi.polish_overlaps.polish_overlaps_dict: complex case"""
         actual = polish_overlaps_dict(SPLICE_GRAPH_COMPLEX_DICT, TRANSCRIPTOME_COMPLEX, ARGS)
         expected = POLISHED_COMPLEX_DICT
-        print(actual)
         self.assertEqualDictOfSpliceGraphs(actual, expected)
 
 

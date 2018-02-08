@@ -387,5 +387,7 @@ def correct_splice_graph_dict(splice_graph_dict: nx.DiGraph, args: dict) -> dict
     for i, transcript in enumerate(splice_graph_dict.keys()):
         splice_graph_dict[transcript] = results[i]
 
+    pool.close()
+    pool.join()
     logging.info("\tDone correcting")
     return splice_graph_dict

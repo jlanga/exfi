@@ -201,4 +201,7 @@ def build_splice_graph_dict(bed3records, args):
     for i, transcript in enumerate(splice_graph_dict.keys()):
         splice_graph_dict[transcript] = results[i]
 
+    pool.close()
+    pool.join()
+
     return splice_graph_dict

@@ -145,7 +145,6 @@ parser.add_argument(
     dest="verbose",
     help="Increase output verbosity"
 )
-utes(G=collapsed_graph, name="overlaps", values=new_link2overlap)
 
 parser.add_argument(
     "-t", "--threads",
@@ -186,7 +185,7 @@ if __name__ == "__main__":
     if args["collapse"]:
         splice_graph_dict = {
             "collapsed":
-            collapse_splice_graph(
+            collapse_splice_graph_dict(
                 splice_graph_dict=splice_graph_dict,
                 transcriptome_dict=transcriptome_dict
             )

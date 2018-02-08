@@ -4,21 +4,24 @@
 
 import networkx as nx
 
-def coord_to_str(seq, start, end) -> str:
-    """Convert coordinate to str"""
-    return "{seq}:{start}-{end}".format(seq=seq, start=start, end=end)
+from exfi.build_splice_graph_dict import \
+    _bed3_to_str
 
 
 def coord_add_left(coord, bases):
     """Add bases to the start coordinate"""
+    coord = list(coord)
     coord[1] += bases
-    return coord
+    return tuple(coord)
+
 
 
 def coord_add_right(coord, bases):
     """Add bases to the end coordinate"""
+    coord = list(coord)
     coord[2] += bases
-    return coord
+    return tuple(coord)
+
 
 
 def polish_overlaps(splice_graph, fasta_dict):
@@ -43,11 +46,10 @@ def polish_overlaps(splice_graph, fasta_dict):
             # if AG.*GT:
             if difference > 0:
 
-
                 # rename both transcripts (don't insert and delete)
                 ## u
-                new_node_u = coord_to_str(*coord_add_right(node_u_coord, difference))
-                new_node_v = coord_to_str(*coord_add_left(node_v_coord, difference))
+                new_node_u = _bed3_to_str(*coord_add_right(node_u_coord, difference))
+                new_node_v = _bed3_to_str(*coord_add_left(node_v_coord, difference))
 
                 # Update old -> new
                 node_mapping[node_u] = new_node_u
@@ -76,6 +78,7 @@ def polish_overlaps(splice_graph, fasta_dict):
     splice_graph = nx.relabel_nodes(G=splice_graph, mapping=node_mapping)
 
     # assign attributes
+    ## Nodes
     nx.set_node_attributes(
         G=splice_graph,
         name="coordinates",
@@ -84,6 +87,7 @@ def polish_overlaps(splice_graph, fasta_dict):
             for node, coordinates in node2coordinates.items()
         }
     )
+    ## Edges
     nx.set_edge_attributes(
         G=splice_graph,
         name="overlaps",
@@ -94,3 +98,30 @@ def polish_overlaps(splice_graph, fasta_dict):
     )
 
     return splice_graph
+
+
+
+def polish_overlaps_dict(splice_graph_dict: dict, fasta_dict: dict, args: dict) -> dict:
+    """Polish all overlaps in a splice graph dict"""
+
+    import pathos.multiprocessing as mp
+
+    # Initialize pool of workers
+    pool = mp.Pool(args["threads"])
+
+    def polish_wrapper(splice_graph):
+        """Export all fasta to function"""
+        return polish_overlaps(splice_graph, fasta_dict)
+
+    # Run
+    results = pool.map(
+        func=polish_wrapper,
+        iterable=splice_graph_dict.values(),
+        chunksize=1000
+    )
+
+    # Add results to splice_graph_dict
+    for i, transcript in enumerate(splice_graph_dict.keys()):
+        splice_graph_dict[transcript] = results[i]
+
+    return splice_graph_dict

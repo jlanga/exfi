@@ -93,6 +93,13 @@ class CustomAssertions:
         """Check if two dicts of nx.DiGraph and some data attached to nodes and edges are equal"""
         # pylint: disable=invalid-name, bad-classmethod-argument
 
+
+        if len(dict1) != len(dict2):
+            raise AssertionError("lengths differ!")
+
+        if not dict1:
+            return True
+
         for key, sg1 in dict1.items():
             if key not in dict2:
                 raise KeyError("Key %s not in dict2" % key)

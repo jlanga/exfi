@@ -15,10 +15,14 @@ from exfi.io.gfa1_to_gapped_transcripts import \
     gfa1_to_gapped_transcripts
 
 from tests.test_data import \
-    GFA_EMPTY_FN, GFA_SIMPLE_FN, GFA_COMPLEX_FN, \
-    GAPPED_EMPTY_FN, GAPPED_SIMPLE_FN, \
-    GAPPED_COMPLEX_FN, GAPPED_COMPLEX_HARD_FN, GAPPED_COMPLEX_SOFT_FN
+    GFA_EMPTY_FN, GFA_SIMPLE_FN, GFA_COMPLEX_FN
 
+
+GAPPED_EMPTY_FN = "tests/io/gapped_empty.fa"
+GAPPED_SIMPLE_FN = "tests/io/gapped_simple.fa"
+GAPPED_COMPLEX_FN = "tests/io/gapped_complex.fa"
+GAPPED_COMPLEX_SOFT_FN = "tests/io/gapped_complex_soft.fa"
+GAPPED_COMPLEX_HARD_FN = "tests/io/gapped_complex_hard.fa"
 
 class TestGFA1ToGappedTranscripts(TestCase):
     """Tests for gfa1_to_gapped_transcript"""

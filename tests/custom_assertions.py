@@ -128,6 +128,14 @@ class CustomAssertions:
     """
 
     @classmethod
+    def assertEqualDict(self, dict1, dict2):
+        """Check if two dicts are equal (values are compared with ==)"""
+        # pylint: disable=invalid-name, bad-classmethod-argument
+        check_same_dict(dict1, dict2)
+
+
+
+    @classmethod
     def assertEqualListOfSeqrecords(self, records1, records2):
         """
         Check if each element of list_of_seqrecords1 is exactly equal to each one of

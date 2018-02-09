@@ -344,15 +344,3 @@ PATHS_COMPLEX_DICT = PATH_COMPLEX
 GFA_EMPTY_FN = "tests/io/empty.gfa"
 GFA_SIMPLE_FN = "tests/io/simple.gfa"
 GFA_COMPLEX_FN = "tests/io/complex.gfa"
-
-EXONS_EMPTY_FN = "tests/io/exons_empty.fa"
-EXONS_SIMPLE_FN = "tests/io/exons_simple.fa"
-EXONS_COMPLEX_FN = "tests/io/exons_complex.fa"
-EXONS_COMPLEX_SOFT_FN = "tests/io/exons_complex_soft.fa"
-EXONS_COMPLEX_HARD_FN = "tests/io/exons_complex_hard.fa"
-
-EXONS_EMPTY_DICT = SEGMENTS_EMPTY_DICT
-EXONS_SIMPLE_DICT = SEGMENTS_SIMPLE_DICT
-EXONS_COMPLEX_DICT = SEGMENTS_COMPLEX_DICT
-EXONS_COMPLEX_SOFT_DICT = fasta_to_dict(EXONS_COMPLEX_SOFT_FN)
-EXONS_COMPLEX_HARD_DICT = fasta_to_dict(EXONS_COMPLEX_HARD_FN)

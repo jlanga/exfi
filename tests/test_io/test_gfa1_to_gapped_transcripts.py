@@ -56,7 +56,8 @@ class TestGFA1ToGappedTranscripts(TestCase):
         os.remove(tmp_file)
 
     def test_multiple_soft(self):
-        """exfi.io.gfa1_to_gapped_transcripts.gfa1_to_gapped_transcripts: complex case and soft masking"""
+        """exfi.io.gfa1_to_gapped_transcripts.gfa1_to_gapped_transcripts: complex case and soft
+        masking"""
         tmp_file = tempfile.mkstemp()[1]
         gfa1_to_gapped_transcripts(
             gfa_in=GFA_COMPLEX_FN,
@@ -70,16 +71,15 @@ class TestGFA1ToGappedTranscripts(TestCase):
 
 
     def test_multiple_hard(self):
-        """exfi.io.gfa1_to_gapped_transcripts.gfa1_to_gapped_transcripts: complex case and hard masking"""
+        """exfi.io.gfa1_to_gapped_transcripts.gfa1_to_gapped_transcripts: complex case and hard
+        masking"""
         tmp_file = tempfile.mkstemp()[1]
         gfa1_to_gapped_transcripts(
             gfa_in=GFA_COMPLEX_FN,
             fasta_out=tmp_file,
             masking="hard"
         )
-        self.assertTrue(
-            filecmp.cmp(tmp_file, GAPPED_COMPLEX_HARD_FN)
-        )
+        self.assertTrue(filecmp.cmp(tmp_file, GAPPED_COMPLEX_HARD_FN))
         os.remove(tmp_file)
 
 if __name__ == '__main__':

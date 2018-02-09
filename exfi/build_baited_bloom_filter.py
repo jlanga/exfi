@@ -80,6 +80,23 @@ def _get_build_bf_command(args, out_fn):
 
 
 
+def _create_links(output_dir):
+    """Create soft links from categries-* to /dev/null"""
+    os.symlink(os.devnull, output_dir + "/categories_transcriptome.fa")
+    os.symlink(os.devnull, output_dir + "/categories_noMatch.fa")
+    os.symlink(os.devnull, output_dir + "/categories_multiMatch.fa")
+    os.symlink(os.devnull, output_dir + "/categories_summary.tsv")
+
+
+def _destroy_links(output_dir):
+    """Destroy the links created by _create_links"""
+    os.remove(output_dir + "/categories_transcriptome.fa")
+    os.remove(output_dir + "/categories_noMatch.fa")
+    os.remove(output_dir + "/categories_multiMatch.fa")
+    os.remove(output_dir + "/categories_summary.tsv")
+
+
+
 def build_baited_bloom_filter(args):
     '''(dict) -> None
 
@@ -113,27 +130,17 @@ def build_baited_bloom_filter(args):
     build_bf = _get_build_bf_command(args, ["/dev/stdin"])
 
     # Run the pipeline
-    logging.info(
-        "\n\nRunning command: %s\n", " ".join(build_transcriptome_bf)
-    )
+    logging.info("\n\nRunning command: %s\n", " ".join(build_transcriptome_bf))
 
-    # Create links to /dev/null for categories_{match,nomatch,multi}.fa and summary
-    os.symlink(os.devnull, output_dir + "/categories_transcriptome.fa")
-    os.symlink(os.devnull, output_dir + "/categories_noMatch.fa")
-    os.symlink(os.devnull, output_dir + "/categories_multiMatch.fa")
-    os.symlink(os.devnull, output_dir + "/categories_summary.tsv")
+    ## Create links to /dev/null for categories_{match,nomatch,multi}.fa and summary
+    _create_links(output_dir)
 
+    ## Put the porcesses to work together
     p_build_transcriptome_bf = Popen(build_transcriptome_bf, shell=False)
-
     p_build_transcriptome_bf.wait()
-
-    logging.info(
-        "\n\nRunning command: %s | %s\n", " ".join(categorize), " ".join(build_bf)
-    )
-
+    logging.info("\n\nRunning command: %s | %s\n", " ".join(categorize), " ".join(build_bf))
     p_categorize = Popen(categorize, stdout=PIPE, shell=False)
     p_build_bf = Popen(build_bf, stdin=p_categorize.stdout, shell=False)
-
     p_categorize.stdout.close()
     p_categorize.wait()
     p_build_bf.wait()
@@ -145,7 +152,4 @@ def build_baited_bloom_filter(args):
         os.remove(output_dir + "/transcriptome.txt")
 
     # Clean up files from biobloomcategorizer
-    os.remove(output_dir + "/categories_transcriptome.fa")
-    os.remove(output_dir + "/categories_noMatch.fa")
-    os.remove(output_dir + "/categories_multiMatch.fa")
-    os.remove(output_dir + "/categories_summary.tsv")
+    _destroy_links(output_dir)

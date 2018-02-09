@@ -42,8 +42,6 @@ from exfi.correct_splice_graph_dict import \
 from tests.custom_assertions import \
     CustomAssertions
 
-from tests.test_data import SEALED_GRAPH_DICT
-
 
 def _compose_args(bloom_fn, gfa_fn):
     """Compose a dict of args with two variables"""
@@ -142,6 +140,21 @@ NEW_NODE_IDS = {
         'ENSDART00000149335.2:0-486'
 }
 
+SEALED_GRAPH = nx.DiGraph()
+SEALED_GRAPH.add_nodes_from(["ENSDART00000149335.2:0-486", "ENSDART00000149335.2:485-3379"])
+nx.set_node_attributes(SEALED_GRAPH, name="coordinates", values={
+    "ENSDART00000149335.2:0-486": (("ENSDART00000149335.2", 0, 486),),
+    "ENSDART00000149335.2:485-3379": (("ENSDART00000149335.2", 485, 3379),)
+})
+SEALED_GRAPH.add_edge(
+    u="ENSDART00000149335.2:0-486",
+    v="ENSDART00000149335.2:485-3379"
+)
+nx.set_edge_attributes(SEALED_GRAPH, name="overlaps", values={
+    ("ENSDART00000149335.2:0-486", "ENSDART00000149335.2:485-3379"): 1
+})
+
+SEALED_GRAPH_DICT = {"ENSDART00000149335.2": SEALED_GRAPH}
 
 def tearDownModule():
     """Remove temporary bloom and temporary GFA files"""

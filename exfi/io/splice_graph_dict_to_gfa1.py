@@ -11,8 +11,25 @@ from itertools import chain
 import networkx as nx
 import pandas as pd
 
+from natsort import \
+    natsorted
+
 from exfi.build_splice_graph_dict import \
     bed6df_to_path2node
+
+
+
+def _get_node2coord(splice_graph):
+    """Get node coordinates"""
+    return nx.get_node_attributes(G=splice_graph, name="coordinates")
+
+
+
+def _get_edge2overlap(splice_graph):
+    """Get edge overlap"""
+    return nx.get_edge_attributes(G=splice_graph, name="overlaps")
+
+
 
 def _compute_segments(splice_graph_dict, transcriptome_dict):
     """(nx.DiGraph, dict) -> list
@@ -21,9 +38,9 @@ def _compute_segments(splice_graph_dict, transcriptome_dict):
     S node_id sequence length
     """
     logging.info("\tComputing segments")
-    for splice_graph in splice_graph_dict.values():
-        node2coords = nx.get_node_attributes(G=splice_graph, name="coordinates")
-        for node_id, coordinates in node2coords.items():
+    for _, splice_graph in natsorted(splice_graph_dict.items()):
+        node2coords = _get_node2coord(splice_graph)
+        for node_id, coordinates in natsorted(node2coords.items()):
             logging.debug("\t\tProcessing node %s", node_id)
             coordinate = coordinates[0]
             transcript_id, start, end = coordinate
@@ -44,15 +61,12 @@ def _compute_links(splice_graph_dict: dict):
     """
     logging.info("\tComputing links")
 
-    for splice_graph in splice_graph_dict.values():
+    for _, splice_graph in natsorted(splice_graph_dict.items()):
 
         # Edges
-        edge2overlap = nx.get_edge_attributes(
-            G=splice_graph,
-            name="overlaps"
-            )
+        edge2overlap = _get_edge2overlap(splice_graph)
 
-        for (node1, node2), overlap in edge2overlap.items():
+        for (node1, node2), overlap in natsorted(edge2overlap.items()):
             logging.debug("\t\tProcesssing edge (%s, %s)", node1, node2)
             # is an overlap or a gap
             if overlap >= 0:
@@ -61,10 +75,8 @@ def _compute_links(splice_graph_dict: dict):
                 overlap = "{}G".format(-overlap)
 
             yield "L\t{node1}\t{orientation1}\t{node2}\t{orientation2}\t{overlap}\n".format(
-                node1=node1,
-                orientation1="+",
-                node2=node2,
-                orientation2="+",
+                node1=node1, orientation1="+",
+                node2=node2, orientation2="+",
                 overlap=overlap
             )
 
@@ -79,18 +91,16 @@ def _compute_containments(splice_graph_dict):
     # Extract from the graph necessary data
     logging.info("\tComputing containments")
 
-    for splice_graph in splice_graph_dict.values():
-        node2coordinates = nx.get_node_attributes(G=splice_graph, name='coordinates')
+    for _, splice_graph in natsorted(splice_graph_dict.items()):
+        node2coordinates = _get_node2coord(splice_graph)
 
-        for node, coordinates in node2coordinates.items():
+        for node, coordinates in natsorted(node2coordinates.items()):
             for (transcript_id, start, end) in coordinates:
 
                 logging.debug("\t\tProcessing %s - %s:%s-%s", node, transcript_id, start, end)
                 cigar = str(int(end) - int(start)) + "M"
                 yield "C\t{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format(
-                    transcript_id, "+",
-                    node, "+",
-                    start, cigar
+                    transcript_id, "+", node, "+", start, cigar
                 )
 
 
@@ -103,13 +113,10 @@ def _compute_paths(splice_graph_dict):
     """
     logging.info("\tComputing paths")
 
-    for splice_graph in splice_graph_dict.values():
+    for _, splice_graph in natsorted(splice_graph_dict.items()):
 
         # Make bed6df
-        node2coords = nx.get_node_attributes(
-            G=splice_graph,
-            name="coordinates"
-        )
+        node2coords = _get_node2coord(splice_graph)
 
         bed6_records = (
             (seqid, start, end, name, ".", "+")
@@ -123,7 +130,7 @@ def _compute_paths(splice_graph_dict):
         )
 
         path2nodes = bed6df_to_path2node(bed6df)
-        for transcript_id, path in path2nodes.items():
+        for transcript_id, path in natsorted(path2nodes.items()):
             yield "P\t{transcript_id}\t{path}\n".format(
                 transcript_id=transcript_id,
                 path=",".join([node + "+" for node in path])

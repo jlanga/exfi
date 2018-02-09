@@ -18,7 +18,7 @@ from exfi.io.splice_graph_dict_to_gfa1 import \
     splice_graph_dict_to_gfa1
 
 from tests.test_data import \
-    TRANSCRIPTOME_EMPTY, TRANSCRIPTOME_SIMPLE, TRANSCRIPTOME_COMPLEX, \
+    TRANSCRIPTOME_EMPTY_DICT, TRANSCRIPTOME_SIMPLE_DICT, TRANSCRIPTOME_COMPLEX_DICT, \
     GFA_EMPTY_FN, GFA_SIMPLE_FN, GFA_COMPLEX_FN, \
     SPLICE_GRAPH_EMPTY_DICT, SPLICE_GRAPH_SIMPLE_DICT, SPLICE_GRAPH_COMPLEX_DICT, \
     SEGMENTS_EMPTY, SEGMENTS_SIMPLE, SEGMENTS_COMPLEX, \
@@ -33,19 +33,19 @@ class TestComputeSegments(TestCase):
 
     def test_empty(self):
         """exfi.io.splice_graph_dict_to_gfa1._compute_segments: empty case"""
-        actual = list(_compute_segments(SPLICE_GRAPH_EMPTY_DICT, TRANSCRIPTOME_EMPTY))
+        actual = list(_compute_segments(SPLICE_GRAPH_EMPTY_DICT, TRANSCRIPTOME_EMPTY_DICT))
         expected = SEGMENTS_EMPTY
         self.assertEqual(actual, expected)
 
     def test_simple(self):
         """exfi.io.splice_graph_dict_to_gfa1._compute_segments: simple case"""
-        actual = list(_compute_segments(SPLICE_GRAPH_SIMPLE_DICT, TRANSCRIPTOME_SIMPLE))
+        actual = list(_compute_segments(SPLICE_GRAPH_SIMPLE_DICT, TRANSCRIPTOME_SIMPLE_DICT))
         expected = SEGMENTS_SIMPLE
         self.assertEqual(actual, expected)
 
     def test_complex(self):
         """exfi.io.splice_graph_dict_to_gfa1._compute_segments: complex case"""
-        actual = list(_compute_segments(SPLICE_GRAPH_COMPLEX_DICT, TRANSCRIPTOME_COMPLEX))
+        actual = list(_compute_segments(SPLICE_GRAPH_COMPLEX_DICT, TRANSCRIPTOME_COMPLEX_DICT))
         expected = SEGMENTS_COMPLEX
         self.assertEqual(actual, expected)
 
@@ -127,7 +127,7 @@ class TestSpliceGraphToGFA1(TestCase):
         tmp_file = tempfile.mkstemp()[1]
         splice_graph_dict_to_gfa1(
             splice_graph_dict=SPLICE_GRAPH_EMPTY_DICT,
-            transcriptome_dict=TRANSCRIPTOME_EMPTY,
+            transcriptome_dict=TRANSCRIPTOME_EMPTY_DICT,
             filename=tmp_file
         )
         self.assertTrue(filecmp.cmp(
@@ -141,7 +141,7 @@ class TestSpliceGraphToGFA1(TestCase):
         tmp_file = tempfile.mkstemp()[1]
         splice_graph_dict_to_gfa1(
             splice_graph_dict=SPLICE_GRAPH_SIMPLE_DICT,
-            transcriptome_dict=TRANSCRIPTOME_SIMPLE,
+            transcriptome_dict=TRANSCRIPTOME_SIMPLE_DICT,
             filename=tmp_file #tmp_file
         )
         self.assertTrue(filecmp.cmp(
@@ -155,7 +155,7 @@ class TestSpliceGraphToGFA1(TestCase):
         tmp_file = tempfile.mkstemp()[1]
         splice_graph_dict_to_gfa1(
             splice_graph_dict=SPLICE_GRAPH_COMPLEX_DICT,
-            transcriptome_dict=TRANSCRIPTOME_COMPLEX,
+            transcriptome_dict=TRANSCRIPTOME_COMPLEX_DICT,
             filename=tmp_file
         )
         self.assertTrue(filecmp.cmp(

@@ -190,26 +190,26 @@ SPLICE_GRAPH_SIMPLE_DICT = {
 }
 
 
-PART1 = nx.DiGraph()
-PART1.add_nodes_from(NODE2COORDS_COMPLEX_PART1.keys())
-nx.set_node_attributes(G=PART1, name="coordinates", values=NODE2COORDS_COMPLEX_PART1)
-PART1.add_edges_from(OVERLAPS_COMPLEX_DICT["ENSDART00000161035.1"].keys())
+SPLICE_GRAPH_1 = nx.DiGraph()
+SPLICE_GRAPH_1.add_nodes_from(NODE2COORDS_COMPLEX_PART1.keys())
+nx.set_node_attributes(G=SPLICE_GRAPH_1, name="coordinates", values=NODE2COORDS_COMPLEX_PART1)
+SPLICE_GRAPH_1.add_edges_from(OVERLAPS_COMPLEX_DICT["ENSDART00000161035.1"].keys())
 nx.set_edge_attributes(
-    G=PART1, name="overlaps", values=OVERLAPS_COMPLEX_DICT["ENSDART00000161035.1"]
+    G=SPLICE_GRAPH_1, name="overlaps", values=OVERLAPS_COMPLEX_DICT["ENSDART00000161035.1"]
 )
 
-PART2 = nx.DiGraph()
-PART2.add_nodes_from(NODE2COORDS_COMPLEX_PART2.keys())
+SPLICE_GRAPH_2 = nx.DiGraph()
+SPLICE_GRAPH_2.add_nodes_from(NODE2COORDS_COMPLEX_PART2.keys())
 nx.set_node_attributes(
-    G=PART2, name="coordinates", values=NODE2COORDS_COMPLEX_PART2)
-PART2.add_edges_from(OVERLAPS_COMPLEX_DICT["ENSDART00000165342.1"].keys())
+    G=SPLICE_GRAPH_2, name="coordinates", values=NODE2COORDS_COMPLEX_PART2)
+SPLICE_GRAPH_2.add_edges_from(OVERLAPS_COMPLEX_DICT["ENSDART00000165342.1"].keys())
 nx.set_edge_attributes(
-    G=PART2, name="overlaps", values=OVERLAPS_COMPLEX_DICT["ENSDART00000165342.1"]
+    G=SPLICE_GRAPH_2, name="overlaps", values=OVERLAPS_COMPLEX_DICT["ENSDART00000165342.1"]
 )
 
 SPLICE_GRAPH_COMPLEX_DICT = {
-    "ENSDART00000161035.1": PART1,
-    "ENSDART00000165342.1": PART2
+    "ENSDART00000161035.1": SPLICE_GRAPH_1,
+    "ENSDART00000165342.1": SPLICE_GRAPH_2
 }
 
 
@@ -549,38 +549,3 @@ COLLAPSED_COMPLEX.add_nodes_from(NEW_NODE2COORD_COMPLEX.keys())
 COLLAPSED_COMPLEX.add_edges_from(NEW_LINK2OVERLAP_COMPLEX.keys())
 nx.set_node_attributes(G=COLLAPSED_COMPLEX, name="coordinates", values=NEW_NODE2COORD_COMPLEX)
 nx.set_edge_attributes(G=COLLAPSED_COMPLEX, name="overlaps", values=NEW_LINK2OVERLAP_COMPLEX)
-
-
-
-POLISHED_EMPTY = nx.DiGraph()
-POLISHED_SIMPLE = nx.DiGraph()
-POLISHED_SIMPLE.add_node("ENSDART00000161035.1:0-326")
-nx.set_node_attributes(
-    G=POLISHED_SIMPLE,
-    name="coordinates",
-    values={'ENSDART00000161035.1:0-326': (('ENSDART00000161035.1', 0, 326),)}
-)
-
-
-POLISHED_COMPLEX = nx.DiGraph()
-POLISHED_COMPLEX.add_nodes_from(
-    tuple(NODE2COORDS_COMPLEX_PART1.keys()) + tuple(NODE2COORDS_COMPLEX_PART2.keys())
-)
-nx.set_node_attributes(
-    G=POLISHED_COMPLEX,
-    name="coordinates",
-    values={**NODE2COORDS_COMPLEX_PART1, **NODE2COORDS_COMPLEX_PART2}
-)
-POLISHED_COMPLEX.add_edges_from(OVERLAPS_COMPLEX.keys())
-nx.set_edge_attributes(
-    G=POLISHED_COMPLEX,
-    name="overlaps",
-    values=OVERLAPS_COMPLEX
-)
-
-POLISHED_EMPTY_DICT = dict()
-POLISHED_SIMPLE_DICT = {"ENSDART00000161035.1": POLISHED_SIMPLE}
-POLISHED_COMPLEX_DICT = {
-    'ENSDART00000161035.1': PART1,
-    'ENSDART00000165342.1': PART2
-}

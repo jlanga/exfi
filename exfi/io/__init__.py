@@ -9,8 +9,6 @@ Data frames, ...
 
 import logging
 
-from Bio import SeqIO
-
 
 def _coordinate_str_to_tuple(coordinates):
     """(string) -> (string, int, int)

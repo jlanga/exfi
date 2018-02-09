@@ -9,8 +9,4 @@ from Bio.SeqIO.FastaIO import \
 def fasta_to_dict(filename: str) -> dict:
     """Fast Fasta to dict via SimpleFastaParser"""
     with open(filename, "r") as handle:
-        fasta_dict = {
-            identifier: sequence
-            for (identifier, sequence) in SimpleFastaParser(handle)
-        }
-        return fasta_dict
+        return dict(SimpleFastaParser(handle))

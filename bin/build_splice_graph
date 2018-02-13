@@ -190,11 +190,11 @@ if __name__ == "__main__":
     # Transcriptome_dict
     transcriptome_dict = fasta_to_dict(args["input_fasta"])
 
-    if args["correct"]:
-        splice_graph_dict = correct_splice_graph_dict(splice_graph_dict, args)
-
     if args["polish"]:
         splice_graph_dict = polish_overlaps_dict(splice_graph_dict, transcriptome_dict, args)
+
+    if args["correct"]:
+        splice_graph_dict = correct_splice_graph_dict(splice_graph_dict, args)
 
     if args["collapse"]:
         splice_graph_dict = {

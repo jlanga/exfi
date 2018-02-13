@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-test_correct_splice_graph.py: tests for the exfi.correct_splice_graph submodule
+test_correct_splice_graph.py: tests for the exfi.correct submodule
 """
 
 
@@ -27,7 +27,7 @@ from exfi.build_splice_graph_dict import \
 from exfi.io.fasta_to_dict import \
     fasta_to_dict
 
-from exfi.correct_splice_graph_dict import \
+from exfi.correct import \
     _prepare_sealer, \
     _run_sealer, \
     _collect_sealer_results, \
@@ -50,13 +50,13 @@ def _compose_args(bloom_fn, gfa_fn):
         "input_bloom": bloom_fn,
         "bloom_size": "500M",
         "levels": 1,
-        "input_fasta": "tests/correct_splice_graph/transcript.fa",
+        "input_fasta": "tests/correct/transcript.fa",
         "max_fp_bases": 5,
         "max_overlap": 10,
         "output_gfa": gfa_fn,
         "threads": 4,
         "max_gap_size": 10,
-        "reads": ["tests/correct_splice_graph/reads.fa"],
+        "reads": ["tests/correct/reads.fa"],
         "output_bloom" : bloom_fn,
         "bloom_filter": bloom_fn,
     }
@@ -170,10 +170,10 @@ class TestPrepareSealer(TestCase, CustomAssertions):
     """
 
     def test_file_creation(self):
-        """exfi.correct_splice_graph._prepare_sealer: test creation"""
+        """exfi.correct._prepare_sealer: test creation"""
         sealer_input_fn = _prepare_sealer(SPLICE_GRAPH_DICT, ARGS)
         actual = fasta_to_dict(sealer_input_fn)
-        expected = fasta_to_dict("tests/correct_splice_graph/to_seal.fa")
+        expected = fasta_to_dict("tests/correct/to_seal.fa")
         remove(sealer_input_fn)
         self.assertEqual(actual, expected)
 
@@ -185,10 +185,10 @@ class TestRunSealer(TestCase, CustomAssertions):
     """
 
     def test_run(self):
-        """exfi.correct_splice_graph._run_sealer: test if runs"""
+        """exfi.correct._run_sealer: test if runs"""
         sealer_in_fn = _prepare_sealer(SPLICE_GRAPH_DICT, ARGS)
         sealer_out_fn = _run_sealer(sealer_input_fn=sealer_in_fn, args=ARGS)
-        actual = fasta_to_dict("tests/correct_splice_graph/sealed.fa")
+        actual = fasta_to_dict("tests/correct/sealed.fa")
         expected = fasta_to_dict(sealer_out_fn)
         remove(sealer_in_fn)
         remove(sealer_out_fn)
@@ -202,7 +202,7 @@ class TestCollectSealerResults(TestCase):
     """
 
     def test_collect_empty(self):
-        """exfi.correct_splice_graph._collect_sealer_results: empty case"""
+        """exfi.correct._collect_sealer_results: empty case"""
         empty_file = mkstemp()
         sealer_output_fn = _run_sealer(sealer_input_fn=empty_file[1], args=ARGS)
         edge2fill = _collect_sealer_results(handle=sealer_output_fn)
@@ -211,9 +211,9 @@ class TestCollectSealerResults(TestCase):
         self.assertEqual(edge2fill, set())
 
     def test_collect_somedata(self):
-        """exfi.correct_splice_graph._collect_sealer_results: some data"""
+        """exfi.correct._collect_sealer_results: some data"""
         edge2fill = _collect_sealer_results(
-            handle="tests/correct_splice_graph/sealed.fa"
+            handle="tests/correct/sealed.fa"
         )
         self.assertEqual(edge2fill, EDGE2FILL)
 
@@ -223,16 +223,16 @@ class TestFilledEdgeByTranscript(TestCase):
     """Tests for _filled_edges_by_transcript(splice_graph: nx.DiGraph, filled_edges: str) -> dict"""
 
     def test_empty(self):
-        """exfi.correct_splice_graph._filled_edge_by_transcript: empty case"""
+        """exfi.correct._filled_edge_by_transcript: empty case"""
         initial = {}
         actual = _filled_edges_by_transcript(filled_edges=initial)
         expected = {}
         self.assertEqual(actual, expected)
 
     def test_some_data(self):
-        """exfi.correct_splice_graph._filled_edge_by_transcript: some data"""
+        """exfi.correct._filled_edge_by_transcript: some data"""
         initial = _collect_sealer_results(
-            handle="tests/correct_splice_graph/sealed.fa"
+            handle="tests/correct/sealed.fa"
         )
         actual = _filled_edges_by_transcript(filled_edges=initial)
         expected = FILLED_EDGE_BY_TRANSCRIPT
@@ -247,14 +247,14 @@ class TestRenameNodesFromCollapse(TestCase):
     """
 
     def test_empty(self):
-        """exfi.correct_splice_graph._rename_nodes_from_collapse: empty case"""
+        """exfi.correct._rename_nodes_from_collapse: empty case"""
         initial = nx.DiGraph()
         actual = _rename_nodes_from_collapse(initial)
         expected = {}
         self.assertEqual(actual, expected)
 
     def test_some_data(self):
-        """exfi.correct_splice_graph._rename_nodes_from_collapse: some data"""
+        """exfi.correct._rename_nodes_from_collapse: some data"""
         actual = _rename_nodes_from_collapse(COLLAPSED_GRAPH)
         expected = QUOTIENT_RELABELING
         self.assertEqual(actual, expected)
@@ -263,19 +263,19 @@ class TestRenameNodesFromCollapse(TestCase):
 
 
 class TestRecomputeNode2Coord(TestCase):
-    """Tests for exfi.correct_splice_graph._recompute_node2coord
+    """Tests for exfi.correct._recompute_node2coord
 
     _recompute_node2coord(component: nx.DiGraph, quotient_relabeled: nx.DiGraph) -> dict
     """
 
     def test_empty(self):
-        """exfi.correct_splice_graph._recompute_node2coord: empty case"""
+        """exfi.correct._recompute_node2coord: empty case"""
         actual = _recompute_node2coord(nx.DiGraph(), nx.DiGraph())
         expected = {}
         self.assertEqual(actual, expected)
 
     def test_some_data(self):
-        """exfi.correct_splice_graph._recompute_node2coord: some data"""
+        """exfi.correct._recompute_node2coord: some data"""
         actual = _recompute_node2coord(
             component=SPLICE_GRAPH,
             quotient_relabeled=QUOTIENT_RELABELED
@@ -292,13 +292,13 @@ class TestRecomputeEdge2Overlap(TestCase):
     """
 
     def test_empty(self):
-        """exfi.correct_splice_graph._recompute_edge2overlap: empty case"""
+        """exfi.correct._recompute_edge2overlap: empty case"""
         actual = _recompute_edge2overlap(nx.DiGraph(), nx.DiGraph())
         expected = {}
         self.assertEqual(actual, expected)
 
     def test_some_data(self):
-        """exfi.correct_splice_graph._recompute_edge2overlap: some data"""
+        """exfi.correct._recompute_edge2overlap: some data"""
         actual = _recompute_node2coord(
             component=SPLICE_GRAPH,
             quotient_relabeled=QUOTIENT_RELABELED
@@ -309,18 +309,18 @@ class TestRecomputeEdge2Overlap(TestCase):
 
 
 class TestComputeNewNodeIds(TestCase):
-    """Test for exfi.correct_splice_graph._compute_new_node_ids
+    """Test for exfi.correct._compute_new_node_ids
 
     _compute_new_node_ids(quotient_relabeled: nx.DiGraph, component: nx.DiGraph) -> dict
     """
     def test_empty(self):
-        """exfi.correct_splice_graph._compute_new_node_ids: empty case"""
+        """exfi.correct._compute_new_node_ids: empty case"""
         actual = _compute_new_node_ids(nx.DiGraph(), nx.DiGraph())
         expected = {}
         self.assertEqual(actual, expected)
 
     def test_some_data(self):
-        """exfi.correct_splice_graph._compute_new_node_ids: some data"""
+        """exfi.correct._compute_new_node_ids: some data"""
         actual = _compute_new_node_ids(QUOTIENT_RELABELED, SPLICE_GRAPH)
         expected = NEW_NODE_IDS
         self.assertEqual(actual, expected)
@@ -328,13 +328,13 @@ class TestComputeNewNodeIds(TestCase):
 
 
 class TestSculptGraph(TestCase):
-    """Tests for exfi.correct_splice_graph._sculpt_graph
+    """Tests for exfi.correct._sculpt_graph
 
     _sculpt_graph(splice_graph: nx.DiGraph, filled_edges: set) -> nx.DiGraph
     """
 
     def test_sculpt_empty_data(self):
-        """exfi.correct_splice_graph._sculpt_graph: empty case"""
+        """exfi.correct._sculpt_graph: empty case"""
         sealed_graph = _sculpt_graph(SPLICE_GRAPH, {})
         self.assertTrue(nx.is_isomorphic(
             sealed_graph,
@@ -343,14 +343,14 @@ class TestSculptGraph(TestCase):
 
 
     def test_scuplt_real_data(self):
-        """exfi.correct_splice_graph._sculpt_graph: some data"""
+        """exfi.correct._sculpt_graph: some data"""
         test_graph = nx.DiGraph()
         test_graph.add_edge(
             u="ENSDART00000149335.2:0-486",
             v="ENSDART00000149335.2:485-3379"
         )
         edge2fill = _collect_sealer_results(
-            handle="tests/correct_splice_graph/sealed.fa"
+            handle="tests/correct/sealed.fa"
         )
         sealed_graph = _sculpt_graph(
             splice_graph=SPLICE_GRAPH, filled_edges=edge2fill
@@ -363,10 +363,10 @@ class TestSculptGraph(TestCase):
 
 
 class TestCorrectSpliceGraphDict(TestCase, CustomAssertions):
-    """Tests for exfi.correct_splice_graph_dict.correct_splice_graph_dict"""
+    """Tests for exfi.correct_dict.correct_splice_graph_dict"""
 
     def test_correct_splice_graph_dict(self):
-        """exfi.correct_splice_graph.correct_splice_graph: some data"""
+        """exfi.correct.correct_splice_graph: some data"""
 
         splice_graph_dict = build_splice_graph_dict(POSITIVE_EXONS_BED, ARGS)
         sealed_graph_dict = correct_splice_graph_dict(splice_graph_dict, ARGS)

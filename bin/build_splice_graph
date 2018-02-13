@@ -19,10 +19,10 @@ from exfi.find_exons import \
 from exfi.build_splice_graph_dict import \
     build_splice_graph_dict
 
-from exfi.correct_splice_graph_dict import \
+from exfi.correct import \
     correct_splice_graph_dict
 
-from exfi.polish_overlaps import \
+from exfi.polish import \
     polish_overlaps_dict
 
 from exfi.io.fasta_to_dict import \
@@ -31,7 +31,7 @@ from exfi.io.fasta_to_dict import \
 from exfi.io.splice_graph_dict_to_gfa1 import \
     splice_graph_dict_to_gfa1
 
-from exfi.collapse_splice_graph_dict import \
+from exfi.collapse import \
     collapse_splice_graph_dict
 
 

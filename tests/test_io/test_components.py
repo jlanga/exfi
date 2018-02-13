@@ -4,8 +4,9 @@
 
 from unittest import TestCase, main
 
-from exfi.io.join_components import join_components
-from exfi.io.split_into_components import split_into_components
+from exfi.io.components import \
+    join_components, \
+    split_into_components
 
 from tests.custom_assertions import \
     CustomAssertions

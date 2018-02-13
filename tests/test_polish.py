@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""tests.test_polish_overlaps.py: Tests for the exfi.polish_overlaps submodule"""
+"""tests.test_polish_overlaps.py: Tests for the exfi.polish submodule"""
 
 
 from unittest import \
@@ -9,7 +9,7 @@ from unittest import \
 
 import networkx as nx
 
-from exfi.polish_overlaps import \
+from exfi.polish import \
     trim_start, \
     trim_end, \
     polish_overlaps, \
@@ -69,26 +69,26 @@ ARGS = {
 
 
 class TestCoordAddLeft(TestCase):
-    """Tests for exfi.polish_overlaps.trim_start"""
+    """Tests for exfi.polish.trim_start"""
 
     def test_empty(self):
-        """exfi.polish_overlaps.trim_start: empty case"""
+        """exfi.polish.trim_start: empty case"""
         with self.assertRaises(IndexError):
             trim_start([], 1)
 
     def test_short(self):
-        """exfi.polish_overlaps.trim_start: short case"""
+        """exfi.polish.trim_start: short case"""
         with self.assertRaises(IndexError):
             trim_start([1], 1)
 
     def test_correct(self):
-        """exfi.polish_overlaps.trim_start: correct case"""
+        """exfi.polish.trim_start: correct case"""
         actual = trim_start(("tr", 1, 2), 2)
         expected = ("tr", 3, 2)
         self.assertEqual(actual, expected)
 
     def test_too_long(self):
-        """exfi.polish_overlaps.trim_start: too long case"""
+        """exfi.polish.trim_start: too long case"""
         actual = trim_start(("tr", 1, 2, 5, 5), 2)
         expected = ("tr", 3, 2, 5, 5)
         self.assertEqual(actual, expected)
@@ -96,26 +96,26 @@ class TestCoordAddLeft(TestCase):
 
 
 class TestCoordAddRight(TestCase):
-    """Tests for exfi.polish_overlaps.trim_end"""
+    """Tests for exfi.polish.trim_end"""
 
     def test_empty(self):
-        """exfi.polish_overlaps.trim_end: empty case"""
+        """exfi.polish.trim_end: empty case"""
         with self.assertRaises(IndexError):
             trim_end([], 1)
 
     def test_short(self):
-        """exfi.polish_overlaps.trim_end: short case"""
+        """exfi.polish.trim_end: short case"""
         with self.assertRaises(IndexError):
             trim_end([1], 1)
 
     def test_correct(self):
-        """exfi.polish_overlaps.trim_end: correct case"""
+        """exfi.polish.trim_end: correct case"""
         actual = trim_end(("tr", 1, 2), 2)
         expected = ("tr", 1, 0)
         self.assertEqual(actual, expected)
 
     def test_too_long(self):
-        """exfi.polish_overlaps.trim_end: too long case"""
+        """exfi.polish.trim_end: too long case"""
         actual = trim_end(("tr", 1, 2, 5, 5), 2)
         expected = ("tr", 1, 0, 5, 5)
         self.assertEqual(actual, expected)
@@ -123,22 +123,22 @@ class TestCoordAddRight(TestCase):
 
 
 class TestPolishOverlaps(TestCase, CustomAssertions):
-    """Tests for exfi.polish_overlaps.polish_overlaps"""
+    """Tests for exfi.polish.polish_overlaps"""
 
     def test_empty(self):
-        """exfi.polish_overlaps.polish_overlaps: empty case"""
+        """exfi.polish.polish_overlaps: empty case"""
         actual = polish_overlaps(SPLICE_GRAPH_EMPTY, TRANSCRIPTOME_EMPTY_DICT)
         expected = POLISHED_EMPTY
         self.assertEqualSpliceGraphs(actual, expected)
 
     def test_simple(self):
-        """exfi.polish_overlaps.polish_overlaps: simple case"""
+        """exfi.polish.polish_overlaps: simple case"""
         actual = polish_overlaps(SPLICE_GRAPH_SIMPLE, TRANSCRIPTOME_SIMPLE_DICT)
         expected = POLISHED_SIMPLE
         self.assertEqualSpliceGraphs(actual, expected)
 
     def test_complex(self):
-        """exfi.polish_overlaps.polish_overlaps: complex case"""
+        """exfi.polish.polish_overlaps: complex case"""
         actual = polish_overlaps(SPLICE_GRAPH_COMPLEX, TRANSCRIPTOME_COMPLEX_DICT)
         expected = POLISHED_COMPLEX
         print(actual)
@@ -148,22 +148,22 @@ class TestPolishOverlaps(TestCase, CustomAssertions):
 
 
 class TestPolishOverlapsDict(TestCase, CustomAssertions):
-    """Tests for exfi.polish_overlaps.polish_overlaps_dict"""
+    """Tests for exfi.polish.polish_overlaps_dict"""
 
     def test_empty(self):
-        """exfi.polish_overlaps.polish_overlaps_dict: empty case"""
+        """exfi.polish.polish_overlaps_dict: empty case"""
         actual = polish_overlaps_dict(SPLICE_GRAPH_EMPTY_DICT, TRANSCRIPTOME_EMPTY_DICT, ARGS)
         expected = POLISHED_EMPTY_DICT
         self.assertEqualDictOfSpliceGraphs(actual, expected)
 
     def test_simple(self):
-        """exfi.polish_overlaps.polish_overlaps_dict: simple case"""
+        """exfi.polish.polish_overlaps_dict: simple case"""
         actual = polish_overlaps_dict(SPLICE_GRAPH_SIMPLE_DICT, TRANSCRIPTOME_SIMPLE_DICT, ARGS)
         expected = POLISHED_SIMPLE_DICT
         self.assertEqualDictOfSpliceGraphs(actual, expected)
 
     def test_complex(self):
-        """exfi.polish_overlaps.polish_overlaps_dict: complex case"""
+        """exfi.polish.polish_overlaps_dict: complex case"""
         actual = polish_overlaps_dict(SPLICE_GRAPH_COMPLEX_DICT, TRANSCRIPTOME_COMPLEX_DICT, ARGS)
         expected = POLISHED_COMPLEX_DICT
         self.assertEqualDictOfSpliceGraphs(actual, expected)

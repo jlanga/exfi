@@ -1,13 +1,45 @@
 #!/usr/bin/env python3
 
-"""
-Submodule to split a huge splice graph into its constituent components
-"""
+"""exfi.io.join_components: Submodule to convert a dict of splice graphs into a
+single splice graph"""
 
 import logging
 
 import networkx as nx
+
 from natsort import natsorted
+
+def join_components(dict_of_components: dict) -> nx.DiGraph:
+    """Merge all splice graphs in dict_of_components into a single splice_graph"""
+
+    logging.info("\tJoining multiple splice graphs into one")
+
+    # Join everything into a splice_graph
+    joint = nx.DiGraph()
+
+    # Nodes
+    logging.info("\t\tProcessing nodes")
+    node2coordinate = {
+        node: coordinate
+        for subgraph in dict_of_components.values()
+        for node, coordinate in nx.get_node_attributes(G=subgraph, name="coordinates").items()
+    }
+
+    joint.add_nodes_from(node2coordinate.keys())
+    nx.set_node_attributes(G=joint, name="coordinates", values=node2coordinate)
+
+    # Edges
+    logging.info("\t\tProcessing edges")
+    edge2overlap = {
+        edge: overlap
+        for subgraph in dict_of_components.values()
+        for edge, overlap in nx.get_edge_attributes(G=subgraph, name="overlaps").items()
+    }
+    joint.add_edges_from(edge2overlap.keys())
+    nx.set_edge_attributes(G=joint, name="overlaps", values=edge2overlap)
+
+    return joint
+
 
 
 def split_into_components(splice_graph: nx.DiGraph) -> dict:
@@ -34,24 +66,12 @@ def split_into_components(splice_graph: nx.DiGraph) -> dict:
         a_node = nodes[0]
         transcript = undirected_component.node[a_node]["coordinates"][0][0]
         logging.info("\t\t\tProcessing component %s", transcript)
-        # Get node data as is
-        # node2coord = nx.get_node_attributes(
-        #     G=undirected_component,
-        #     name="coordinates"
-        # )
 
         logging.info("\t\t\t\tGetting node2coord")
         node2coord = {
             node: node2coord_big[node]
             for node in undirected_component.nodes()
         }
-
-        # Get edge data. Be careful because each edge is twice: one in each direction
-        # Use natsorted to get the correct direction
-        # edge2overlap = {}
-        # for node_u, node_v in undirected_component.edges():
-        #     node_u, node_v = natsorted([node_u, node_v])
-        #     edge2overlap[(node_u, node_v)] = edge2overlap
 
         logging.info("\t\t\t\tGetting edge2overlap")
         edges = {

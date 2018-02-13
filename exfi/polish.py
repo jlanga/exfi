@@ -132,6 +132,8 @@ def polish_overlaps_dict(splice_graph_dict: dict, fasta_dict: dict, args: dict) 
         iterable=splice_graph_dict.values(),
         chunksize=1000
     )
+    pool.close()
+    pool.join()
 
     # Add results to splice_graph_dict
     for i, transcript in enumerate(splice_graph_dict.keys()):

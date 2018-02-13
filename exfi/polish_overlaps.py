@@ -8,19 +8,31 @@ from exfi.build_splice_graph_dict import \
     _bed3_to_str
 
 
-def coord_add_left(coord, bases):
-    """Add bases to the start coordinate"""
-    coord = list(coord)
-    coord[1] += bases
-    return tuple(coord)
+def trim_end(coordinate: tuple, bases: int) -> tuple:
+    """Trim bases to the end of the coordinate"""
+    coordinate = list(coordinate)
+    coordinate[2] -= bases
+    return tuple(coordinate)
 
 
 
-def coord_add_right(coord, bases):
-    """Add bases to the end coordinate"""
-    coord = list(coord)
-    coord[2] += bases
-    return tuple(coord)
+def trim_start(coordinate: tuple, bases: int) -> tuple:
+    """Trim bases to the start of the coordinate"""
+    coordinate = list(coordinate)
+    coordinate[1] += bases
+    return tuple(coordinate)
+
+
+
+def trim_multiple_ends(iterable_coordinate: tuple, bases: int) -> tuple:
+    """Trim bases at the end of all elements in iterable_coordinate"""
+    return tuple(trim_end(coordinate, bases) for coordinate in iterable_coordinate)
+
+
+
+def trim_multiple_starts(iterable_coordinate: tuple, bases: int) -> tuple:
+    """Trim bases at the start of all elements in iterable_coordinate"""
+    return tuple(trim_start(coordinate, bases) for coordinate in iterable_coordinate)
 
 
 
@@ -33,38 +45,39 @@ def polish_overlaps(splice_graph, fasta_dict):
 
     for (node_u, node_v), overlap in edge2overlap.items():
 
-        if overlap >= 3:
+        if overlap >= 4:
 
-            # Get coordinates
+            # Get one of the coordinates (there should be one)
             node_u_coord = node2coordinates[node_u][0]
             node_v_coord = node2coordinates[node_v][0]
 
             # Get overlapping thing
             overlap_seq = fasta_dict[node_u_coord[0]][node_v_coord[1]:node_u_coord[2]]
-            difference = overlap_seq.find("GT") - overlap_seq.find("AG")
 
-            # if AG.*GT:
-            if difference > 0:
+            # When there is an overlap,
+            # Exon structure should be EXON...AG - GT...intron...AG - GT...exon
+            if "AGGT" in overlap_seq:
 
-                # rename both transcripts (don't insert and delete)
-                ## u
-                new_node_u = _bed3_to_str(coord_add_right(node_u_coord, difference))
-                new_node_v = _bed3_to_str(coord_add_left(node_v_coord, difference))
+                index = overlap_seq.rfind("AGGT")
 
-                # Update old -> new
+                # rename both transcripts
+                ## u: delete overlap untul AG
+                ## v: delete overlap until GT
+                new_node_u = _bed3_to_str(trim_end(node_u_coord, overlap - index - 2))
+                new_node_v = _bed3_to_str(trim_start(node_v_coord, index + 2))
+
+                # Update old -> new renaming
                 node_mapping[node_u] = new_node_u
                 node_mapping[node_v] = new_node_v
 
                 # change coordinate dict values
                 ## u
-                node2coordinates[node_u] = tuple(
-                    coord_add_right(coordinate, difference)
-                    for coordinate in node2coordinates[node_u]
+                node2coordinates[node_u] = trim_multiple_ends(
+                    iterable_coordinate=node2coordinates[node_u], bases=overlap - index - 2
                 )
                 ## v
-                node2coordinates[node_v] = tuple(
-                    coord_add_left(coordinate, difference)
-                    for coordinate in  node2coordinates[node_v]
+                node2coordinates[node_v] = trim_multiple_starts(
+                    iterable_coordinate=node2coordinates[node_v], bases=index + 2
                 )
 
                 # change overlap dict values

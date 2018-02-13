@@ -10,8 +10,8 @@ from unittest import \
 import networkx as nx
 
 from exfi.polish_overlaps import \
-    coord_add_left, \
-    coord_add_right, \
+    trim_start, \
+    trim_end, \
     polish_overlaps, \
     polish_overlaps_dict
 
@@ -62,62 +62,62 @@ POLISHED_COMPLEX_DICT = {
     'ENSDART00000165342.1': SPLICE_GRAPH_2
 }
 
-
-
 ARGS = {
     "threads": 1
 }
 
+
+
 class TestCoordAddLeft(TestCase):
-    """Tests for exfi.polish_overlaps.coord_add_left"""
+    """Tests for exfi.polish_overlaps.trim_start"""
 
     def test_empty(self):
-        """exfi.polish_overlaps.coord_add_left: empty case"""
+        """exfi.polish_overlaps.trim_start: empty case"""
         with self.assertRaises(IndexError):
-            coord_add_left([], 1)
+            trim_start([], 1)
 
     def test_short(self):
-        """exfi.polish_overlaps.coord_add_left: short case"""
+        """exfi.polish_overlaps.trim_start: short case"""
         with self.assertRaises(IndexError):
-            coord_add_left([1], 1)
+            trim_start([1], 1)
 
     def test_correct(self):
-        """exfi.polish_overlaps.coord_add_left: correct case"""
-        actual = coord_add_left(("tr", 1, 2), 2)
+        """exfi.polish_overlaps.trim_start: correct case"""
+        actual = trim_start(("tr", 1, 2), 2)
         expected = ("tr", 3, 2)
         self.assertEqual(actual, expected)
 
     def test_too_long(self):
-        """exfi.polish_overlaps.coord_add_left: too long case"""
-        actual = coord_add_left(("tr", 1, 2, 5, 5), 2)
+        """exfi.polish_overlaps.trim_start: too long case"""
+        actual = trim_start(("tr", 1, 2, 5, 5), 2)
         expected = ("tr", 3, 2, 5, 5)
         self.assertEqual(actual, expected)
 
 
 
 class TestCoordAddRight(TestCase):
-    """Tests for exfi.polish_overlaps.coord_add_right"""
+    """Tests for exfi.polish_overlaps.trim_end"""
 
     def test_empty(self):
-        """exfi.polish_overlaps.coord_add_right: empty case"""
+        """exfi.polish_overlaps.trim_end: empty case"""
         with self.assertRaises(IndexError):
-            coord_add_right([], 1)
+            trim_end([], 1)
 
     def test_short(self):
-        """exfi.polish_overlaps.coord_add_right: short case"""
+        """exfi.polish_overlaps.trim_end: short case"""
         with self.assertRaises(IndexError):
-            coord_add_right([1], 1)
+            trim_end([1], 1)
 
     def test_correct(self):
-        """exfi.polish_overlaps.coord_add_right: correct case"""
-        actual = coord_add_right(("tr", 1, 2), 2)
-        expected = ("tr", 1, 4)
+        """exfi.polish_overlaps.trim_end: correct case"""
+        actual = trim_end(("tr", 1, 2), 2)
+        expected = ("tr", 1, 0)
         self.assertEqual(actual, expected)
 
     def test_too_long(self):
-        """exfi.polish_overlaps.coord_add_right: too long case"""
-        actual = coord_add_right(("tr", 1, 2, 5, 5), 2)
-        expected = ("tr", 1, 4, 5, 5)
+        """exfi.polish_overlaps.trim_end: too long case"""
+        actual = trim_end(("tr", 1, 2, 5, 5), 2)
+        expected = ("tr", 1, 0, 5, 5)
         self.assertEqual(actual, expected)
 
 

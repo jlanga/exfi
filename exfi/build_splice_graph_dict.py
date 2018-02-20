@@ -102,15 +102,17 @@ def compute_edge_overlaps(splice_graph: nx.DiGraph) -> Dict[Tuple[str, str], int
     """Get the dict of overlaps between exons.
 
     Such dict has as keys a tuple of two connected nodes and as value the overlap between them:
+
     - Positive overlap means that they overlap that number of bases,
     - Zero that they occur next to each other
     - Negative that there is a gap in the transcriptome of that number of bases
-    (one or multiple exons of length < kmer)
+        (one or multiple exons of length < kmer)
 
     :param splice_graph: returns: Note: the splice graph must have already the nodes written with
-    coordinates, and the edges alredy entered too.
+        coordinates, and the edges alredy entered too.
 
     Hypothesis: node2coords.values should only hold one value
+
     """
     logging.debug("\tComputing edge overlaps")
 

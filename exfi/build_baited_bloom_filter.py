@@ -167,24 +167,27 @@ def build_baited_bloom_filter(args: dict) -> None:
     """Run the build_baited_bloom_filter pipeline.
 
     The pipeline works as follows:
+
         - Build a secondary Bloom filter of the transcriptome with `biobloommaker`.
         - Categorize reads with `biobloomcategorizer` and pipe to `abyss-bloom build` to build the
-            primary Bloom filter
+primary Bloom filter
 
     :param dict args: Dict of arguments.
 
-    :ivar dict args: dict with named arguments:
-        - transcriptome (str): path to transcriptome in FASTA format.
+    .. note:: Parameter `args` must have the following keys:
+
+        - fasta (str): path to transcriptome in FASTA format.
         - kmer (int): size of the kmers.
         - bloom_size (str):  total size of the Bloom filter(s) in bytes. K/M/G units can be used.
         - levels (int): number of Bloom filters used to count.
-        - output_bloom (str): path where to store the final Bloom filter.
+        - bloom (str): path where to store the final Bloom filter.
         - threads (int): number of threads to be used.
         - reads (list of str): paths to the reads in FASTA/Q format, gzipped or not.
 
-    ..seealso: Functions used:
+    .. seealso: Functions used:
         :py:meth: `_get_biobloommaker_command`, `_get_categorize_command`, `_get_build_bf_command`,
         `_create_links`, `_destroy_links`.
+
     """
 
     # Imports

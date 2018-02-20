@@ -190,10 +190,14 @@ class SpliceGraphDict(Dict[str, SpliceGraph]):
 
 
 
-# class Path2Node(dict):
-
-# class Bed3Records
-
-# class Bed3Df
-
-# class Bed6Df
+# class Path2Node(Dict[str,Tuple[str]]):
+#     """Class to store the dict transcript_id: [node1, ..., nodeN]"""
+#     pass
+#
+#
+# class Bed3DataFrame(pd.DataFrame):
+#     """Class of pd.DataFrame where columns are seqid, start, end"""
+#     pass
+#
+# class Bed6DataFrame(pd.DataFrame):
+#     """Class of pd.DataFrame where columns are seqid, start, end, """

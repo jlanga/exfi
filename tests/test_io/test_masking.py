@@ -23,6 +23,7 @@ from tests.test_data import \
 from tests.test_io.test_gfa1_to_exons import \
     EXONS_COMPLEX_DICT, EXONS_COMPLEX_SOFT_DICT, EXONS_COMPLEX_HARD_DICT
 
+from tests.custom_assertions import CustomAssertions
 
 
 class TestProcessOverlapCigar(TestCase):
@@ -69,14 +70,14 @@ class TestSoftMaskLeft(TestCase):
 
 
 
-class TestSoftMask(TestCase):
+class TestSoftMask(TestCase, CustomAssertions):
     """Tests for exfi.io.masking._soft_mask"""
 
     def test_soft_mask(self):
         """exfi.io.masking._soft_mask: simple"""
         actual = _soft_mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX)
         expected = EXONS_COMPLEX_SOFT_DICT
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
 
 
@@ -102,37 +103,37 @@ class TestHardMaskLeft(TestCase):
 
 
 
-class TestHardMask(TestCase):
+class TestHardMask(TestCase, CustomAssertions):
     """Tests for exfi.io.masking._hard_mask"""
 
     def test_hard_mask(self):
         """exfi.io.masking._hard_mask: simple"""
         actual = _hard_mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX)
         expected = EXONS_COMPLEX_HARD_DICT
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
 
 
-class TestMask(TestCase):
+class TestMask(TestCase, CustomAssertions):
     """Tests for exfi.io.masking._mask"""
 
     def test_no_mask(self):
         """exfi.io.masking._mask: no masking"""
         actual = _mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX, "none")
         expected = EXONS_COMPLEX_DICT
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
     def test_soft_mask(self):
         """exfi.io.masking._mask: soft masking"""
         actual = _mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX, "soft")
         expected = EXONS_COMPLEX_SOFT_DICT
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
     def test_hard_mask(self):
         """exfi.io.masking._mask: hard masking"""
         actual = _mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX, "hard")
         expected = EXONS_COMPLEX_HARD_DICT
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
 
 

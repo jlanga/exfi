@@ -30,8 +30,13 @@ from natsort import \
 from exfi.io.fasta_to_dict import \
     fasta_to_dict
 
-def _get_node2sequence(splice_graph: dict, transcriptome_dict: dict) -> dict:
-    """From the splice graph and a transcriptome, get the exon: sequence dictionary"""
+
+def _get_node2sequence(splice_graph: nx.DiGraph, transcriptome_dict: dict) -> dict:
+    """From the splice graph and a transcriptome, get the exon: sequence dictionary
+
+    :param dict splice_graph: DiGraph from where to extract the node2sequence data.
+    :param dict transcriptome_dict: Dict of reference transcriptome.
+    """
     logging.debug("\tComputing the exon to sequence dictionary")
     node2sequence = {}
 
@@ -47,8 +52,7 @@ def _get_node2sequence(splice_graph: dict, transcriptome_dict: dict) -> dict:
     return node2sequence
 
 
-
-def _prepare_sealer(splice_graph_dict: nx.DiGraph, args: dict) -> str:
+def _prepare_sealer(splice_graph_dict: dict, args: dict) -> str:
     """Prepare fasta file with candidates to be filled with sealer. Return the path
     of the fasta file to be sealed.
 
@@ -63,6 +67,9 @@ def _prepare_sealer(splice_graph_dict: nx.DiGraph, args: dict) -> str:
         "input_bloom": str,
         "max_fp_bases": int
     }
+
+    :param dict splice_graph_dict: Dict of SpliceGraphs.
+    :param dict args: dict of arguments for abyss-sealer.
     """
 
     logging.debug("\tPreparing input for abyss-sealer")
@@ -87,8 +94,8 @@ def _prepare_sealer(splice_graph_dict: nx.DiGraph, args: dict) -> str:
             if overlap < 0 and overlap <= args["max_gap_size"]:  # Small gap
                 identifier = node1 + "~" + node2
                 sequence = Seq.Seq(
-                    node2sequence[node1][0:-args["max_fp_bases"]] \
-                    + "N" * 100 \
+                    node2sequence[node1][0:-args["max_fp_bases"]]
+                    + "N" * 100
                     + node2sequence[node2][args["max_fp_bases"]:]
                 )
                 seqrecord = SeqRecord.SeqRecord(
@@ -102,11 +109,11 @@ def _prepare_sealer(splice_graph_dict: nx.DiGraph, args: dict) -> str:
                 identifier = node1 + "~" + node2
                 # Cut overlap from one end, again from the other, and from both to see what happens
 
-                ## Both
+                # Both
                 sequence = Seq.Seq(
-                    node2sequence[node1][0:-overlap-args["max_fp_bases"]] \
-                    + "N" * 100 \
-                    + node2sequence[node2][overlap+args["max_fp_bases"]:]
+                    node2sequence[node1][0:-overlap - args["max_fp_bases"]]
+                    + "N" * 100
+                    + node2sequence[node2][overlap + args["max_fp_bases"]:]
                 )
                 seqrecord = SeqRecord.SeqRecord(
                     id=identifier,
@@ -115,14 +122,9 @@ def _prepare_sealer(splice_graph_dict: nx.DiGraph, args: dict) -> str:
                 )
                 sequences_to_seal.append(seqrecord)
 
-    SeqIO.write(
-        format="fasta",
-        handle=sealer_input[1],
-        sequences=sequences_to_seal
-    )
+    SeqIO.write(format="fasta", handle=sealer_input[1], sequences=sequences_to_seal)
 
     return sealer_input[1]
-
 
 
 def _run_sealer(sealer_input_fn: str, args: dict) -> str:
@@ -134,6 +136,10 @@ def _run_sealer(sealer_input_fn: str, args: dict) -> str:
         "max_gap_size": int,
         "input_bloom": str,
     }
+
+    :param str sealer_input_fn: Input filename for sealer (the scaffold).
+    :param dict args: Dict of argumnets for sealer
+
     """
     logging.debug("\tRunning abyss-sealer")
     # Run sealer
@@ -162,10 +168,12 @@ def _run_sealer(sealer_input_fn: str, args: dict) -> str:
     return sealer_output_prefix[1] + "_merged.fa"
 
 
-
 def _collect_sealer_results(handle: str) -> set:
     """Process extensions from sealer and return the computed extensions in a set of pairs of
-    tuples: set((node1, node2), ... , (nodeN-1, nodeN))"""
+    tuples: set((node1, node2), ... , (nodeN-1, nodeN))
+
+    :param str handle: Output filename from abyss-sealer.
+    """
     logging.debug("\tCollecting abyss-sealer results")
     # Collect results
     filled_edges = set()
@@ -175,10 +183,12 @@ def _collect_sealer_results(handle: str) -> set:
     return filled_edges
 
 
-
-def _filled_edges_by_transcript(filled_edges: str) -> dict:
+def _filled_edges_by_transcript(filled_edges: set) -> dict:
     """Split the edge2fill by the transcript they belong. Result is
-    dict(transcript_id: set)"""
+    dict(transcript_id: set)
+
+    :param set filled_edges: set of pairs of filled edges.
+    """
     logging.debug("\tSplitting sealer results by transcript")
     filled_edges_by_transcript = {}
     for node_u, node_v in filled_edges:
@@ -189,9 +199,11 @@ def _filled_edges_by_transcript(filled_edges: str) -> dict:
     return filled_edges_by_transcript
 
 
-
 def _rename_nodes_from_collapse(quotient_graph: nx.DiGraph) -> dict:
-    """Compose the new_node ids from nx.quotient to str or tuples of strs"""
+    """Compose the new_node ids from nx.quotient to str or tuples of strs
+
+    :param nx.DiGraph quotient_graph: DiGraph with collapsed nodes with nx.qoutient.
+    """
     logging.debug("\tRenaming collapsed nodes")
     # Main dict
     mapping = {  # Old -> New
@@ -205,9 +217,12 @@ def _rename_nodes_from_collapse(quotient_graph: nx.DiGraph) -> dict:
     return mapping
 
 
-
 def _recompute_node2coord(component: nx.DiGraph, quotient_relabeled: nx.DiGraph) -> dict:
-    """Compute the new node2coord for the quotient graph"""
+    """Compute the new node2coord for the quotient graph
+
+    :param nx.DiGraph component: old SpliceGraph.
+    :param nx.DiGraph quotient_relabeled: new SpliceGraph, already relabeled.
+    """
     logging.debug("\tRecomputing node2coord")
     # Get the new_node2coord data
     old_node2coord = nx.get_node_attributes(G=component, name="coordinates")
@@ -224,9 +239,12 @@ def _recompute_node2coord(component: nx.DiGraph, quotient_relabeled: nx.DiGraph)
     return new_node2coord
 
 
-
 def _recompute_edge2overlap(component: nx.DiGraph, quotient_relabeled: nx.DiGraph) -> dict:
-    """Compute the new node2coord for the quotient graph"""
+    """Compute the new node2coord for the quotient graph
+
+    :param nx.DiGraph component: old SpliceGraph.
+    :param nx.DiGraph quotient_relabeled: new SpliceGraph.
+    """
     logging.debug("\tRecomputing edge2overlap")
 
     old_edge2overlap = nx.get_edge_attributes(G=component, name="overlaps")
@@ -237,22 +255,22 @@ def _recompute_edge2overlap(component: nx.DiGraph, quotient_relabeled: nx.DiGrap
 
         if isinstance(node_u, tuple) and isinstance(node_v, tuple):
             new_edge2overlap[(node_u, node_v)] = old_edge2overlap[(node_u[-1], node_v[0])]
-
         elif isinstance(node_u, tuple) and isinstance(node_v, str):
             new_edge2overlap[(node_u, node_v)] = old_edge2overlap[(node_u[-1], node_v)]
-
         elif isinstance(node_u, str) and isinstance(node_v, tuple):
             new_edge2overlap[(node_u, node_v)] = old_edge2overlap[(node_u, node_v[0])]
-
         else:
             new_edge2overlap[(node_u, node_v)] = old_edge2overlap[(node_u, node_v)]
 
     return new_edge2overlap
 
 
-
 def _compute_new_node_ids(quotient_relabeled: nx.DiGraph, component: nx.DiGraph) -> dict:
-    """Compose the new node id for every collapsed node in nx.quotient_graph"""
+    """Compose the new node id for every collapsed node in nx.quotient_graph
+
+    :param nx.DiGraph quotient_relabeled: new SpliceGraph.
+    :param nx.DiGraph component: old SpliceGraph.
+    """
 
     logging.debug("\tRecomputing final node identifiers")
 
@@ -283,9 +301,12 @@ def _compute_new_node_ids(quotient_relabeled: nx.DiGraph, component: nx.DiGraph)
     return quotient_mapping
 
 
-
 def _sculpt_graph(splice_graph: nx.DiGraph, filled_edges: set) -> nx.DiGraph:
-    """Apply sealer corrections in filled_edges to the splice graph"""
+    """Apply sealer corrections in filled_edges to the splice graph
+
+    :param nx.DiGraph splice_graph: SpliceGraph to be corrected.
+    :param set filled_edges: set of edges to be merged.
+    """
 
     logging.debug("\tSculpting graph")
 
@@ -294,12 +315,17 @@ def _sculpt_graph(splice_graph: nx.DiGraph, filled_edges: set) -> nx.DiGraph:
 
     # Compute the quotient graph
     def partition(node_u, node_v):
-        """Function to test if node_u and node_v belong to the same partition of the graph"""
+        """Function to test if node_u and node_v belong to the same partition of the graph
+
+        :param node_u:
+        :param node_v:
+
+        """
         graph = nx.DiGraph()
         graph.add_edges_from(filled_edges)
         if node_u in graph.nodes() and \
-            node_v in graph.nodes() and \
-            nx.has_path(G=graph, source=node_u, target=node_v):
+                node_v in graph.nodes() and \
+                nx.has_path(G=graph, source=node_u, target=node_v):
             return True
         return False
 
@@ -321,19 +347,12 @@ def _sculpt_graph(splice_graph: nx.DiGraph, filled_edges: set) -> nx.DiGraph:
     # Set new info
     nx.set_node_attributes(G=quotient_relabeled, name="coordinates", values=node2coord)
     nx.set_edge_attributes(G=quotient_relabeled, name="overlaps", values=edge2overlap)
-    component_final = nx.relabel_nodes(
-        G=quotient_relabeled,
-        mapping=node_ids
-    )
+    component_final = nx.relabel_nodes(G=quotient_relabeled, mapping=node_ids)
 
     return component_final
 
 
-
-
-
-
-def correct_splice_graph_dict(splice_graph_dict: nx.DiGraph, args: dict) -> dict:
+def correct_splice_graph_dict(splice_graph_dict: dict, args: dict) -> dict:
     """Try to correct small gaps and some overlaps (SNPs and indels) with abyss-sealer
 
     args = {
@@ -342,6 +361,9 @@ def correct_splice_graph_dict(splice_graph_dict: nx.DiGraph, args: dict) -> dict
         "input_bloom": str,
         "input_fasta": str
     }
+
+    :param dict splice_graph_dict: Dict of splice graphs, one per transcript.
+    :param dict args: arguments for abyss-sealer
     """
     logging.info("Correct splice graph with abyss-sealer")
 
@@ -362,7 +384,8 @@ def correct_splice_graph_dict(splice_graph_dict: nx.DiGraph, args: dict) -> dict
     filled_edges = _collect_sealer_results(handle=sealer_output_fn)
     remove(sealer_input_fn)
     remove(sealer_output_fn)
-    filled_edges_by_transcript = _filled_edges_by_transcript(filled_edges=filled_edges)
+    filled_edges_by_transcript = _filled_edges_by_transcript(
+        filled_edges=filled_edges)
     del filled_edges
 
     # Complete the filled_edges_by_transcript dict
@@ -385,7 +408,8 @@ def correct_splice_graph_dict(splice_graph_dict: nx.DiGraph, args: dict) -> dict
     )
     pool.close()
     pool.join()
-    splice_graph_dict = dict(zip(splice_graph_dict.keys(), corrected_splice_graphs))
+    splice_graph_dict = dict(
+        zip(splice_graph_dict.keys(), corrected_splice_graphs))
 
     logging.info("\tDone correcting")
     return splice_graph_dict

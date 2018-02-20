@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-"""exfi.io.join_components: Submodule to convert a dict of splice graphs into a
-single splice graph"""
+"""exfi.io.join_components: Submodule to convert a dict of splice graphs into a single splice graph
+"""
 
 import logging
 
@@ -9,8 +9,12 @@ import networkx as nx
 
 from natsort import natsorted
 
+
 def join_components(dict_of_components: dict) -> nx.DiGraph:
-    """Merge all splice graphs in dict_of_components into a single splice_graph"""
+    """Merge all splice graphs in dict_of_components into a single splice_graph
+
+    :param dict dict_of_components: Dict of Splice Graphs, key is transcript_id, value is nx.DiGraph
+    """
 
     logging.info("\tJoining multiple splice graphs into one")
 
@@ -41,16 +45,19 @@ def join_components(dict_of_components: dict) -> nx.DiGraph:
     return joint
 
 
-
 def split_into_components(splice_graph: nx.DiGraph) -> dict:
-    '''Convert a single splice graph into a dict of splice graphs, where
+    """Convert a single splice graph into a dict of splice graphs
+
     - keys are transcript_ids
     - values are the splice graph of that transcript
-    '''
+
+    :param nx.DiGraph splice_graph: Graph to be splitted into connected components.
+    """
     logging.info("\tSplitting directed graph into directed components")
     # Compute connected components
     logging.info("\t\tComputing undirected components")
-    undirected_components = nx.connected_component_subgraphs(G=splice_graph.to_undirected())
+    undirected_components = nx.connected_component_subgraphs(
+        G=splice_graph.to_undirected())
 
     component_dict = {}
 

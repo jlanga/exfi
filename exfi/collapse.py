@@ -8,14 +8,18 @@ import logging
 
 import networkx as nx
 
-def _compute_seq2node(node2coord, transcriptome_dict):
-    """(dict, dict) -> dict
+
+def _compute_seq2node(node2coord: dict, transcriptome_dict: dict) -> dict:
+    """Compute seq2node dict
 
     From
     - a dict node2coord = {node_id: tuples of coordinates}, and
     - a dict transcriptome_dict = {transcript_id: str},
     build the dict
     - node2seq = {node_id: str}
+
+    :param node2coord: node to coordinates dict.
+    :param transcriptome_dict: transcript to sequence dict.
     """
     # Get the node -> sequence
     logging.debug("\t_compute_seq2node")
@@ -29,11 +33,10 @@ def _compute_seq2node(node2coord, transcriptome_dict):
     return seq2node
 
 
+def _compute_old2new(seq2node: dict) -> dict:
+    """Compute the dict of old identifiers to new
 
-def _compute_old2new(seq2node):
-    """(dict) -> dict
-
-    Compute the dict of old identifiers to new
+    :param seq2node: Sequence to node dict
     """
     logging.debug("\t_compute_old2new")
     old2new = {}
@@ -44,11 +47,12 @@ def _compute_old2new(seq2node):
     return old2new
 
 
+def _compute_new_node2coord(old2new: dict, node2coord: dict):
+    """Recompute the node to coordinate dict
 
-def _compute_new_node2coord(old2new, node2coord):
-    """(dict, dict) -> dict
+    :param old2new: dict of old to new names
+    :param node2coord: node to coordinates dict
 
-    Recompute the node to coordinate dict
     """
     logging.debug("\t_compute_new_node2coord")
     # Compute the new set coordinates of each node
@@ -60,10 +64,12 @@ def _compute_new_node2coord(old2new, node2coord):
     return new_node2coord
 
 
-def _compute_new_link2overlap(old2new, link2overlap):
-    """(dict, dict) -> dict
+def _compute_new_link2overlap(old2new: dict, link2overlap: dict) -> dict:
+    """Recompute the link2overlaps dict accordint to the new node_ids
 
-    Recompute the link2overlaps dict accordint to the new node_ids
+    :param old2new: dict of old to new names
+    :param link2overlap: old edge2overlap dict
+
     """
     logging.debug("\t_compute_new_link2overlap")
     # Compute the new set of edges and overlaps
@@ -75,8 +81,11 @@ def _compute_new_link2overlap(old2new, link2overlap):
     return new_link2overlap
 
 
-def _merge_node2coords(splice_graph_dict):
-    """Take all node2coord from every graph and merge into a single dict"""
+def _merge_node2coords(splice_graph_dict: dict) -> dict:
+    """Take all node2coord from every graph and merge into a single dict
+
+    :param splice_graph_dict: Dict of name: SpliceGraph.
+    """
     logging.debug("\t_merge_node2coords")
     node2coord_big = {}
     for splice_graph in splice_graph_dict.values():
@@ -91,12 +100,12 @@ def _merge_node2coords(splice_graph_dict):
     return node2coord_big
 
 
+def _merge_link2overlap(splice_graph_dict: dict) -> dict:
+    """Take all link2overlap from every graph and merge into a single dict
 
-def _merge_link2overlap(splice_graph_dict):
-    """Take all link2overlap from every graph and merge into a single dict"""
-
+    :param splice_graph_dict:  Dict of name -> SpliceGraph.
+    """
     logging.debug("\t_merge_link2overlap")
-
     link2overlap_big = {}
 
     for splice_graph in splice_graph_dict.values():
@@ -107,11 +116,12 @@ def _merge_link2overlap(splice_graph_dict):
     return link2overlap_big
 
 
+def collapse_splice_graph_dict(splice_graph_dict: dict, transcriptome_dict: dict) -> nx.DiGraph:
+    """Collapse nodes by sequence identity
 
-def collapse_splice_graph_dict(splice_graph_dict, transcriptome_dict):
-    """(dict nx.DiGraph, dict) -> nx.DiGraph
+    :param splice_graph_dict: Dict of name -> SpliceGraph.
+    :param transcriptome_dict: Dict of transcript ids -> sequence.
 
-    Collapse nodes by sequence identity
     """
     logging.info("Collapsing graph by sequence")
 
@@ -129,7 +139,9 @@ def collapse_splice_graph_dict(splice_graph_dict, transcriptome_dict):
     collapsed_graph = nx.DiGraph()
     collapsed_graph.add_nodes_from(new_node2coord.keys())
     collapsed_graph.add_edges_from(new_link2overlap.keys())
-    nx.set_node_attributes(G=collapsed_graph, name="coordinates", values=new_node2coord)
-    nx.set_edge_attributes(G=collapsed_graph, name="overlaps", values=new_link2overlap)
+    nx.set_node_attributes(
+        G=collapsed_graph, name="coordinates", values=new_node2coord)
+    nx.set_edge_attributes(
+        G=collapsed_graph, name="overlaps", values=new_link2overlap)
 
     return collapsed_graph

@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
-"""
-Module to build the associated splice graph from a set of bed3 records
-"""
+"""Module to build the associated splice graph from a set of bed3 records"""
+
+from typing import \
+    Iterable, \
+    Tuple, \
+    Dict
 
 import logging
 
@@ -11,10 +14,10 @@ import pandas as pd
 import pathos.multiprocessing as mp
 
 
-def _bed3_to_str(bed3_record):
-    """(str, int, int) -> str
+def _bed3_to_str(bed3_record: Tuple[str, int, int]) -> str:
+    """Convert a three element tuple into a string of the form a[0]:a[1]-a[2]
 
-    BED3 to string
+    :param tuple bed3_record: tuple. Must have length 3
     """
     if len(bed3_record) == 3:
         return "{0}:{1}-{2}".format(*bed3_record)
@@ -22,12 +25,12 @@ def _bed3_to_str(bed3_record):
         raise IndexError("Incorrect number of elements in record")
 
 
+def bed3_records_to_bed6df_dict(iterable_of_bed3: Iterable[Tuple[str, int, int]]) -> pd.DataFrame:
+    """Convert an iterable of bed3 records to a bed6 as dataframe
 
-def bed3_records_to_bed6df_dict(iterable_of_bed3):
-    """(iterable of tuples) -> pd.dataframe
+    Columns of the bed6df are seqid, start, end, name, strand and score
 
-    Convert an iterable of bed3 records to a bed6 as dataframe
-    bed6 =[seqid, start, end, name, strand, score]
+    :param iterable_of_bed3: Iterable of tuples in BED3 format (seqid, start, end).
     """
     logging.info("\tbed3_records_to_bed6df_dict")
     bed6_cols = ['chrom', 'start', 'end', 'name', 'score', 'strand']
@@ -36,7 +39,7 @@ def bed3_records_to_bed6df_dict(iterable_of_bed3):
               for bed3_record in iterable_of_bed3),
         columns=bed6_cols
     )\
-    .sort_values(by=bed6_cols[0:2])\
+        .sort_values(by=bed6_cols[0:2])\
 
     bed6df_dict = {
         transcript_id: dataframe
@@ -46,11 +49,10 @@ def bed3_records_to_bed6df_dict(iterable_of_bed3):
     return bed6df_dict
 
 
+def bed6df_to_node2coordinates(bed6df: pd.DataFrame) -> dict:
+    """Get from the BED6 dataframe the dict of node_id : coordinates
 
-def bed6df_to_node2coordinates(bed6df):
-    """(pd.DataFrame) -> dict
-
-    Get from the BED6 dataframe the correspondece of name -> (chrom, start, end)
+    :param pd.DataFrame bed6df: DataFrame of BED6 records.
     """
     logging.debug("\tbed6bed6df_to_node2coordinates")
     # Check for extreme case:
@@ -61,9 +63,9 @@ def bed6df_to_node2coordinates(bed6df):
         .sort_values(['chrom', 'start', 'end'])\
         .drop(["score", "strand"], axis=1)\
         .assign(
-            coordinates=bed6df\
-                [["chrom", "start", "end"]]\
-                .apply(tuple, axis=1)
+            coordinates=bed6df
+            [["chrom", "start", "end"]]
+            .apply(tuple, axis=1)
         )\
         .drop(["chrom", "start", "end"], axis=1)\
         .set_index("name", "coordinates")\
@@ -78,43 +80,41 @@ def bed6df_to_node2coordinates(bed6df):
     return node2coordinate
 
 
+def bed6df_to_path2node(bed6df: pd.DataFrame) -> Dict[str, Tuple[str]]:
+    """Get a dict containing transcript_id to the tuple of node names that compose it in order,
+    indicating the path.
 
-
-def bed6df_to_path2node(bed6df):
-    """(pandas.df) -> {transcript_id: (node1, ..., nodeN)}
-
-    Get a dict containing transcript_id to the tuple of node names that compose
-    it in order, indicating the path."""
+    :param pd.DataFrame bed6df: DataFrame with BED6 records.
+    """
     logging.debug("\tbed6df -> path2node")
     if bed6df.shape[0] > 0:
         return bed6df\
             .sort_values(['chrom', 'start', 'end'])\
             .drop(['start', 'end', 'strand', 'score'], axis=1)\
-            .rename(columns={'chrom':'path'})\
+            .rename(columns={'chrom': 'path'})\
             .groupby('path')\
             .agg(lambda x: tuple(x.tolist()))\
             .to_dict()["name"]
     return {}
 
 
+def compute_edge_overlaps(splice_graph: nx.DiGraph) -> Dict[Tuple[str, str], int]:
+    """Get the dict of overlaps between exons.
 
-def compute_edge_overlaps(splice_graph):
-    """(nx.DiGraph) -> dict
-
-    Get the overlap between connected exons:
+    Such dict has as keys a tuple of two connected nodes and as value the overlap between them:
     - Positive overlap means that they overlap that number of bases,
     - Zero that they occur next to each other
     - Negative that there is a gap in the transcriptome of that number of bases
     (one or multiple exons of length < kmer)
-    Return dict {(str, str): int} (node1, node2, and overlap)
-    Note: the splice graph must have already the nodes written with coordinates,
-    and the edges alredy entered too.
+
+    :param splice_graph: returns: Note: the splice graph must have already the nodes written with
+    coordinates, and the edges alredy entered too.
 
     Hypothesis: node2coords.values should only hold one value
     """
     logging.debug("\tComputing edge overlaps")
 
-    #Init
+    # Init
     node2coords = nx.get_node_attributes(
         G=splice_graph,
         name='coordinates'
@@ -133,11 +133,8 @@ def compute_edge_overlaps(splice_graph):
     return edge_overlaps
 
 
-
-def build_splice_graph(bed6df):
-    """(pd.DataFrame) -> nx.Digraph
-
-    Build the splice_graph from a dataframe of bed6 records
+def build_splice_graph(bed6df: pd.DataFrame) -> nx.DiGraph:
+    """Build the splice_graph from a dataframe of bed6 records
 
     splice_graph is a directed graph, whose nodes
         - are an identifier, the tuple in string format
@@ -149,6 +146,8 @@ def build_splice_graph(bed6df):
             - positive means there is an overlap of that number of bases
             - zero means no overlap
             - negative means a gap of that number of bases
+
+    :param pd.DataFrame bed6df: Exon coordinates in BED6 format
     """
     logging.debug("Running build_splice_graph")
     # Initialize graph
@@ -177,9 +176,13 @@ def build_splice_graph(bed6df):
     return splice_graph
 
 
+def build_splice_graph_dict(
+        bed3records: Iterable[Tuple[str, int, int]], args: dict) -> Dict[str, nx.DiGraph]:
+    """Build the SpliceGraphDict from a bunch of BED3 records
 
-def build_splice_graph_dict(bed3records, args):
-    """(Iterable of (str, int, int)) -> Nx.DiGraph"""
+    :param iterable bed3records: Iterable of tuples containing bed3 records
+    :param dict args: args to be passed to the pipeline
+    """
     logging.info("Building splice graph")
 
     # Process bed records
@@ -189,7 +192,11 @@ def build_splice_graph_dict(bed3records, args):
     pool = mp.Pool(args["threads"])
 
     # Build graphs in parallel and merge results
-    splice_graphs = pool.map(func=build_splice_graph, iterable=bed6df_dict.values(), chunksize=100)
+    splice_graphs = pool.map(
+        func=build_splice_graph,
+        iterable=bed6df_dict.values(),
+        chunksize=1000
+    )
     pool.close()
     pool.join()
     splice_graph_dict = dict(zip(bed6df_dict.keys(), splice_graphs))

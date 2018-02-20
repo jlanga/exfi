@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-exfi.io.gfa1_to_splice_graph.py: submodule to convert a gfa1 file into a splice graph
-"""
+"""exfi.io.gfa1_to_splice_graph.py: submodule to convert a gfa1 file into a splice graph"""
 
 import logging
 
@@ -13,7 +11,12 @@ from exfi.io.read_gfa1 import \
 
 
 def _split_node2coord(node2coord: dict, node2transcript: dict) -> dict:
-    """Split the big node2coord dict into its subcompoenents (transcripts)"""
+    """Split the big node2coord dict into its subcomponents (transcripts)
+
+    :param dict node2coord: dict of the shape key=node_id, value=((seq1, start1, node1),
+     ..., (seqN, startN, nodeN))
+    :param dict node2transcript: dict of the shape node_id: transcript_id
+    """
     splitted_node2coord = {key: dict() for key in set(node2transcript.values())}
     for node, coordinates in node2coord.items():
         transcript = node2transcript[node]
@@ -25,7 +28,14 @@ def _split_node2coord(node2coord: dict, node2transcript: dict) -> dict:
 
 
 def _split_edge2overlap(edge2overlap: dict, node2transcript: dict) -> dict:
-    """Split the big edge2overlap dict into subcomponents (transcripts)"""
+    """Split the big edge2overlap dict into subcomponents (transcripts)
+
+    :param dict edge2overlap: dict of the shape key=(node1, node2), value= overlap inbases between
+    node1 and node2. Positive value means overlap, negative value means gap of that size between
+    them
+    :param dict node2transcript: dict of the shape key=exon_id, value= transcripts to which it
+    belongs
+    """
     splitted_edge2overlap = {transcript: dict() for transcript in set(node2transcript.values())}
     for edge, overlap in edge2overlap.items():
         transcript = node2transcript[edge[0]]
@@ -34,10 +44,10 @@ def _split_edge2overlap(edge2overlap: dict, node2transcript: dict) -> dict:
 
 
 
-def gfa1_to_splice_graph(handle):
-    """(str) -> nx.DiGraph
+def gfa1_to_splice_graph(handle: str) -> None:
+    """Read a GFA1 file and store the splice graph
 
-    Read a GFA1 file and store the splice graph
+    :param str handle: Path to input GFA1 file
     """
     logging.info("Converting gfa1 %s to splice graph", handle)
 
@@ -68,17 +78,12 @@ def gfa1_to_splice_graph(handle):
 
         node2coord = transcript2node2coord[transcript]
         splice_graph. add_nodes_from(node2coord.keys())
-        nx.set_node_attributes(
-            G=splice_graph, name="coordinates", values=node2coord
-        )
+        nx.set_node_attributes(G=splice_graph, name="coordinates", values=node2coord)
 
         edge2overlap = transcript2edge2overlap[transcript]
         splice_graph.add_edges_from(edge2overlap.keys())
-        nx.set_edge_attributes(
-            G=splice_graph, name="overlaps", values=edge2overlap
-        )
+        nx.set_edge_attributes(G=splice_graph, name="overlaps", values=edge2overlap)
 
         splice_graph_dict[transcript] = splice_graph
-
 
     return splice_graph_dict

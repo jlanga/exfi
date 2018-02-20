@@ -57,8 +57,8 @@ def _find_exons_pipeline(args: dict) -> Iterable[Tuple[str, int, int]]:
 
     args = {
         "kmer": int,
-        "input_bloom": str,
-        "input_fasta": str,
+        "bloom": str,
+        "fasta": str,
         "max_overlap": int,
         "max_fp_bases": int
     }
@@ -71,7 +71,7 @@ def _find_exons_pipeline(args: dict) -> Iterable[Tuple[str, int, int]]:
     c_kmers = [
         "abyss-bloom", "kmers", "--kmer", str(
             args["kmer"]), "--verbose", "--bed",
-        args["input_bloom"], args["input_fasta"]
+        args["bloom"], args["fasta"]
     ]
     c_merge1 = ["bedtools", "merge", "-d", str(-args["kmer"] + 2)]
     c_filter = ["awk", "$3 - $2 >= {min_length}".format(

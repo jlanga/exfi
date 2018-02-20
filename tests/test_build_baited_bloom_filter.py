@@ -25,11 +25,11 @@ def _simple_build_baited(transcriptome, reads, tmp_bf):
 
     Simple wrapper for testing"""
     args = {
-        "input_fasta": transcriptome,
+        "fasta": transcriptome,
         "kmer": 30,
         "bloom_size": "100M",
         "levels": 1,
-        "output_bloom": tmp_bf,
+        "bloom": tmp_bf,
         "threads": 1,
         "reads": reads
     }

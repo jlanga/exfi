@@ -53,7 +53,7 @@ def trim_multiple_starts(iterable_coordinate: tuple, bases: int) -> tuple:
 
 
 
-def polish_overlaps(splice_graph, fasta_dict):
+def polish_splice_graph(splice_graph, fasta_dict):
     """Trim overlaps according to the AG/GT signal (AC/CT in the reverse strand)
 
     :param nx.DiGraph splice_graph: SpliceGraph to polish.
@@ -135,7 +135,7 @@ def polish_overlaps(splice_graph, fasta_dict):
 
 
 
-def polish_overlaps_dict(splice_graph_dict: dict, fasta_dict: dict, args: dict) -> dict:
+def polish_splice_graph_dict(splice_graph_dict: dict, fasta_dict: dict, args: dict) -> dict:
     """Polish all overlaps in a splice graph dict
 
     :param dict splice_graph_dict: SpliceGraphDict to polish.
@@ -155,7 +155,7 @@ def polish_overlaps_dict(splice_graph_dict: dict, fasta_dict: dict, args: dict) 
 
         :param nx.DiGraph splice_graph: splice_graph to polish.
         """
-        return polish_overlaps(splice_graph, fasta_dict)
+        return polish_splice_graph(splice_graph, fasta_dict)
 
     # Run
     results = pool.map(

@@ -6,7 +6,7 @@ Tests for exfi.io.gfa1_to_splice_graph
 
 from unittest import TestCase, main
 
-from exfi.io.gfa1_to_splice_graph import gfa1_to_splice_graph
+from exfi.io.gfa1_to_splice_graph_dict import gfa1_to_splice_graph_dict
 
 from tests.custom_assertions import \
     CustomAssertions
@@ -22,21 +22,21 @@ class TestGFA1ToSpliceGrah(TestCase, CustomAssertions):
 
     def test_empty(self):
         """exfi.io.gfa1_to_splice_graph.gfa1_to_splice_graph: empty case"""
-        actual = gfa1_to_splice_graph(GFA_EMPTY_FN)
+        actual = gfa1_to_splice_graph_dict(GFA_EMPTY_FN)
         expected = SPLICE_GRAPH_EMPTY_DICT
         self.assertEqualDictOfSpliceGraphs(actual, expected)
 
 
     def test_simple(self):
         """exfi.io.gfa1_to_splice_graph.gfa1_to_splice_graph: simple case"""
-        actual = gfa1_to_splice_graph(GFA_SIMPLE_FN)
+        actual = gfa1_to_splice_graph_dict(GFA_SIMPLE_FN)
         expected = SPLICE_GRAPH_SIMPLE_DICT
         self.assertEqualDictOfSpliceGraphs(actual, expected)
 
 
     def test_complex(self):
         """exfi.io.gfa1_to_splice_graph.gfa1_to_splice_graph: complex case"""
-        actual = gfa1_to_splice_graph(GFA_COMPLEX_FN)
+        actual = gfa1_to_splice_graph_dict(GFA_COMPLEX_FN)
         expected = SPLICE_GRAPH_COMPLEX_DICT
         self.assertEqualDictOfSpliceGraphs(actual, expected)
 

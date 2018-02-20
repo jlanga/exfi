@@ -19,6 +19,15 @@ from Bio.SeqIO.FastaIO import \
 
 import networkx as nx
 
+from exfi.correct import correct_splice_graph_dict
+from exfi.collapse import collapse_splice_graph_dict
+from exfi.polish import polish_splice_graph_dict
+from exfi.io.splice_graph_dict_to_gfa1 import splice_graph_dict_to_gfa1
+from exfi.io.gfa1_to_splice_graph_dict import gfa1_to_splice_graph_dict
+from exfi.build_splice_graph_dict import build_splice_graph_dict
+
+
+
 class FastaDict(Dict[str, str]):
     """Class for fasta dictionaries.
 
@@ -27,18 +36,14 @@ class FastaDict(Dict[str, str]):
     """
     # pylint: disable=too-few-public-methods
 
-    def build_from_fasta(self, filename: str) -> None:
+    @staticmethod
+    def build_from_fasta(filename: str) -> None:
         """Read Fasta file"""
+        fasta_dict = FastaDict()
         with open(filename, "r") as handle:
             for key, value in SimpleFastaParser(handle):
-                self[key] = value
-
-    # def __str__(self) -> None:
-    #     """Print the entire dictionary"""
-    #     print("{")
-    #     for key, value in self.items():
-    #         print(f"{key}: {value},")
-    #     print("}")
+                fasta_dict[key] = value
+        return fasta_dict
 
 
 
@@ -76,7 +81,7 @@ class Coordinate(Tuple[str, int, int]):
 
         ("chr1", 100, 150) + 5 -> ("chr1", 95, 150)
         """
-        self.start += bases
+        self.start -= bases
 
     def extend_bases_at_end(self, bases):
         """Extend bases at end"
@@ -93,11 +98,14 @@ class Node2Coordinates(Dict[str, Tuple[Coordinate]]):
     # pylint: disable=too-few-public-methods
     pass
 
+
+
 class Edge2Overlap(Dict[Tuple[str, str], int]):
     """Edge2Overlaps is a dict where keys are tuples of two node identifiers and the value is an int
     """
     # pylint: disable=too-few-public-methods
     pass
+
 
 
 class SpliceGraph(nx.DiGraph):
@@ -142,8 +150,8 @@ class SpliceGraph(nx.DiGraph):
 
 
 
-class SpliceGrapDict(Dict[str, SpliceGraph]):
-    """Class to work with splice"""
+class SpliceGraphDict(Dict[str, SpliceGraph]):
+    """Class to work with splice graphs in dict format "name": SpliceGraph"""
 
     def add_from_iterables(
             self, names: Iterable[str], splice_graphs: Iterable[SpliceGraph]) -> None:
@@ -151,33 +159,34 @@ class SpliceGrapDict(Dict[str, SpliceGraph]):
         for name, splice_graph in zip(names, splice_graphs):
             self[name] = splice_graph
 
-    def polish(self, args: dict) -> None:
+    def polish(self, fasta_dict: FastaDict, args: dict) -> None:
         """Polish overlaps according to the signal AGGT is found"""
-        pass
+        self = polish_splice_graph_dict(splice_graph_dict=self, fasta_dict=fasta_dict, args=args)
 
     def correct(self, args: dict) -> None:
         """Use abyss-sealer to correct/merge exons"""
-        pass
+        self = correct_splice_graph_dict(splice_graph_dict=self, args=args)
 
-    def collapse(self, args: dict) -> None:
+    def collapse(self, transcriptome_dict: FastaDict) -> None:
         """Create a new splice graph by merging all exons by sequence identity"""
-        pass
+        self = collapse_splice_graph_dict(
+            splice_graph_dict=self, transcriptome_dict=transcriptome_dict)
 
-    def write_to_gfa1(self, filename: str) -> None:
+    def write_to_gfa1(self, transcriptome_dict: FastaDict, filename: str) -> None:
         """Write SpliceGraphDict to GFA1 file"""
-        pass
+        splice_graph_dict_to_gfa1(
+            splice_graph_dict=self, transcriptome_dict=transcriptome_dict, filename=filename)
 
-    def load_from_bed3_records(self, bed3_records: Iterable[Tuple[str, int, int]]) -> None:
+    @staticmethod
+    def load_from_bed3_records(
+            bed3_records: Iterable[Coordinate], args: dict) -> None:
         """Build the SpliceGraphDict from BED3 records"""
+        return SpliceGraphDict(build_splice_graph_dict(bed3records=bed3_records, args=args))
 
-    def load_from_gfa1_file(self, filename) -> None:
+    @staticmethod
+    def load_from_gfa1_file(filename) -> None:
         """Build SpliceGraphDict from a GFA1 file"""
-
-    def write_exons(self, filename) -> None:
-        """Convert SpliceGraphDict to exons FASTA."""
-
-    def write_gapped(self, filename) -> None:
-        """Convert SpliceGraphDict to gapped transcripts in FASTA format."""
+        return SpliceGraphDict(gfa1_to_splice_graph_dict(handle=filename))
 
 
 

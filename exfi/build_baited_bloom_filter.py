@@ -54,7 +54,7 @@ def _get_biobloommaker_command(args: dict, output_dir: str) -> list:
         '--output_dir', output_dir,
         '--threads', str(args["threads"]),
         '--kmer_size', str(args["kmer"]),
-        args["input_fasta"]
+        args["fasta"]
     ]
     return build_transcriptome_bf
 
@@ -122,7 +122,7 @@ def _get_build_bf_command(args: dict, in_fn: str) -> list:
         '--bloom-size', args["bloom_size"],
         '--levels', str(args["levels"]),
         '--threads', str(args["threads"]),
-        args["output_bloom"]
+        args["bloom"]
     ] + in_fn
     return build_bf
 
@@ -191,7 +191,7 @@ def build_baited_bloom_filter(args: dict) -> None:
     from subprocess import Popen, PIPE
     from os.path import dirname, abspath
 
-    output_dir = dirname(abspath(args["output_bloom"]))
+    output_dir = dirname(abspath(args["bloom"]))
     # Convert single read library to list
     if isinstance(args["reads"], str):
         args["reads"] = [args["reads"]]

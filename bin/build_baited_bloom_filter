@@ -31,29 +31,30 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    '--input-fasta', '-i',
+    '--fasta', '-f',
     type=str,
     required=True,
     help='Input transcriptome in FASTA format',
-    dest='input_fasta',
+    dest='fasta',
     metavar='FILE'
 )
 
 parser.add_argument(
-    '--kmer', '-k',
+    '--kmer-size', '-k',
     type=int,
     required=False,
-    help='The size of the k-mer [30]',
+    help='The size of the k-mer [31]',
     dest='kmer',
     metavar='INT',
-    default=30
+    default=31
 )
 
 parser.add_argument(
     '--bloom-size', '-b',
     type=str,
     required=False,
-    help="Size of the Bloom filter [500M]",
+    help="Size of the Bloom filter [500M]. This is the total size. The final Bloom filter will be"
+        "size / levels.",
     dest="bloom_size",
     metavar='STR',
     default='500M'
@@ -85,8 +86,8 @@ parser.add_argument(
     type=str,
     required=True,
     help='Path to write the resulting Bloom filter',
-    dest="output_bloom",
-    metavar="STR"
+    dest="bloom",
+    metavar="FILE"
 )
 
 parser.add_argument(
@@ -108,48 +109,35 @@ if __name__ == '__main__':
 
     # Store arguments
     args = vars(parser.parse_args())
-    transcriptome = abspath(args['input_fasta'])
-    kmer = args['kmer']
-    bloom_size = args['bloom_size']
-    levels = args['levels']
-    output_bloom = abspath(args['output_bloom'])
-    threads = args["threads"],
-    reads = args["reads"]
-    threads = int(*threads)  # I don't know why it is parsed as tuple
+    args.fasta = abspath(args.fasta)
+    args.bloom = abspath(args.bloom)
+    args.threads = int(*args.threads)  # I don't know why it is parsed as tuple
 
     # Set up logger
-    if args["verbose"]:
+    if args.verbose:
         logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
     else:
         logging.basicConfig(level=logging.CRITICAL, format='%(asctime)s %(message)s')
 
     # Check inputs
-    assert isfile(transcriptome), 'ERROR: input fasta does not exist'
-    assert kmer >= 1, 'ERROR: incorrect kmer size'
+    assert isfile(args.transcriptome), 'ERROR: input fasta does not exist'
+    assert args.kmer >= 1, 'ERROR: incorrect kmer size'
     # assert bloom_size
-    assert levels >= 1, 'ERROR: incorrect number of levels'
-    assert threads >= 1, 'ERROR: incorrect number of threads'
-    for read_file in reads:
-        assert isfile(read_file), 'ERROR: file {file} does not exist'.format(
-            file=read_file
-        )
+    assert args.levels >= 1, 'ERROR: incorrect number of levels'
+    assert args.threads >= 1, 'ERROR: incorrect number of threads'
+    for read_file in args.reads:
+        assert isfile(read_file), f'ERROR: file {read_file} does not exist'
 
     # Check if programs are in path
     from shutil import which
-    assert which('biobloommaker') is not None, \
-        'ERROR: biobloommaker not in PATH'
-    assert which('biobloomcategorizer') is not None, \
-        'ERROR: biobloomcategorizer not in path'
-    assert which('abyss-bloom') is not None, \
-        'ERROR: abyss-bloom not in path'
+    assert which('biobloommaker') is not None, 'ERROR: biobloommaker not in PATH'
+    assert which('biobloomcategorizer') is not None, 'ERROR: biobloomcategorizer not in PATH'
+    assert which('abyss-bloom') is not None, 'ERROR: abyss-bloom not in PATH'
 
     # Create output folder if it doesn't exist
-    output_dir = dirname(output_bloom)
+    output_dir = dirname(args.bloom)
     if output_dir != "" and not exists(output_dir):
         makedirs(output_dir)
 
     # Run the program
     build_baited_bloom_filter(args)
-
-    #remove(output_dir + "/transcriptome.bf")
-    #remove(output_dir + "/transcriptome.txt")

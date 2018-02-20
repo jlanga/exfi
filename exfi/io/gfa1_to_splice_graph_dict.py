@@ -44,8 +44,8 @@ def _split_edge2overlap(edge2overlap: dict, node2transcript: dict) -> dict:
 
 
 
-def gfa1_to_splice_graph(handle: str) -> None:
-    """Read a GFA1 file and store the splice graph
+def gfa1_to_splice_graph_dict(handle: str) -> None:
+    """Read a GFA1 file and store the SpliceGraphDict
 
     :param str handle: Path to input GFA1 file
     """

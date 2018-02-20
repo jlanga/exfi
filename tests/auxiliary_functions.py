@@ -65,10 +65,9 @@ def _bf_and_process(reads_fns: list, transcriptome_fn: str) -> list:
         "bloom_size": "100M",
         "levels": 1,
         "threads": 1,
-        "input_bloom": tmp_bf,
-        "output_bloom": tmp_bf,
+        "bloom": tmp_bf,
         "reads": reads_fns,
-        "input_fasta": transcriptome_fn,
+        "fasta": transcriptome_fn,
         "max_fp_bases": 5,
         "max_overlap": 10
     }

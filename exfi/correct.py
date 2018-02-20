@@ -73,7 +73,7 @@ def _prepare_sealer(splice_graph_dict: dict, args: dict) -> str:
     """
 
     logging.debug("\tPreparing input for abyss-sealer")
-    transcriptome_dict = fasta_to_dict(args["input_fasta"])
+    transcriptome_dict = fasta_to_dict(args["fasta"])
 
     # Prepare fasta for sealer
     # Make temporary fasta where to write sequences for sealer
@@ -151,7 +151,7 @@ def _run_sealer(sealer_input_fn: str, args: dict) -> str:
         '--max-gap-length', "30",
         '--kmer', str(args["kmer"]),
         '--fix-errors',
-        '--input-bloom', args["input_bloom"],
+        '--input-bloom', args["bloom"],
         '--mask',
         '--output-prefix', sealer_output_prefix[1],
         '--verbose'

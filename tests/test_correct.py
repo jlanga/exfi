@@ -47,18 +47,16 @@ def _compose_args(bloom_fn, gfa_fn):
     """Compose a dict of args with two variables"""
     return {
         "kmer": 30,
-        "input_bloom": bloom_fn,
+        "bloom": bloom_fn,
         "bloom_size": "500M",
         "levels": 1,
-        "input_fasta": "tests/correct/transcript.fa",
+        "fasta": "tests/correct/transcript.fa",
         "max_fp_bases": 5,
         "max_overlap": 10,
-        "output_gfa": gfa_fn,
+        "gfa1": gfa_fn,
         "threads": 4,
         "max_gap_size": 10,
         "reads": ["tests/correct/reads.fa"],
-        "output_bloom" : bloom_fn,
-        "bloom_filter": bloom_fn,
     }
 
 

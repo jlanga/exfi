@@ -2,6 +2,8 @@
 
 import argparse
 
+import logging
+
 from os.path import \
     isfile, \
     abspath
@@ -82,7 +84,13 @@ parser.add_argument(
     default=False
 )
 
-args = parser.parse_args()
+parser.add_argument(
+    "-v", "--verbose",
+    action="store_true",
+    dest="verbose",
+    help="Increase output verbosity"
+)
+
 
 if __name__ == "__main__":
 
@@ -90,6 +98,12 @@ if __name__ == "__main__":
     args = vars(parser.parse_args())
     args["input_gfa"] = abspath(args["input_gfa"])
     args["output_fasta"] = abspath(args["output_fasta"])
+
+    # Set up logger
+    if args["verbose"]:
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s\t%(message)s')
+    else:
+        logging.basicConfig(level=logging.CRITICAL, format='%(asctime)s %(message)s')
 
     masking = "none"
     if args["soft_mask_overlaps"] == True:

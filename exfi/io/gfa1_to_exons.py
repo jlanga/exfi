@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
+"""exfi.io.gfa1_to_exons.py: submodule to convert a GFA1 file into a fasta containing only the exons
 """
-exfi.io.gfa1_to_exons.py: submodule to convert a GFA1 file into a fasta containing only the exons
-"""
+
+import logging
 
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
@@ -14,11 +15,15 @@ from exfi.io.masking import _mask
 
 
 
-def gfa1_to_exons(gfa_in_fn, fasta_out_fn, masking="none"):
-    """(str, str, bool, bool) -> None
+def gfa1_to_exons(gfa_in_fn: str, fasta_out_fn: str, masking: str = "none") -> None:
+    """Write the exons in FASTA format present in a GFA1 file
 
-    Write the exons in FASTA format present in a GFA1 file
+    :param str gfa_in_fn: Path to input GFA1 file
+    :param fasta_out_fn: Path to output FASTA FILE
+    :param masking:  (Default value = "none") Type of masking to make. Options are "none", "soft"
+    and "hard".
     """
+    logging.info("Converting GFA1 file %s into exon fasta %s", gfa_in_fn, fasta_out_fn)
     gfa1 = read_gfa1(gfa_in_fn)
 
     exon2sequence = gfa1["segments"]
@@ -30,8 +35,11 @@ def gfa1_to_exons(gfa_in_fn, fasta_out_fn, masking="none"):
 
     # Add coordinate information to description
     # Compose SeqRecord of each exon
+    logging.info("\tComposing SeqRecords")
     sequences = []
     for exon_id, exon_sequence in exon2sequence.items():
+        logging.debug("Processing %s", exon_id)
+
         # Compose coordinates
         exon_coordinates = exon2coordinates[exon_id]
         description = " ".join(
@@ -45,4 +53,5 @@ def gfa1_to_exons(gfa_in_fn, fasta_out_fn, masking="none"):
         ))
 
     # Write to fasta
+    logging.info("\tWriting fasta to file")
     SeqIO.write(format="fasta", handle=fasta_out_fn, sequences=sequences)

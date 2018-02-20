@@ -8,10 +8,11 @@ from unittest import TestCase, main
 
 from exfi.io.gfa1_to_splice_graph import gfa1_to_splice_graph
 
-from tests.auxiliary_functions import CustomAssertions
+from tests.custom_assertions import \
+    CustomAssertions
 
 from tests.test_data import \
-    SPLICE_GRAPH_EMPTY, SPLICE_GRAPH_SIMPLE, SPLICE_GRAPH_COMPLEX, \
+    SPLICE_GRAPH_EMPTY_DICT, SPLICE_GRAPH_SIMPLE_DICT, SPLICE_GRAPH_COMPLEX_DICT, \
     GFA_EMPTY_FN, GFA_SIMPLE_FN, GFA_COMPLEX_FN
 
 
@@ -22,28 +23,22 @@ class TestGFA1ToSpliceGrah(TestCase, CustomAssertions):
     def test_empty(self):
         """exfi.io.gfa1_to_splice_graph.gfa1_to_splice_graph: empty case"""
         actual = gfa1_to_splice_graph(GFA_EMPTY_FN)
-        self.assertEqualSpliceGraphs(
-            actual,
-            SPLICE_GRAPH_EMPTY
-        )
+        expected = SPLICE_GRAPH_EMPTY_DICT
+        self.assertEqualDictOfSpliceGraphs(actual, expected)
 
 
     def test_simple(self):
         """exfi.io.gfa1_to_splice_graph.gfa1_to_splice_graph: simple case"""
         actual = gfa1_to_splice_graph(GFA_SIMPLE_FN)
-        self.assertEqualSpliceGraphs(
-            actual,
-            SPLICE_GRAPH_SIMPLE
-        )
+        expected = SPLICE_GRAPH_SIMPLE_DICT
+        self.assertEqualDictOfSpliceGraphs(actual, expected)
 
 
     def test_complex(self):
         """exfi.io.gfa1_to_splice_graph.gfa1_to_splice_graph: complex case"""
         actual = gfa1_to_splice_graph(GFA_COMPLEX_FN)
-        self.assertEqualSpliceGraphs(
-            actual,
-            SPLICE_GRAPH_COMPLEX
-        )
+        expected = SPLICE_GRAPH_COMPLEX_DICT
+        self.assertEqualDictOfSpliceGraphs(actual, expected)
 
 
 if __name__ == '__main__':

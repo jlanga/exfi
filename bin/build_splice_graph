@@ -2,6 +2,8 @@
 
 import argparse
 
+import logging
+
 from os.path import \
     isfile, \
     abspath
@@ -14,19 +16,23 @@ from exfi.find_exons import \
     _get_fasta, \
     _find_exons_pipeline
 
-from exfi.build_splice_graph import \
-    build_splice_graph
+from exfi.build_splice_graph_dict import \
+    build_splice_graph_dict
 
-from exfi.correct_splice_graph import \
-    correct_splice_graph
+from exfi.correct import \
+    correct_splice_graph_dict
 
-from exfi.io import \
-    index_fasta
+from exfi.polish import \
+    polish_overlaps_dict
 
-from exfi.io.splice_graph_to_gfa1 import \
-    splice_graph_to_gfa1
+from exfi.io.fasta_to_dict import \
+    fasta_to_dict
 
-from exfi.collapse_splice_graph import collapse_splice_graph
+from exfi.io.splice_graph_dict_to_gfa1 import \
+    splice_graph_dict_to_gfa1
+
+from exfi.collapse import \
+    collapse_splice_graph_dict
 
 
 
@@ -128,6 +134,38 @@ parser.add_argument(
     action="store_true"
 )
 
+parser.add_argument(
+    '--correct',
+    '-C',
+    help='Correct splice graph by using sealer between exons that seem nearby [False]',
+    dest='correct',
+    action="store_true"
+)
+
+parser.add_argument(
+    "-v", "--verbose",
+    action="store_true",
+    dest="verbose",
+    help="Increase output verbosity"
+)
+
+parser.add_argument(
+    "-t", "--threads",
+    type=int,
+    help='number of threads to use when possible [1]',
+    dest="threads",
+    metavar="INT",
+    default=1
+)
+
+parser.add_argument(
+    "-p", "--polish",
+    action="store_true",
+    dest="polish",
+    help="Polish overlaps in which a AG-GT signal is detected"
+)
+
+
 args = parser.parse_args()
 
 if __name__ == "__main__":
@@ -137,26 +175,39 @@ if __name__ == "__main__":
     args["input_fasta"] = abspath(args["input_fasta"])
     args["output_gfa"] = abspath(args["output_gfa"])
 
+    # Set up logger
+    if args["verbose"]:
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
+    else:
+        logging.basicConfig(level=logging.CRITICAL, format='%(asctime)s %(message)s')
+
     # Get predicted exons in bed format
     positive_exons_bed = _find_exons_pipeline(args)
 
     # Build splice graph
-    splice_graph = build_splice_graph(positive_exons_bed)
+    splice_graph_dict = build_splice_graph_dict(positive_exons_bed, args)
 
     # Transcriptome_dict
-    transcriptome_dict = index_fasta(args["input_fasta"])
+    transcriptome_dict = fasta_to_dict(args["input_fasta"])
 
-    splice_graph = correct_splice_graph(splice_graph, args)
+    if args["polish"]:
+        splice_graph_dict = polish_overlaps_dict(splice_graph_dict, transcriptome_dict, args)
+
+    if args["correct"]:
+        splice_graph_dict = correct_splice_graph_dict(splice_graph_dict, args)
 
     if args["collapse"]:
-        splice_graph = collapse_splice_graph(
-        splice_graph=splice_graph,
-        transcriptome_dict={x.id: str(x.seq) for x in transcriptome_dict.values()}
-    )
+        splice_graph_dict = {
+            "collapsed":
+            collapse_splice_graph_dict(
+                splice_graph_dict=splice_graph_dict,
+                transcriptome_dict=transcriptome_dict
+            )
+        }
 
     # Write to GFA1
-    splice_graph_to_gfa1(
-        splice_graph=splice_graph,
+    splice_graph_dict_to_gfa1(
+        splice_graph_dict=splice_graph_dict,
         transcriptome_dict=transcriptome_dict,
         filename=args["output_gfa"]
     )

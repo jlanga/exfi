@@ -7,13 +7,17 @@ Tests form the find_exons submodule
 
 import unittest
 
+from exfi.io.fasta_to_dict import \
+    fasta_to_dict
+
 from tests.auxiliary_functions import \
-    CustomAssertions, \
     _command_to_list, \
-    _fasta_to_dict, \
     _fasta_to_list, \
     _getfasta_to_list, \
     _bf_and_process
+
+from tests.custom_assertions import \
+    CustomAssertions
 
 from tests.test_data import \
     BED3RECORDS_EMPTY, BED3RECORDS_SIMPLE, BED3RECORDS_COMPLEX, \
@@ -56,29 +60,29 @@ class TestGetFastaToList(unittest.TestCase, CustomAssertions):
         """exfi.find_exons._getfasta_to_list: process an empty fasta and an empty bed"""
         transcriptome_dict = {}
         iterable_of_bed = [("test1", 14, 27)]
-        self.assertEqualListOfSeqrecords(
+        self.assertEqual(
             _getfasta_to_list(transcriptome_dict, iterable_of_bed),
             []
         )
 
     def test_one_sequence_empty_bed(self):
         """exfi.find_exons._getfasta_to_list: process a simple fasta and an empty bed"""
-        transcriptome_dict = _fasta_to_dict(
+        transcriptome_dict = fasta_to_dict(
             "tests/find_exons/single_sequence.fa"
         )
         iterable_of_bed = []
-        self.assertEqualListOfSeqrecords(
+        self.assertEqual(
             _getfasta_to_list(transcriptome_dict, iterable_of_bed),
             []
         )
 
     def test_one_sequence_one_bed(self):
         """exfi.find_exons._getfasta_to_list: process an single fasta and a single bed record"""
-        transcriptome_dict = _fasta_to_dict(
+        transcriptome_dict = fasta_to_dict(
             "tests/find_exons/one_sequence_one_bed_input.fa"
         )
         iterable_of_bed = [("test1", 0, 60)]
-        self.assertEqualListOfSeqrecords(
+        self.assertEqual(
             _getfasta_to_list(transcriptome_dict, iterable_of_bed),
             _fasta_to_list(
                 "tests/find_exons/one_sequence_one_bed_output.fa"
@@ -87,13 +91,13 @@ class TestGetFastaToList(unittest.TestCase, CustomAssertions):
 
     def test_multi_seqs_multi_beds(self):
         """exfi.find_exons._getfasta_to_list: process an multiline fasta and multple bed"""
-        transcriptome_dict = _fasta_to_dict(
+        transcriptome_dict = fasta_to_dict(
             "tests/find_exons/multiple_sequences_multiple_beds_input.fa",
         )
         iterable_of_bed = [
             ("test1", 0, 60), ("test2", 0, 40), ("test3", 10, 20)
         ]
-        self.assertEqualListOfSeqrecords(
+        self.assertEqual(
             _getfasta_to_list(transcriptome_dict, iterable_of_bed),
             _fasta_to_list(
                 "tests/find_exons/multiple_sequences_multiple_beds_output.fa",

@@ -3,7 +3,7 @@
 """exfi.io.splice_graph_to_gfa1.py: functions to convert a splice graph into a GFA1 file"""
 
 import logging
-from typing import Generator, Dict, Tuple
+from typing import Generator
 
 from itertools import chain
 
@@ -16,8 +16,11 @@ from natsort import \
 from exfi.build_splice_graph_dict import \
     bed6df_to_path2node
 
+from exfi.classes import FastaDict, Node2Coordinates, Edge2Overlap, SpliceGraph, \
+    SpliceGraphDict
 
-def _get_node2coord(splice_graph: nx.DiGraph) -> Dict[str, Tuple[Tuple[str, int, int]]]:
+
+def _get_node2coord(splice_graph: SpliceGraph) -> Node2Coordinates:
     """Get node coordinates
 
     :param nx.DiGraph splice_graph: DiGraph from which to extract node coordinates.
@@ -25,7 +28,7 @@ def _get_node2coord(splice_graph: nx.DiGraph) -> Dict[str, Tuple[Tuple[str, int,
     return nx.get_node_attributes(G=splice_graph, name="coordinates")
 
 
-def _get_edge2overlap(splice_graph: nx.DiGraph) -> Dict[Tuple[str, str], int]:
+def _get_edge2overlap(splice_graph: SpliceGraph) -> Edge2Overlap:
     """Get edge2overlap
 
     :param nx.DiGraph splice_graph: DiGraph from which to extract edge overlaps.
@@ -34,7 +37,7 @@ def _get_edge2overlap(splice_graph: nx.DiGraph) -> Dict[Tuple[str, str], int]:
 
 
 def _set_node2coord(
-        splice_graph: nx.DiGraph, node2coord: Dict[str, Tuple[Tuple[str, int, int]]]) -> None:
+        splice_graph: SpliceGraph, node2coord: Node2Coordinates) -> None:
     """Set node to coordinates data in splice_graph
 
     :param nx.DiGraph splice_graph: DiGraph where to store the data.
@@ -43,7 +46,7 @@ def _set_node2coord(
     nx.set_node_attributes(G=splice_graph, name="coordinates", values=node2coord)
 
 
-def _set_edge2overlap(splice_graph: nx.DiGraph, edge2overlap: Dict[Tuple[str, str], int]) -> None:
+def _set_edge2overlap(splice_graph: SpliceGraph, edge2overlap: Edge2Overlap) -> None:
     """Set edge to overlap data in splice_graph
 
     :param nx.DiGraph splice_graph: DiGraph where to store data
@@ -53,7 +56,7 @@ def _set_edge2overlap(splice_graph: nx.DiGraph, edge2overlap: Dict[Tuple[str, st
 
 
 def _compute_segments(
-        splice_graph_dict: Dict[str, nx.DiGraph], transcriptome_dict: Dict[str, str]) -> \
+        splice_graph_dict: SpliceGraphDict, transcriptome_dict: FastaDict) -> \
         Generator[str, None, None]:
     """Compute the segment lines: S node_id sequence length
 
@@ -68,14 +71,11 @@ def _compute_segments(
             coordinate = coordinates[0]
             transcript_id, start, end = coordinate
             sequence = str(transcriptome_dict[transcript_id][start:end])
-            yield "S\t{node}\t{sequence}\tLN:i:{length}\n".format(
-                node=node_id,
-                sequence=sequence,
-                length=len(sequence)
-            )
+            length = len(sequence)
+            yield f"S\t{node_id}\t{sequence}\tLN:i:{length}\n"
 
 
-def _compute_links(splice_graph_dict: Dict[str, nx.DiGraph]) -> Generator[str, None, None]:
+def _compute_links(splice_graph_dict: SpliceGraphDict) -> Generator[str, None, None]:
     """Compute the link lines: L start orientation end orientation overlap
 
     :param dict splice_graph_dict: dict of DiGraphs with the splice graph
@@ -94,15 +94,10 @@ def _compute_links(splice_graph_dict: Dict[str, nx.DiGraph]) -> Generator[str, N
                 overlap = "{}M".format(overlap)
             else:
                 overlap = "{}G".format(-overlap)
-
-            yield "L\t{node1}\t{orientation1}\t{node2}\t{orientation2}\t{overlap}\n".format(
-                node1=node1, orientation1="+",
-                node2=node2, orientation2="+",
-                overlap=overlap
-            )
+            yield f"L\t{node1}\t+\t{node2}\t+\t{overlap}\n"
 
 
-def _compute_containments(splice_graph_dict: Dict[str, nx.DiGraph]) -> Generator[str, None, None]:
+def _compute_containments(splice_graph_dict: SpliceGraphDict) -> Generator[str, None, None]:
     """Compute the containment lines (w.r.t. transcriptome)
 
     C container orientation contained orientation position overlap
@@ -119,12 +114,10 @@ def _compute_containments(splice_graph_dict: Dict[str, nx.DiGraph]) -> Generator
             for (transcript_id, start, end) in coordinates:
                 logging.debug("\t\tProcessing %s - %s:%s-%s", node, transcript_id, start, end)
                 cigar = str(int(end) - int(start)) + "M"
-                yield "C\t{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format(
-                    transcript_id, "+", node, "+", start, cigar
-                )
+                yield f"C\t{transcript_id}\t+\t{node}\t+\t{start}\t{cigar}\n"
 
 
-def _compute_paths(splice_graph_dict: Dict[str, nx.DiGraph]):
+def _compute_paths(splice_graph_dict: SpliceGraphDict):
     """Compute the paths in the splice graph: P transcript_id [node1, ..., nodeN]
 
     :param splice_graph_dict: Dict of splice graphs.
@@ -149,15 +142,13 @@ def _compute_paths(splice_graph_dict: Dict[str, nx.DiGraph]):
 
         path2nodes = bed6df_to_path2node(bed6df)
         for transcript_id, path in natsorted(path2nodes.items()):
-            yield "P\t{transcript_id}\t{path}\n".format(
-                transcript_id=transcript_id,
-                path=",".join([node + "+" for node in path])
-            )
+            path = ",".join([node + "+" for node in path])
+            yield f"P\t{transcript_id}\t{path}\n"
 
 
 def splice_graph_dict_to_gfa1(
-        splice_graph_dict: Dict[str, nx.DiGraph],
-        transcriptome_dict: Dict[str, str],
+        splice_graph_dict: SpliceGraphDict,
+        transcriptome_dict: FastaDict,
         filename: str) \
         -> None:
     """Write splice graph to filename in GFA 1 format

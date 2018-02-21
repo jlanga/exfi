@@ -32,7 +32,7 @@ import os
 
 from typing import List
 
-def _get_biobloommaker_command(args: dict, output_dir: str) -> list:
+def _get_biobloommaker_command(args: dict, output_dir: str) -> List[str]:
     """Helper function to compose the command to execute
 
     :param dict args: Dict of arguments.
@@ -60,7 +60,7 @@ def _get_biobloommaker_command(args: dict, output_dir: str) -> list:
     return build_transcriptome_bf
 
 
-def _get_categorize_command(args: dict, output_dir: str) -> list:
+def _get_categorize_command(args: dict, output_dir: str) -> List[str]:
     """Helper function to compose the categorize command
 
     :arg dict args: Dict of arguments
@@ -92,7 +92,7 @@ def _get_categorize_command(args: dict, output_dir: str) -> list:
     return categorize
 
 
-def _get_build_bf_command(args: dict, in_fn: List[str]) -> list:
+def _get_build_bf_command(args: dict, in_fn: List[str]) -> List[str]:
     """Helper function to compose command to get the final Bloom Filter
 
     :arg dict args: Dict of arguments.

@@ -13,9 +13,10 @@ from Bio import SeqIO
 from exfi.io.masking import _mask
 from exfi.io.read_gfa1 import read_gfa1
 
+from exfi.classes import Node2Coordinates, Path2Nodes
 
-
-def _compose_paths(exon_dict: dict, path_dict: dict, number_of_ns: int = 100) -> SeqRecord:
+def _compose_paths(
+        exon_dict: Node2Coordinates, path_dict: Path2Nodes, number_of_ns: int = 100) -> SeqRecord:
     """Compose and return each gapped transcript.
 
     :param exon_dict: dict of exons: {exon_id: ((seq1, start1, end1,), ...)}.

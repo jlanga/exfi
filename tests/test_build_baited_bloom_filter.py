@@ -4,6 +4,8 @@
 Battery of tests for exfi.build_baited_bloom_filter
 """
 
+from typing import List
+
 from unittest import TestCase
 
 import tempfile
@@ -20,10 +22,8 @@ READS_2_FN = "tests/build_baited_bloom_filter/reads_2.fq"
 TRANSCRIPTOME_EMPTY_FN = "tests/build_baited_bloom_filter/transcriptome_empty.fa"
 TRANSCRIPTOME_SMALL_FN = "tests/build_baited_bloom_filter/transcriptome_small.fa"
 
-def _simple_build_baited(transcriptome, reads, tmp_bf):
-    """(str, list, str, str) -> None
-
-    Simple wrapper for testing"""
+def _simple_build_baited(transcriptome: str, reads: List[str], tmp_bf: str) -> None:
+    """Simple wrapper for testing"""
     args = {
         "fasta": transcriptome,
         "kmer": 30,

@@ -4,10 +4,14 @@
 Tests for exfi.build_splice_graph
 """
 
+from typing import Iterable
 
 import unittest
 
 import networkx as nx
+
+from exfi.classes import Coordinate, SpliceGraph, \
+    SpliceGraphDict
 
 from exfi.build_splice_graph_dict import \
     _bed3_to_str, \
@@ -37,13 +41,13 @@ BED6_COLS = ['chrom', 'start', 'end', 'name', 'score', 'strand']
 ARGS = {"threads": 4}
 
 
-def _prepare_overlaps(bed3_records):
+def _prepare_overlaps(bed3_records: Iterable[Coordinate]) -> SpliceGraphDict:
     """Compute splicegraph prior the computation of overlaps"""
-    sg_dict = dict()
+    sg_dict = SpliceGraphDict()
 
     bed6df_dict = bed3_records_to_bed6df_dict(bed3_records)
     for transcript, bed6_df in bed6df_dict.items():
-        splice_graph = nx.DiGraph()
+        splice_graph = SpliceGraph()
         splice_graph.add_nodes_from(bed6_df["name"].tolist())
         node2coords = bed6df_to_node2coordinates(bed6_df)
         nx.set_node_attributes(G=splice_graph, name="coordinates", values=node2coords)

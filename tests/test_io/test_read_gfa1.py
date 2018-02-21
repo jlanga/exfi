@@ -7,12 +7,12 @@ Tests for exfi.io.read_gfa1
 from unittest import TestCase, main
 
 from exfi.io.read_gfa1 import \
-        _overlap_str_to_int, \
-        _process_segments, \
-        _process_links, \
-        _process_containments, \
-        _process_paths, \
-        read_gfa1
+    _overlap_str_to_int, \
+    _process_segments, \
+    _process_links, \
+    _process_containments, \
+    _process_paths, \
+    read_gfa1
 
 
 from tests.test_data import \

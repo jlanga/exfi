@@ -5,6 +5,7 @@ test_correct_splice_graph.py: tests for the exfi.correct submodule
 """
 
 
+
 from unittest import TestCase, main
 
 from tempfile import \
@@ -14,6 +15,8 @@ from os import remove
 from os.path import dirname
 
 import networkx as nx
+
+from exfi.classes import SpliceGraph
 
 from exfi.build_baited_bloom_filter import \
     build_baited_bloom_filter
@@ -43,7 +46,7 @@ from tests.custom_assertions import \
     CustomAssertions
 
 
-def _compose_args(bloom_fn, gfa_fn):
+def _compose_args(bloom_fn: str, gfa_fn: str) -> dict:
     """Compose a dict of args with two variables"""
     return {
         "kmer": 30,
@@ -78,9 +81,9 @@ FILLED_EDGE_BY_TRANSCRIPT = {
 }
 
 
-def partition(node_u, node_v, edge2fill):
+def partition(node_u: str, node_v: str, edge2fill: set):
     """Define partitions as how the graph should be filled"""
-    graph = nx.DiGraph()
+    graph = SpliceGraph()
     graph.add_edges_from(edge2fill)
     if node_u in graph.nodes() and \
         node_v in graph.nodes() and \

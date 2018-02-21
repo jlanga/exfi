@@ -16,7 +16,7 @@ from exfi.io.masking import \
     _hard_mask, \
     _mask
 
-from tests.test_data import \
+from tests.data import \
     OVERLAPS_COMPLEX
 
 # pylint: disable=no-name-in-module

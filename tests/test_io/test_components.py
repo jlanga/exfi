@@ -11,7 +11,7 @@ from exfi.io.components import \
 from tests.custom_assertions import \
     CustomAssertions
 
-from tests.test_data import \
+from tests.data import \
     SPLICE_GRAPH_EMPTY, SPLICE_GRAPH_SIMPLE, SPLICE_GRAPH_COMPLEX
 
 

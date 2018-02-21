@@ -11,7 +11,7 @@ from exfi.io.gfa1_to_splice_graph_dict import gfa1_to_splice_graph_dict
 from tests.custom_assertions import \
     CustomAssertions
 
-from tests.test_data import \
+from tests.data import \
     SPLICE_GRAPH_EMPTY_DICT, SPLICE_GRAPH_SIMPLE_DICT, SPLICE_GRAPH_COMPLEX_DICT, \
     GFA_EMPTY_FN, GFA_SIMPLE_FN, GFA_COMPLEX_FN
 

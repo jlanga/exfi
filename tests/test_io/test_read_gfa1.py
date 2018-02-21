@@ -15,7 +15,7 @@ from exfi.io.read_gfa1 import \
     read_gfa1
 
 
-from tests.test_data import \
+from tests.data import \
     GFA_EMPTY_FN, GFA_SIMPLE_FN, GFA_COMPLEX_FN, \
     SEGMENTS_EMPTY, SEGMENTS_SIMPLE, SEGMENTS_COMPLEX, \
     SEGMENTS_EMPTY_DICT, SEGMENTS_SIMPLE_DICT, SEGMENTS_COMPLEX_DICT, \

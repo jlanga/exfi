@@ -19,7 +19,7 @@ from tests.auxiliary_functions import \
 from tests.custom_assertions import \
     CustomAssertions
 
-from tests.test_data import \
+from tests.data import \
     BED3RECORDS_EMPTY, BED3RECORDS_SIMPLE, BED3RECORDS_COMPLEX, \
     BED3RECORDS_EMPTY_FN, BED3RECORDS_SIMPLE_FN, BED3RECORDS_COMPLEX_FN
 

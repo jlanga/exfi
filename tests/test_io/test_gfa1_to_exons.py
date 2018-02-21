@@ -16,7 +16,7 @@ from exfi.io.gfa1_to_exons import \
 from exfi.io.fasta_to_dict import \
     fasta_to_dict
 
-from tests.test_data import \
+from tests.data import \
     GFA_EMPTY_FN, GFA_SIMPLE_FN, GFA_COMPLEX_FN
 
 EXONS_EMPTY_FN = "tests/io/exons_empty.fa"

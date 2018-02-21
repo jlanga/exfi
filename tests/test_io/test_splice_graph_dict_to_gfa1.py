@@ -17,7 +17,7 @@ from exfi.io.splice_graph_dict_to_gfa1 import \
     _compute_paths, \
     splice_graph_dict_to_gfa1
 
-from tests.test_data import \
+from tests.data import \
     TRANSCRIPTOME_EMPTY_DICT, TRANSCRIPTOME_SIMPLE_DICT, TRANSCRIPTOME_COMPLEX_DICT, \
     GFA_EMPTY_FN, GFA_SIMPLE_FN, GFA_COMPLEX_FN, \
     SPLICE_GRAPH_EMPTY_DICT, SPLICE_GRAPH_SIMPLE_DICT, SPLICE_GRAPH_COMPLEX_DICT, \

@@ -25,7 +25,7 @@ from exfi.collapse import \
 from tests.custom_assertions import \
     CustomAssertions
 
-from tests.test_data import \
+from tests.data import \
     NODE2COORDS_EMPTY, NODE2COORDS_SIMPLE, NODE2COORDS_COMPLEX, \
     OVERLAPS_EMPTY, OVERLAPS_SIMPLE, OVERLAPS_COMPLEX, \
     TRANSCRIPTOME_EMPTY_DICT, TRANSCRIPTOME_SIMPLE_DICT, TRANSCRIPTOME_COMPLEX_DICT, \

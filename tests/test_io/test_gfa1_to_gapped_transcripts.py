@@ -14,7 +14,7 @@ import os
 from exfi.io.gfa1_to_gapped_transcripts import \
     gfa1_to_gapped_transcripts
 
-from tests.test_data import \
+from tests.data import \
     GFA_EMPTY_FN, GFA_SIMPLE_FN, GFA_COMPLEX_FN
 
 

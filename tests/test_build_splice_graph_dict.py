@@ -25,7 +25,7 @@ from exfi.build_splice_graph_dict import \
 from tests.custom_assertions import \
     CustomAssertions
 
-from tests.test_data import \
+from tests.data import \
     BED3RECORDS_EMPTY, BED3RECORDS_SIMPLE, BED3RECORDS_COMPLEX, \
     BED6DF_EMPTY, BED6DF_SIMPLE, BED6DF_COMPLEX, \
     BED6DF_DICT_EMPTY, BED6DF_DICT_SIMPLE, BED6DF_DICT_COMPLEX, \

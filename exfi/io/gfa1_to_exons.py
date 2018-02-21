@@ -9,7 +9,7 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 
-from exfi.io import _coordinate_tuple_to_str
+from exfi.io import _coordinate_to_str
 from exfi.io.read_gfa1 import read_gfa1
 from exfi.io.masking import _mask
 
@@ -43,7 +43,7 @@ def gfa1_to_exons(gfa_in_fn: str, fasta_out_fn: str, masking: str = "none") -> N
         # Compose coordinates
         exon_coordinates = exon2coordinates[exon_id]
         description = " ".join(
-            _coordinate_tuple_to_str(coordinate)
+            _coordinate_to_str(coordinate)
             for coordinate in exon_coordinates
         )
         sequences.append(SeqRecord(

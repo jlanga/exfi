@@ -17,7 +17,7 @@ from typing import \
 from exfi.classes import Coordinate
 
 
-def _coordinate_tuple_to_str(coordinate: Coordinate) -> str:
+def _coordinate_to_str(coordinate: Coordinate) -> str:
     """Convert coordinates to str seqid:start-end
 
     :param str seqid: Sequence identifier

@@ -2,37 +2,38 @@
 
 """exfi.polish_overlaps: submodule to polish the overlaps between two exons"""
 
+from typing import Iterable
+
 import networkx as nx
 
-from exfi.build_splice_graph_dict import \
-    _bed3_to_str
+from exfi.io import \
+    _coordinate_to_str
+
+from exfi.classes import Coordinate, SpliceGraph, SpliceGraphDict, FastaDict
 
 
-def trim_end(coordinate: tuple, bases: int) -> tuple:
+def trim_end(coordinate: Coordinate, bases: int) -> Coordinate:
     """Trim bases to the end of the coordinate
 
     :param tuple coordinate: BED3 record
     :param int bases:  Number of bases to trim form end
     """
-    coordinate = list(coordinate)
-    coordinate[2] -= bases
-    return tuple(coordinate)
+    return Coordinate(coordinate[0], coordinate[1], coordinate[2] - bases)
 
 
 
-def trim_start(coordinate: tuple, bases: int) -> tuple:
+def trim_start(coordinate: Coordinate, bases: int) -> Coordinate:
     """Trim bases to the start of the coordinate
 
     :param tuple coordinate: BED3 record.
     :param int bases: Number of bases to trim from start.
     """
-    coordinate = list(coordinate)
-    coordinate[1] += bases
-    return tuple(coordinate)
+    return Coordinate(coordinate[0], coordinate[1] + bases, coordinate[2])
 
 
 
-def trim_multiple_ends(iterable_coordinate: tuple, bases: int) -> tuple:
+def trim_multiple_ends(iterable_coordinate: Iterable[Coordinate], bases: int) \
+    -> Iterable[Coordinate]:
     """Trim bases at the end of all elements in iterable_coordinate
 
     :param tuple iterable_coordinate: iterable of bed3 records.
@@ -42,7 +43,8 @@ def trim_multiple_ends(iterable_coordinate: tuple, bases: int) -> tuple:
 
 
 
-def trim_multiple_starts(iterable_coordinate: tuple, bases: int) -> tuple:
+def trim_multiple_starts(iterable_coordinate: Iterable[Coordinate], bases: int) \
+    -> Iterable[Coordinate]:
     """Trim bases at the start of all elements in iterable_coordinate
 
     :param tuple iterable_coordinate: iterable of bed3 records.
@@ -53,7 +55,7 @@ def trim_multiple_starts(iterable_coordinate: tuple, bases: int) -> tuple:
 
 
 
-def polish_splice_graph(splice_graph, fasta_dict):
+def polish_splice_graph(splice_graph: SpliceGraph, fasta_dict: FastaDict) -> SpliceGraph:
     """Trim overlaps according to the AG/GT signal (AC/CT in the reverse strand)
 
     :param nx.DiGraph splice_graph: SpliceGraph to polish.
@@ -84,8 +86,8 @@ def polish_splice_graph(splice_graph, fasta_dict):
                 # rename both transcripts
                 ## u: delete overlap untul AG
                 ## v: delete overlap until GT
-                new_node_u = _bed3_to_str(trim_end(node_u_coord, overlap - index - 2))
-                new_node_v = _bed3_to_str(trim_start(node_v_coord, index + 2))
+                new_node_u = _coordinate_to_str(trim_end(node_u_coord, overlap - index - 2))
+                new_node_v = _coordinate_to_str(trim_start(node_v_coord, index + 2))
 
                 # Update old -> new renaming
                 node_mapping[node_u] = new_node_u
@@ -135,7 +137,8 @@ def polish_splice_graph(splice_graph, fasta_dict):
 
 
 
-def polish_splice_graph_dict(splice_graph_dict: dict, fasta_dict: dict, args: dict) -> dict:
+def polish_splice_graph_dict(
+        splice_graph_dict: SpliceGraphDict, fasta_dict: FastaDict, args: dict) -> SpliceGraphDict:
     """Polish all overlaps in a splice graph dict
 
     :param dict splice_graph_dict: SpliceGraphDict to polish.
@@ -150,7 +153,7 @@ def polish_splice_graph_dict(splice_graph_dict: dict, fasta_dict: dict, args: di
     # Initialize pool of workers
     pool = mp.Pool(args["threads"])
 
-    def polish_wrapper(splice_graph):
+    def polish_wrapper(splice_graph: SpliceGraph) -> SpliceGraph:
         """Export fasta_dict to function.
 
         :param nx.DiGraph splice_graph: splice_graph to polish.

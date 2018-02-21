@@ -15,6 +15,8 @@ from exfi.polish import \
     polish_splice_graph, \
     polish_splice_graph_dict
 
+from exfi.classes import Coordinate
+
 from tests.custom_assertions import \
     CustomAssertions
 
@@ -84,13 +86,13 @@ class TestCoordAddLeft(TestCase):
     def test_correct(self):
         """exfi.polish.trim_start: correct case"""
         actual = trim_start(("tr", 1, 2), 2)
-        expected = ("tr", 3, 2)
+        expected = Coordinate("tr", 3, 2)
         self.assertEqual(actual, expected)
 
     def test_too_long(self):
         """exfi.polish.trim_start: too long case"""
         actual = trim_start(("tr", 1, 2, 5, 5), 2)
-        expected = ("tr", 3, 2, 5, 5)
+        expected = Coordinate("tr", 3, 2)
         self.assertEqual(actual, expected)
 
 
@@ -111,13 +113,13 @@ class TestCoordAddRight(TestCase):
     def test_correct(self):
         """exfi.polish.trim_end: correct case"""
         actual = trim_end(("tr", 1, 2), 2)
-        expected = ("tr", 1, 0)
+        expected = Coordinate("tr", 1, 0)
         self.assertEqual(actual, expected)
 
     def test_too_long(self):
         """exfi.polish.trim_end: too long case"""
         actual = trim_end(("tr", 1, 2, 5, 5), 2)
-        expected = ("tr", 1, 0, 5, 5)
+        expected = Coordinate("tr", 1, 0)
         self.assertEqual(actual, expected)
 
 

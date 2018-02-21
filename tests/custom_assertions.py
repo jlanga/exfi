@@ -12,10 +12,17 @@ tests.custom_assertions.py: custom assertions for unit tests:
     - each edge have the same overlap
 """
 
+from typing import List, Dict
+
 import networkx as nx
 
+import pandas as pd
 
-def check_same_keys(dict1, dict2):
+from Bio.SeqRecord import SeqRecord
+
+from exfi.classes import SpliceGraph, SpliceGraphDict
+
+def check_same_keys(dict1: dict, dict2: dict) -> None:
     """Check if two dicts have the exact same keys"""
     if set(dict1.keys()) != set(dict2.keys()):
         raise KeyError("Keys differ: {keys1} {keys2}".format(
@@ -24,7 +31,7 @@ def check_same_keys(dict1, dict2):
 
 
 
-def check_same_values(dict1, dict2):
+def check_same_values(dict1: dict, dict2: dict) -> None:
     """Check if two dicts have the same values"""
     for key, value1 in dict1.items():  # Check same values
         value2 = dict2[key]
@@ -35,14 +42,14 @@ def check_same_values(dict1, dict2):
 
 
 
-def check_same_dict(dict1, dict2):
+def check_same_dict(dict1: dict, dict2: dict) -> None:
     """Check if two dicts contain the exact same values"""
     check_same_keys(dict1, dict2)
     check_same_values(dict1, dict2)
 
 
 
-def check_equal_node2coord(sg1, sg2):
+def check_equal_node2coord(sg1: SpliceGraph, sg2: SpliceGraph) -> None:
     """Check if two splice graphs have the same node2coord dicts"""
     node2coord1 = nx.get_node_attributes(G=sg1, name="coordinates")
     node2coord2 = nx.get_node_attributes(G=sg2, name="coordinates")
@@ -50,7 +57,7 @@ def check_equal_node2coord(sg1, sg2):
 
 
 
-def check_equal_edge2overlap(sg1, sg2):
+def check_equal_edge2overlap(sg1: SpliceGraph, sg2: SpliceGraph) -> None:
     """Check if two splice graphs have the same node2coord dicts"""
     edge2overlap1 = nx.get_edge_attributes(G=sg1, name="overlaps")
     edge2overlap2 = nx.get_edge_attributes(G=sg2, name="overlaps")
@@ -58,7 +65,7 @@ def check_equal_edge2overlap(sg1, sg2):
 
 
 
-def check_equal_df_dict_values(dict1, dict2):
+def check_equal_df_dict_values(dict1: dict, dict2: dict) -> None:
     """Check if two data frames are equal
     Solution: https://stackoverflow.com/a/33223893
     """
@@ -70,7 +77,7 @@ def check_equal_df_dict_values(dict1, dict2):
 
 
 
-def check_equal_splice_graphs(sg1, sg2):
+def check_equal_splice_graphs(sg1: SpliceGraph, sg2: SpliceGraph) -> None:
     """Check if two splice graphs are:
         - isomorphic
         - node2coord are equal
@@ -83,7 +90,7 @@ def check_equal_splice_graphs(sg1, sg2):
 
 
 
-def check_equal_dict_of_sg(dict1, dict2):
+def check_equal_dict_of_sg(dict1: dict, dict2: dict) -> None:
     """Check if each key, element are equal splice graphs"""
     check_same_keys(dict1, dict2)
     for key, sg1 in dict1.items():
@@ -92,7 +99,7 @@ def check_equal_dict_of_sg(dict1, dict2):
 
 
 
-def check_equal_length(iter1, iter2):
+def check_equal_length(iter1: List, iter2: List) -> None:
     """Check if two iterables have the same length"""
     length_1 = len(iter1)
     length_2 = len(iter2)
@@ -103,7 +110,7 @@ def check_equal_length(iter1, iter2):
 
 
 
-def check_equal_seqrecrods(seqrecord1, seqrecord2):
+def check_equal_seqrecrods(seqrecord1: SeqRecord, seqrecord2: SeqRecord) -> None:
     """Check if id and seq are equal"""
     if seqrecord1.id != seqrecord2.id or seqrecord1.seq != seqrecord2.seq:
         raise AssertionError(
@@ -114,9 +121,9 @@ def check_equal_seqrecrods(seqrecord1, seqrecord2):
 
 
 
-def check_equal_list_seqrecords(iter1, iter2):
+def check_equal_list_seqrecords(iter1: List[SeqRecord], iter2: List[SeqRecord]) -> None:
     """Check if a list of SeqRecords are equal"""
-    for i in len(iter1):
+    for i, _ in enumerate(iter1):
         check_equal_seqrecrods(iter1[i], iter2[i])
 
 
@@ -128,7 +135,7 @@ class CustomAssertions:
     """
 
     @classmethod
-    def assertEqualDict(self, dict1, dict2):
+    def assertEqualDict(self, dict1: dict, dict2: dict) -> None:
         """Check if two dicts are equal (values are compared with ==)"""
         # pylint: disable=invalid-name, bad-classmethod-argument
         check_same_dict(dict1, dict2)
@@ -136,7 +143,8 @@ class CustomAssertions:
 
 
     @classmethod
-    def assertEqualListOfSeqrecords(self, records1, records2):
+    def assertEqualListOfSeqrecords(
+            self, records1: List[SeqRecord], records2: List[SeqRecord]) -> None:
         """
         Check if each element of list_of_seqrecords1 is exactly equal to each one of
         list_of_seqrecords2.
@@ -148,7 +156,7 @@ class CustomAssertions:
 
 
     @classmethod
-    def assertEqualSpliceGraphs(self, sg1, sg2):
+    def assertEqualSpliceGraphs(self, sg1: SpliceGraph, sg2: SpliceGraph) -> None:
         """Check if two splice graph are equal:"""
         # pylint: disable=invalid-name,bad-classmethod-argument
         check_equal_splice_graphs(sg1, sg2)
@@ -156,7 +164,8 @@ class CustomAssertions:
 
 
     @classmethod
-    def assertEqualDictOfDF(self, dict1, dict2):
+    def assertEqualDictOfDF(
+            self, dict1: Dict[str, pd.DataFrame], dict2: Dict[str, pd.DataFrame]) -> None:
         """Check if two dicts of pd.DataFrame are equal"""
         # pylint: disable=invalid-name,bad-classmethod-argument
         check_same_keys(dict1, dict2)
@@ -164,7 +173,7 @@ class CustomAssertions:
 
 
     @classmethod
-    def assertEqualDictOfSpliceGraphs(self, dict1, dict2):
+    def assertEqualDictOfSpliceGraphs(self, dict1: SpliceGraphDict, dict2: SpliceGraphDict) -> None:
         """Check if two dicts of nx.DiGraph and some data attached to nodes and edges are equal"""
         # pylint: disable=invalid-name, bad-classmethod-argument
         check_equal_dict_of_sg(dict1, dict2)

@@ -7,28 +7,28 @@ exfi.collapse_splice_graph: merge nodes with the exact same sequence
 import logging
 
 from typing import \
-    Dict
+    Dict, Tuple
 
 import networkx as nx
 
 from exfi.classes import FastaDict, Node2Coordinates, Edge2Overlap, SpliceGraph, SpliceGraphDict
 
 def _compute_seq2node(
-        node2coord: Node2Coordinates, transcriptome_dict: FastaDict) -> Dict[str, str]:
+        node2coord: Node2Coordinates, transcriptome_dict: FastaDict) -> Dict[str, Tuple[str, ...]]:
     """Compute seq2node dict
 
     From
     - a dict node2coord = {node_id: tuples of coordinates}, and
     - a dict transcriptome_dict = {transcript_id: str},
     build the dict
-    - node2seq = {node_id: str}
+    - seq2node = {sequence(str): node_id (str)}
 
     :param node2coord: node to coordinates dict.
     :param transcriptome_dict: transcript to sequence dict.
     """
     # Get the node -> sequence
     logging.debug("\t_compute_seq2node")
-    seq2node: Dict[str, str] = {}
+    seq2node: Dict[str, Tuple[str, ...]] = {}
     for node_id, coordinates in node2coord.items():
         seqid, start, end = coordinates[0]  # Just take the first
         sequence = transcriptome_dict[seqid][start:end]
@@ -38,7 +38,7 @@ def _compute_seq2node(
     return seq2node
 
 
-def _compute_old2new(seq2node: Dict[str, str]) -> Dict[str, str]:
+def _compute_old2new(seq2node: Dict[str, Tuple[str, ...]]) -> Dict[str, str]:
     """Compute the dict of old identifiers to new
 
     :param seq2node: Sequence to node dict
@@ -70,7 +70,7 @@ def _compute_new_node2coord(old2new: dict, node2coord: Node2Coordinates) -> Node
     return new_node2coord
 
 
-def _compute_new_link2overlap(old2new: dict, link2overlap: Edge2Overlap) -> Edge2Overlap:
+def _compute_new_link2overlap(old2new: Dict[str, str], link2overlap: Edge2Overlap) -> Edge2Overlap:
     """Recompute the link2overlaps dict accordint to the new node_ids
 
     :param old2new: dict of old to new names
@@ -112,7 +112,7 @@ def _merge_link2overlap(splice_graph_dict: SpliceGraphDict) -> Edge2Overlap:
     :param splice_graph_dict:  Dict of name -> SpliceGraph.
     """
     logging.debug("\t_merge_link2overlap")
-    link2overlap_big = {}
+    link2overlap_big = Edge2Overlap()
 
     for splice_graph in splice_graph_dict.values():
         link2overlap = nx.get_edge_attributes(G=splice_graph, name="overlaps")

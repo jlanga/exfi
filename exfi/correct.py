@@ -7,7 +7,7 @@ with abyss-sealer.
 
 import logging
 
-from typing import Dict
+from typing import Dict, Union, Tuple
 
 from subprocess import \
     Popen
@@ -43,7 +43,7 @@ def _get_node2sequence(splice_graph: SpliceGraph, transcriptome_dict: FastaDict)
     :param dict transcriptome_dict: Dict of reference transcriptome.
     """
     logging.debug("\tComputing the exon to sequence dictionary")
-    node2sequence = {}
+    node2sequence: Dict[str, str] = {}
 
     node2coordinates = Node2Coordinates(nx.get_node_attributes(
         G=splice_graph,
@@ -211,14 +211,10 @@ def _rename_nodes_from_collapse(quotient_graph: SpliceGraph) -> Dict[str, str]:
     """
     logging.debug("\tRenaming collapsed nodes")
     # Main dict
-    mapping = {  # Old -> New
+    mapping: Dict[str, Union[str, Tuple[str, ...]]] = {  # Old -> New
         node_id: tuple(natsorted(node for node in node_id))
         for node_id in quotient_graph.nodes()
     }
-    # mapping_raw: Dict[str, Tuple[str, ...]] = {  # Old -> New
-    #     node_id: tuple(natsorted(node for node in node_id))
-    #     for node_id in quotient_graph.nodes()
-    # }
 
     # Convert single item tuples to str
     for key, value in mapping.items():
@@ -226,6 +222,13 @@ def _rename_nodes_from_collapse(quotient_graph: SpliceGraph) -> Dict[str, str]:
             mapping[key] = value[0]
     return mapping
 
+    # # Original dict
+    # mapping_raw: Dict[str, Tuple[str, ...]] = {  # Old -> New
+    #     node_id: tuple(natsorted(node for node in node_id))
+    #     for node_id in quotient_graph.nodes()
+    # }
+
+    # # New dict
     # mapping: Dict[str, str] = {}
     # for key, value in mapping_raw.items():
     #     if len(value) == 1:
@@ -265,8 +268,8 @@ def _recompute_edge2overlap(
     """
     logging.debug("\tRecomputing edge2overlap")
 
-    old_edge2overlap = nx.get_edge_attributes(G=component, name="overlaps")
-    new_edge2overlap = Edge2Overlap()
+    old_edge2overlap = Edge2Overlap(nx.get_edge_attributes(G=component, name="overlaps"))
+    new_edge2overlap = dict()
 
     for edge in quotient_relabeled.edges():
         node_u, node_v = edge
@@ -293,7 +296,7 @@ def _compute_new_node_ids(
 
     logging.debug("\tRecomputing final node identifiers")
 
-    quotient_mapping = {}
+    quotient_mapping: Dict[str, str] = {}
     old_node2coord = nx.get_node_attributes(G=component, name="coordinates")
 
     for node in quotient_relabeled.nodes():
@@ -308,11 +311,7 @@ def _compute_new_node_ids(
             _, _, end = old_node2coord[last_node_id][0]
 
             # Compose new node
-            new_node_id = "{transcript}:{start}-{end}".format(
-                transcript=transcript_id,
-                start=start,
-                end=end
-            )
+            new_node_id = f"{transcript_id}:{start}-{end}"
             quotient_mapping[node] = new_node_id
         else:
             quotient_mapping[node] = node
@@ -333,7 +332,7 @@ def _sculpt_graph(splice_graph: SpliceGraph, filled_edges: set) -> SpliceGraph:
         return splice_graph
 
     # Compute the quotient graph
-    def partition(node_u, node_v):
+    def partition(node_u: str, node_v: str) -> bool:
         """Function to test if node_u and node_v belong to the same partition of the graph
 
         :param node_u:
@@ -410,7 +409,7 @@ def correct_splice_graph_dict(splice_graph_dict: SpliceGraphDict, args: dict) ->
     # Complete the filled_edges_by_transcript dict
     for transcript in splice_graph_dict:
         if transcript not in filled_edges_by_transcript:
-            filled_edges_by_transcript[transcript] = {}
+            filled_edges_by_transcript[transcript] = set()
 
     # Initialize pool of workers
     pool = mp.Pool(args["threads"])
@@ -423,11 +422,11 @@ def correct_splice_graph_dict(splice_graph_dict: SpliceGraphDict, args: dict) ->
             splice_graph_dict.values(),
             filled_edges_by_transcript.values()
         ),
-        chunksize=100
+        chunksize=1000
     )
     pool.close()
     pool.join()
-    splice_graph_dict = dict(
+    splice_graph_dict = SpliceGraphDict(
         zip(splice_graph_dict.keys(), corrected_splice_graphs)
     )
 

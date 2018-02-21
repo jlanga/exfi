@@ -10,7 +10,7 @@ from unittest import TestCase, main
 
 import networkx as nx
 
-from exfi.classes import Coordinate, FastaDict, SpliceGraph
+from exfi.classes import Coordinate, FastaDict, SpliceGraph, Edge2Overlap
 
 from exfi.io.fasta_to_dict import \
     fasta_to_dict
@@ -32,7 +32,7 @@ from tests.test_data import \
     SPLICE_GRAPH_EMPTY_DICT, SPLICE_GRAPH_SIMPLE_DICT, SPLICE_GRAPH_COMPLEX_DICT
 
 
-def fasta_to_seq2node(fasta_dict: FastaDict) -> Dict[str, str]:
+def fasta_to_seq2node(fasta_dict: FastaDict) -> Dict[str, Tuple[str, ...]]:
     """Revert fasta_dict: seq: seq_id"""
     return {value: (key,) for key, value in fasta_dict.items()}
 
@@ -59,9 +59,9 @@ NEW_NODE2COORD_COMPLEX = dict(zip(
 ))
 
 
-NEW_LINK2OVERLAP_EMPTY = {}
-NEW_LINK2OVERLAP_SIMPLE = {}
-NEW_LINK2OVERLAP_COMPLEX = {
+NEW_LINK2OVERLAP_EMPTY = Edge2Overlap()
+NEW_LINK2OVERLAP_SIMPLE = Edge2Overlap()
+NEW_LINK2OVERLAP_COMPLEX = Edge2Overlap({
     ('exon_00000000', 'exon_00000001'): -71,
     ('exon_00000001', 'exon_00000002'): -5,
     ('exon_00000003', 'exon_00000004'): 2,
@@ -75,7 +75,7 @@ NEW_LINK2OVERLAP_COMPLEX = {
     ('exon_00000011', 'exon_00000012'): -21,
     ('exon_00000012', 'exon_00000013'): -1,
     ('exon_00000013', 'exon_00000014'): -1
-}
+})
 
 
 COLLAPSED_EMPTY = SpliceGraph()

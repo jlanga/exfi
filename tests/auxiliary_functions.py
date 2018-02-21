@@ -4,6 +4,8 @@
 Auxiliary functions and classes for testing
 """
 
+from typing import Iterable, List, Tuple
+
 import tempfile
 import shutil
 from subprocess import \
@@ -19,9 +21,9 @@ from exfi.find_exons import \
 from exfi.build_baited_bloom_filter import \
     _get_build_bf_command
 
+from exfi.classes import FastaDict, Coordinate
 
-
-def _command_to_list(command):
+def _command_to_list(command: List[str]) -> List[Coordinate]:
     """Execute command and return output as list of strings"""
     process = Popen(command, stdout=PIPE, shell=False)
     results = list(_process_output(process))
@@ -29,20 +31,22 @@ def _command_to_list(command):
 
 
 
-def _fasta_to_list(filename: str) -> list:
+def _fasta_to_list(filename: str) -> List[Tuple[str, str]]:
     """fasta to list with SimpleFastaParser"""
     with open(filename, "r") as handle:
         return [record for record in SimpleFastaParser(handle)]
 
 
 
-def _getfasta_to_list(transcriptome_dict: dict, iterable_of_bed: list) -> list:
+def _getfasta_to_list(
+        transcriptome_dict: FastaDict, iterable_of_bed: Iterable[Coordinate]) \
+        -> List[Tuple[str, str]]:
     """Convert to a list the generator from getfasta"""
     return list(_get_fasta(transcriptome_dict, iterable_of_bed))
 
 
 
-def _silent_popen(command):
+def _silent_popen(command: List[str]) -> Popen:
     """Create a Popen with no stderr and stdout"""
     return Popen(
         command,
@@ -53,7 +57,7 @@ def _silent_popen(command):
 
 
 
-def _bf_and_process(reads_fns: list, transcriptome_fn: str) -> list:
+def _bf_and_process(reads_fns: List[str], transcriptome_fn: str) -> List[Coordinate]:
     """(list of str, str) -> list
 
     Build the BF and process the reads

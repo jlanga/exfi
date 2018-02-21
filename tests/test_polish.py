@@ -2,7 +2,6 @@
 
 """tests.test_polish_overlaps.py: Tests for the exfi.polish submodule"""
 
-
 from unittest import \
     TestCase, \
     main
@@ -15,7 +14,7 @@ from exfi.polish import \
     polish_splice_graph, \
     polish_splice_graph_dict
 
-from exfi.classes import Coordinate
+from exfi.classes import Coordinate, SpliceGraph, SpliceGraphDict
 
 from tests.custom_assertions import \
     CustomAssertions
@@ -31,17 +30,17 @@ from tests.test_data import \
 
 
 # Test data
-POLISHED_EMPTY = nx.DiGraph()
-POLISHED_SIMPLE = nx.DiGraph()
+POLISHED_EMPTY = SpliceGraph()
+POLISHED_SIMPLE = SpliceGraph()
 POLISHED_SIMPLE.add_node("ENSDART00000161035.1:0-326")
 nx.set_node_attributes(
     G=POLISHED_SIMPLE,
     name="coordinates",
-    values={'ENSDART00000161035.1:0-326': (('ENSDART00000161035.1', 0, 326),)}
+    values={'ENSDART00000161035.1:0-326': (Coordinate('ENSDART00000161035.1', 0, 326),)}
 )
 
 
-POLISHED_COMPLEX = nx.DiGraph()
+POLISHED_COMPLEX = SpliceGraph()
 POLISHED_COMPLEX.add_nodes_from(
     tuple(NODE2COORDS_COMPLEX_PART1.keys()) + tuple(NODE2COORDS_COMPLEX_PART2.keys())
 )
@@ -57,12 +56,12 @@ nx.set_edge_attributes(
     values=OVERLAPS_COMPLEX
 )
 
-POLISHED_EMPTY_DICT = dict()
-POLISHED_SIMPLE_DICT = {"ENSDART00000161035.1": POLISHED_SIMPLE}
-POLISHED_COMPLEX_DICT = {
+POLISHED_EMPTY_DICT = SpliceGraphDict()
+POLISHED_SIMPLE_DICT = SpliceGraphDict({"ENSDART00000161035.1": POLISHED_SIMPLE})
+POLISHED_COMPLEX_DICT = SpliceGraphDict({
     'ENSDART00000161035.1': SPLICE_GRAPH_1,
     'ENSDART00000165342.1': SPLICE_GRAPH_2
-}
+})
 
 ARGS = {
     "threads": 1

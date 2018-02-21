@@ -16,10 +16,14 @@ from exfi.io.masking import \
     _hard_mask, \
     _mask
 
-from tests.test_data import \
-    OVERLAPS_COMPLEX, \
+from tests.data import \
+    OVERLAPS_COMPLEX
+
+# pylint: disable=no-name-in-module
+from tests.test_io.test_gfa1_to_exons import \
     EXONS_COMPLEX_DICT, EXONS_COMPLEX_SOFT_DICT, EXONS_COMPLEX_HARD_DICT
 
+from tests.custom_assertions import CustomAssertions
 
 
 class TestProcessOverlapCigar(TestCase):
@@ -35,7 +39,6 @@ class TestProcessOverlapCigar(TestCase):
         with self.assertRaises(IndexError):
             _process_overlap_cigar("")
 
-
     def test_correct(self):
         """exfi.io.masking._process_overlap_cigar: correct case"""
         self.assertEqual(
@@ -44,84 +47,93 @@ class TestProcessOverlapCigar(TestCase):
         )
 
 
+
 class TestSoftMaskRight(TestCase):
     """Tests for exfi.io.masking._soft_mask_right"""
+
     def test_soft_mask_right(self):
         """exfi.io.masking._soft_mask_right: simple"""
-        self.assertEqual(
-            _soft_mask_right("AAAAA", 3),
-            "AAaaa"
-        )
+        actual = _soft_mask_right("AAAAA", 3)
+        expected = "AAaaa"
+        self.assertEqual(actual, expected)
+
+
 
 class TestSoftMaskLeft(TestCase):
     """Tests for exfi.io.masking._soft_mask_left"""
+
     def test_soft_mask_left(self):
         """exfi.io.masking._soft_mask_left: simple"""
-        self.assertEqual(
-            _soft_mask_left("AAAAA", 3),
-            "aaaAA"
-        )
+        actual = _soft_mask_left("AAAAA", 3)
+        expected = "aaaAA"
+        self.assertEqual(actual, expected)
 
-class TestSoftMask(TestCase):
+
+
+class TestSoftMask(TestCase, CustomAssertions):
     """Tests for exfi.io.masking._soft_mask"""
+
     def test_soft_mask(self):
         """exfi.io.masking._soft_mask: simple"""
-        print(EXONS_COMPLEX_DICT)
-        self.assertEqual(
-            _soft_mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX),
-            EXONS_COMPLEX_SOFT_DICT
-        )
+        actual = _soft_mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX)
+        expected = EXONS_COMPLEX_SOFT_DICT
+        self.assertEqualDict(actual, expected)
+
 
 
 class TestHardMaskRight(TestCase):
     """Tests for exfi.io.masking._hard_mask_right"""
+
     def test_hard_mask_right(self):
         """exfi.io.masking._hard_mask_right: simple"""
-        self.assertEqual(
-            _hard_mask_right("AAAAA", 3),
-            "AANNN"
-        )
+        actual = _hard_mask_right("AAAAA", 3)
+        expected = "AANNN"
+        self.assertEqual(actual, expected)
+
+
 
 class TestHardMaskLeft(TestCase):
     """Tests for exfi.io.masking._hard_mask_left"""
+
     def test_hard_mask_left(self):
         """exfi.io.masking._hard_mask_left: simple"""
-        self.assertEqual(
-            _hard_mask_left("AAAAA", 3),
-            "NNNAA"
-        )
+        actual = _hard_mask_left("AAAAA", 3)
+        expected = "NNNAA"
+        self.assertEqual(actual, expected)
 
-class TestHardMask(TestCase):
+
+
+class TestHardMask(TestCase, CustomAssertions):
     """Tests for exfi.io.masking._hard_mask"""
+
     def test_hard_mask(self):
         """exfi.io.masking._hard_mask: simple"""
-        self.assertEqual(
-            _hard_mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX),
-            EXONS_COMPLEX_HARD_DICT
-        )
+        actual = _hard_mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX)
+        expected = EXONS_COMPLEX_HARD_DICT
+        self.assertEqualDict(actual, expected)
 
-class TestMask(TestCase):
+
+
+class TestMask(TestCase, CustomAssertions):
     """Tests for exfi.io.masking._mask"""
+
     def test_no_mask(self):
         """exfi.io.masking._mask: no masking"""
-        self.assertEqual(
-            _mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX, "none"),
-            EXONS_COMPLEX_DICT
-        )
+        actual = _mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX, "none")
+        expected = EXONS_COMPLEX_DICT
+        self.assertEqualDict(actual, expected)
 
     def test_soft_mask(self):
         """exfi.io.masking._mask: soft masking"""
-        self.assertEqual(
-            _mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX, "soft"),
-            EXONS_COMPLEX_SOFT_DICT
-        )
+        actual = _mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX, "soft")
+        expected = EXONS_COMPLEX_SOFT_DICT
+        self.assertEqualDict(actual, expected)
 
     def test_hard_mask(self):
         """exfi.io.masking._mask: hard masking"""
-        self.assertEqual(
-            _mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX, "hard"),
-            EXONS_COMPLEX_HARD_DICT
-        )
+        actual = _mask(EXONS_COMPLEX_DICT, OVERLAPS_COMPLEX, "hard")
+        expected = EXONS_COMPLEX_HARD_DICT
+        self.assertEqualDict(actual, expected)
 
 
 

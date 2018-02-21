@@ -16,19 +16,23 @@ from exfi.find_exons import \
     _get_fasta, \
     _find_exons_pipeline
 
-from exfi.build_splice_graph import \
-    build_splice_graph
+from exfi.build_splice_graph_dict import \
+    build_splice_graph_dict
 
-from exfi.correct_splice_graph import \
-    correct_splice_graph
+from exfi.correct import \
+    correct_splice_graph_dict
 
-from exfi.io import \
-    index_fasta
+from exfi.polish import \
+    polish_splice_graph_dict
 
-from exfi.io.splice_graph_to_gfa1 import \
-    splice_graph_to_gfa1
+from exfi.io.fasta_to_dict import \
+    fasta_to_dict
 
-from exfi.collapse_splice_graph import collapse_splice_graph
+from exfi.io.splice_graph_dict_to_gfa1 import \
+    splice_graph_dict_to_gfa1
+
+from exfi.collapse import \
+    collapse_splice_graph_dict
 
 
 
@@ -49,11 +53,11 @@ parser.add_argument(
 
 parser.add_argument(
     '--input-fasta',
-    '-i',
+    '-f',
     type=str,
     required=True,
     help='Input transcriptome in FASTA format',
-    dest='input_fasta',
+    dest='fasta',
     metavar='FILE'
 )
 
@@ -64,19 +68,19 @@ parser.add_argument(
     required=True,
     help='Bloom filter with genomic sequences (from build_baited_bloom_filter or'
         'abyss-bloom)',
-    dest='input_bloom',
+    dest='bloom',
     metavar='BLOOM'
 )
 
 parser.add_argument(
-    '--kmer',
+    '--kmer-size',
     '-k',
     type=int,
     required=True,
-    help='The size of the k-mer (enter the same as in the bloom filter) [27]',
+    help='The size of the k-mer (enter the same as in the bloom filter) [31]',
     dest='kmer',
     metavar='KMER',
-    default=27
+    default=31
 )
 
 parser.add_argument(
@@ -118,7 +122,7 @@ parser.add_argument(
     type=str,
     required=True,
     help='Path to output GFA1 file (the splice graph)',
-    dest="output_gfa",
+    dest="gfa1",
     metavar="FILE"
 )
 
@@ -145,15 +149,32 @@ parser.add_argument(
     help="Increase output verbosity"
 )
 
+parser.add_argument(
+    "-t", "--threads",
+    type=int,
+    help='number of threads to use when possible [1]',
+    dest="threads",
+    metavar="INT",
+    default=1
+)
+
+parser.add_argument(
+    "-p", "--polish",
+    action="store_true",
+    dest="polish",
+    help="Polish overlaps in which a AG-GT signal is detected"
+)
+
 
 args = parser.parse_args()
 
 if __name__ == "__main__":
 
     args = vars(parser.parse_args())
-    args["input_bloom"] = abspath(args["input_bloom"])
-    args["input_fasta"] = abspath(args["input_fasta"])
-    args["output_gfa"] = abspath(args["output_gfa"])
+    # Convert relative paths to absolute paths, just in case
+    args["bloom"] = abspath(args["bloom"])
+    args["fasta"] = abspath(args["fasta"])
+    args["gfa1"] = abspath(args["gfa1"])
 
     # Set up logger
     if args["verbose"]:
@@ -165,24 +186,28 @@ if __name__ == "__main__":
     positive_exons_bed = _find_exons_pipeline(args)
 
     # Build splice graph
-    splice_graph = build_splice_graph(positive_exons_bed)
+    splice_graph_dict = build_splice_graph_dict(positive_exons_bed, args)
 
     # Transcriptome_dict
-    transcriptome_dict = index_fasta(args["input_fasta"])
+    transcriptome_dict = fasta_to_dict(args["fasta"])
+
+    if args["polish"]:
+        splice_graph_dict = polish_splice_graph_dict(splice_graph_dict, transcriptome_dict, args)
 
     if args["correct"]:
-        splice_graph = correct_splice_graph(splice_graph, args)
+        splice_graph_dict = correct_splice_graph_dict(splice_graph_dict, args)
 
     if args["collapse"]:
-        splice_graph = collapse_splice_graph(
-            splice_graph=splice_graph,
-            transcriptome_dict={x.id: str(x.seq) for x in transcriptome_dict.values()
+        splice_graph_dict = {
+            "collapsed": collapse_splice_graph_dict(
+                splice_graph_dict=splice_graph_dict,
+                transcriptome_dict=transcriptome_dict
+            )
         }
-    )
 
     # Write to GFA1
-    splice_graph_to_gfa1(
-        splice_graph=splice_graph,
+    splice_graph_dict_to_gfa1(
+        splice_graph_dict=splice_graph_dict,
         transcriptome_dict=transcriptome_dict,
-        filename=args["output_gfa"]
+        filename=args["gfa1"]
     )

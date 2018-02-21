@@ -21,6 +21,7 @@ setup(
         'networkx',
         'pandas',
         'natsort',
+        'pathos',
     ],
     long_description=open('README.md').read(),
     test_suite='nose.collector',

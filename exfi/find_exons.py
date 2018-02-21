@@ -11,39 +11,49 @@ Module to compute positive exons in the bloom filter as follos:
 
 # Import everything
 
+from typing import \
+    Iterable, \
+    Tuple
+
 import logging
 
 from subprocess import Popen, PIPE
-from Bio.SeqRecord import SeqRecord
 
+from exfi.classes import Coordinate, FastaDict
 
-def _process_output(process):
-    """Get lines in bed format from the output of a Popen."""
+def _process_output(process: Popen) -> Iterable[Coordinate]:
+    """Get lines in bed format from the output of a Popen.
+
+    :param Popen process: Popen object.
+    """
     for stdout_line in iter(process.stdout.readline, b''):
         chromosome, start, end = stdout_line.decode().strip().split()
-        yield (chromosome, int(start), int(end))
+        coordinate = Coordinate(chromosome, int(start), int(end))
+        yield coordinate
+        # yield Coordinate(stdout_line.decode().strip().split())
     process.stdout.close()
     process.wait()
 
 
-def _get_fasta(transcriptome_dict, iterable_of_bed):
+def _get_fasta(
+        transcriptome_dict: FastaDict, iterable_of_bed: Iterable[Coordinate]) -> \
+        Iterable[Tuple[str, str]]:
     """Extract subsequences in trancriptome_fn according to locis.
 
-    (fasta file, list of lists) -> seqrecord
+    :param dict transcriptome_dict: FastaDict of the transcriptome
+    :param iterable iterable_of_bed: iterable of Bed3Records.
     """
     for bed in iterable_of_bed:
         chromosome, start, end = bed
         if chromosome in transcriptome_dict:
-            seq = transcriptome_dict[chromosome][start:end].seq
-            identifier = "{0}:{1}-{2}".format(chromosome, start, end)
-            description = identifier
-            yield SeqRecord(id=identifier, seq=seq, description=description)
+            seq = transcriptome_dict[chromosome][start:end]
+            identifier = f"{chromosome}:{start}-{end}"
+            yield (identifier, seq)
 
 
-def _find_exons_pipeline(args):
-    """(dict) -> iterable of tuples
+def _find_exons_pipeline(args: dict) -> Iterable[Coordinate]:
+    """Find exons according to the Bloom filter -> BED
 
-    Find exons according to the Bloom filter -> BED
     Main pipeline:
     - Check every kmer,
     - merge if there is an overlap of k-1 bases,
@@ -52,17 +62,21 @@ def _find_exons_pipeline(args):
 
     args = {
         "kmer": int,
-        "input_bloom": str,
-        "input_fasta": str,
+        "bloom": str,
+        "fasta": str,
         "max_overlap": int,
         "max_fp_bases": int
     }
+
+    :param dict args: arguments for abyss-bloom kmers, bedtools merge and awk
+
     """
     logging.info("Running the find exons pipeline")
     # Prepare the commands
     c_kmers = [
-        "abyss-bloom", "kmers", "--kmer", str(args["kmer"]), "--verbose", "--bed",
-        args["input_bloom"], args["input_fasta"]
+        "abyss-bloom", "kmers", "--kmer", str(
+            args["kmer"]), "--verbose", "--bed",
+        args["bloom"], args["fasta"]
     ]
     c_merge1 = ["bedtools", "merge", "-d", str(-args["kmer"] + 2)]
     c_filter = ["awk", "$3 - $2 >= {min_length}".format(

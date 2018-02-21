@@ -13,7 +13,8 @@ conda install --yes \
     networkx \
     pandas \
     pip \
-    natsort
+    natsort \
+    pathos
 conda clean --all --yes
 
 pushd /opt/

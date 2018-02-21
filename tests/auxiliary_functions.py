@@ -4,12 +4,14 @@
 Auxiliary functions and classes for testing
 """
 
+from typing import Iterable, List, Tuple
+
 import tempfile
 import shutil
-from subprocess import Popen, PIPE
+from subprocess import \
+    Popen, PIPE
 
-import networkx as nx
-from Bio import SeqIO
+from Bio.SeqIO.FastaIO import SimpleFastaParser
 
 from exfi.find_exons import \
     _process_output, \
@@ -19,31 +21,32 @@ from exfi.find_exons import \
 from exfi.build_baited_bloom_filter import \
     _get_build_bf_command
 
+from exfi.classes import FastaDict, Coordinate
 
-
-
-
-
-def _command_to_list(command):
+def _command_to_list(command: List[str]) -> List[Coordinate]:
     """Execute command and return output as list of strings"""
     process = Popen(command, stdout=PIPE, shell=False)
     results = list(_process_output(process))
     return results
 
-def _fasta_to_dict(filename):
-    """SeqIO.index wrapper for fasta files"""
-    return SeqIO.index(filename=filename, format="fasta")
 
 
-def _fasta_to_list(filename):
-    """SeqIO.parse wrapper for fasta files"""
-    return list(SeqIO.parse(handle=filename, format="fasta"))
+def _fasta_to_list(filename: str) -> List[Tuple[str, str]]:
+    """fasta to list with SimpleFastaParser"""
+    with open(filename, "r") as handle:
+        return [record for record in SimpleFastaParser(handle)]
 
-def _getfasta_to_list(transcriptome_dict, iterable_of_bed):
+
+
+def _getfasta_to_list(
+        transcriptome_dict: FastaDict, iterable_of_bed: Iterable[Coordinate]) \
+        -> List[Tuple[str, str]]:
     """Convert to a list the generator from getfasta"""
     return list(_get_fasta(transcriptome_dict, iterable_of_bed))
 
-def _silent_popen(command):
+
+
+def _silent_popen(command: List[str]) -> Popen:
     """Create a Popen with no stderr and stdout"""
     return Popen(
         command,
@@ -52,7 +55,9 @@ def _silent_popen(command):
         shell=False
     )
 
-def _bf_and_process(reads_fns, transcriptome_fn):
+
+
+def _bf_and_process(reads_fns: List[str], transcriptome_fn: str) -> List[Coordinate]:
     """(list of str, str) -> list
 
     Build the BF and process the reads
@@ -64,10 +69,9 @@ def _bf_and_process(reads_fns, transcriptome_fn):
         "bloom_size": "100M",
         "levels": 1,
         "threads": 1,
-        "input_bloom": tmp_bf,
-        "output_bloom": tmp_bf,
+        "bloom": tmp_bf,
         "reads": reads_fns,
-        "input_fasta": transcriptome_fn,
+        "fasta": transcriptome_fn,
         "max_fp_bases": 5,
         "max_overlap": 10
     }
@@ -77,61 +81,3 @@ def _bf_and_process(reads_fns, transcriptome_fn):
     results = _find_exons_pipeline(args)
     shutil.rmtree(tmp_dir)
     return list(results)
-
-
-class CustomAssertions:
-    """
-    Custom assertions not covered in unittest:
-    - assertEqualListOfSeqrecords
-    """
-    @classmethod
-    def assertEqualListOfSeqrecords(self, records1, records2):
-        """
-        Check if each element of list_of_seqrecords1 is exactly equal to each one of
-        list_of_seqrecords2.
-        """
-        # pylint: disable=invalid-name, bad-classmethod-argument
-        length_1 = len(records1)
-        length_2 = len(records2)
-        if length_1 != length_2:
-            raise AssertionError(
-                'Lengths differ:\n {len_1} != {len_2}'.format(
-                    len_1=length_1,
-                    len_2=length_2
-                )
-            )
-        else:
-            for i in range(length_1):
-                record1 = records1[i]
-                record2 = records2[i]
-                if record1.id != record2.id or record1.seq != record2.seq:
-                    raise AssertionError(
-                        'Records at position {i} differ:\n{id1} : {seq1}\n{id2} : {seq2}'.format(
-                            i=i,
-                            id1=record1.id,
-                            seq1=record1.seq,
-                            id2=record2.id,
-                            seq2=record2.seq
-                        )
-                    )
-            return True
-
-    @classmethod
-    def assertEqualSpliceGraphs(self, sg1, sg2):
-        """
-        Check if two splice graph are equal:
-        - are isomorphic
-        - same coordinates
-        - same overlaps
-        """
-        # pylint: disable=invalid-name,bad-classmethod-argument
-        coordinates1 = nx.get_node_attributes(G=sg1, name="coordinates")
-        coordinates2 = nx.get_node_attributes(G=sg1, name="coordinates")
-        overlaps1 = nx.get_edge_attributes(G=sg1, name="overlaps")
-        overlaps2 = nx.get_edge_attributes(G=sg1, name="overlaps")
-        same_coordinates = coordinates1 == coordinates2
-        same_overlaps = overlaps1 == overlaps2
-        are_isomorphic = nx.is_isomorphic(sg1, sg2)
-        if are_isomorphic and same_coordinates and same_overlaps:
-            return True
-        return False

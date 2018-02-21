@@ -39,7 +39,7 @@ parser.add_argument(
     type=str,
     required=True,
     help='Input splice graph in GFA1 format (the results from build_splicegraph)',
-    dest='input_gfa',
+    dest='gfa1',
     metavar='FILE'
 )
 
@@ -49,7 +49,7 @@ parser.add_argument(
     type=str,
     required=True,
     help='Path to output fasta file (the gapped transcripts)',
-    dest="output_fasta",
+    dest="fasta",
     metavar="FILE"
 )
 
@@ -96,8 +96,8 @@ if __name__ == "__main__":
 
     # Parse
     args = vars(parser.parse_args())
-    args["input_gfa"] = abspath(args["input_gfa"])
-    args["output_fasta"] = abspath(args["output_fasta"])
+    args["gfa1"] = abspath(args["gfa1"])
+    args["fasta"] = abspath(args["fasta"])
 
     # Set up logger
     if args["verbose"]:
@@ -112,8 +112,8 @@ if __name__ == "__main__":
         masking = "hard"
 
     gfa1_to_gapped_transcripts(
-        gfa_in=args["input_gfa"],
-        fasta_out=args["output_fasta"],
+        gfa_in=args["gfa1"],
+        fasta_out=args["fasta"],
         number_of_ns=args["number_of_ns"],
         masking=masking
     )

@@ -4,30 +4,47 @@
 
 import logging
 
+from typing import Dict
+
 import networkx as nx
 
 from exfi.io.read_gfa1 import \
     read_gfa1
 
+from exfi.classes import \
+    Node2Coordinates, \
+    Edge2Overlap, \
+    SpliceGraph, \
+    SpliceGraphDict
 
-def _split_node2coord(node2coord: dict, node2transcript: dict) -> dict:
+def _split_node2coord(
+        node2coord: Node2Coordinates, node2transcript: Dict[str, str]) -> \
+        Dict[str, Node2Coordinates]:
     """Split the big node2coord dict into its subcomponents (transcripts)
 
     :param dict node2coord: dict of the shape key=node_id, value=((seq1, start1, node1),
      ..., (seqN, startN, nodeN))
     :param dict node2transcript: dict of the shape node_id: transcript_id
     """
-    splitted_node2coord = {key: dict() for key in set(node2transcript.values())}
+    splitted_node2coord: Dict[str, Node2Coordinates] = {
+        key: Node2Coordinates()
+        for key in set(node2transcript.values())
+    }
     for node, coordinates in node2coord.items():
         transcript = node2transcript[node]
-        if node not in splitted_node2coord[transcript]:
-            splitted_node2coord[transcript][node] = tuple()
-        splitted_node2coord[transcript][node] += coordinates
+        if node in splitted_node2coord[transcript]:
+            splitted_node2coord[transcript][node] += coordinates
+        else:
+            splitted_node2coord[transcript][node] = tuple(coordinates)
+        # if node not in splitted_node2coord[transcript]:
+        #     splitted_node2coord[transcript][node] = tuple(Coordinate())
+        # splitted_node2coord[transcript][node] += coordinates
     return splitted_node2coord
 
 
 
-def _split_edge2overlap(edge2overlap: dict, node2transcript: dict) -> dict:
+def _split_edge2overlap(edge2overlap: Edge2Overlap, node2transcript: Dict[str, str]) -> \
+        Dict[str, Edge2Overlap]:
     """Split the big edge2overlap dict into subcomponents (transcripts)
 
     :param dict edge2overlap: dict of the shape key=(node1, node2), value= overlap inbases between
@@ -36,7 +53,10 @@ def _split_edge2overlap(edge2overlap: dict, node2transcript: dict) -> dict:
     :param dict node2transcript: dict of the shape key=exon_id, value= transcripts to which it
     belongs
     """
-    splitted_edge2overlap = {transcript: dict() for transcript in set(node2transcript.values())}
+    splitted_edge2overlap: Dict[str, Edge2Overlap] = {
+        transcript: Edge2Overlap()
+        for transcript in set(node2transcript.values())
+    }
     for edge, overlap in edge2overlap.items():
         transcript = node2transcript[edge[0]]
         splitted_edge2overlap[transcript][edge] = overlap
@@ -44,7 +64,7 @@ def _split_edge2overlap(edge2overlap: dict, node2transcript: dict) -> dict:
 
 
 
-def gfa1_to_splice_graph_dict(handle: str) -> None:
+def gfa1_to_splice_graph_dict(handle: str) -> SpliceGraphDict:
     """Read a GFA1 file and store the SpliceGraphDict
 
     :param str handle: Path to input GFA1 file
@@ -70,11 +90,14 @@ def gfa1_to_splice_graph_dict(handle: str) -> None:
     transcript2edge2overlap = _split_edge2overlap(edge2overlap, node2transcript)
 
     # Initialize
-    splice_graph_dict = {transcript: None for transcript in transcript2nodes}
+    splice_graph_dict = SpliceGraphDict({
+        transcript: SpliceGraph()
+        for transcript in transcript2nodes
+    })
 
     # process
     for transcript in splice_graph_dict.keys():
-        splice_graph = nx.DiGraph()
+        splice_graph = SpliceGraph()
 
         node2coord = transcript2node2coord[transcript]
         splice_graph. add_nodes_from(node2coord.keys())

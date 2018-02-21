@@ -30,6 +30,7 @@ import logging
 import shutil
 import os
 
+from typing import List
 
 def _get_biobloommaker_command(args: dict, output_dir: str) -> list:
     """Helper function to compose the command to execute
@@ -91,7 +92,7 @@ def _get_categorize_command(args: dict, output_dir: str) -> list:
     return categorize
 
 
-def _get_build_bf_command(args: dict, in_fn: str) -> list:
+def _get_build_bf_command(args: dict, in_fn: List[str]) -> list:
     """Helper function to compose command to get the final Bloom Filter
 
     :arg dict args: Dict of arguments.

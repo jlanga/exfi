@@ -19,20 +19,25 @@ import logging
 
 from subprocess import Popen, PIPE
 
+from exfi.classes import Coordinate, FastaDict
 
-def _process_output(process: Popen) -> Iterable[Tuple[str, int, int]]:
+def _process_output(process: Popen) -> Iterable[Coordinate]:
     """Get lines in bed format from the output of a Popen.
 
     :param Popen process: Popen object.
     """
     for stdout_line in iter(process.stdout.readline, b''):
         chromosome, start, end = stdout_line.decode().strip().split()
-        yield (chromosome, int(start), int(end))
+        coordinate = Coordinate(chromosome, int(start), int(end))
+        yield coordinate
+        # yield Coordinate(stdout_line.decode().strip().split())
     process.stdout.close()
     process.wait()
 
 
-def _get_fasta(transcriptome_dict: dict, iterable_of_bed: list) -> Iterable[Tuple[str, str]]:
+def _get_fasta(
+        transcriptome_dict: FastaDict, iterable_of_bed: Iterable[Coordinate]) -> \
+        Iterable[Tuple[str, str]]:
     """Extract subsequences in trancriptome_fn according to locis.
 
     :param dict transcriptome_dict: FastaDict of the transcriptome
@@ -42,11 +47,11 @@ def _get_fasta(transcriptome_dict: dict, iterable_of_bed: list) -> Iterable[Tupl
         chromosome, start, end = bed
         if chromosome in transcriptome_dict:
             seq = transcriptome_dict[chromosome][start:end]
-            identifier = "{0}:{1}-{2}".format(chromosome, start, end)
+            identifier = f"{chromosome}:{start}-{end}"
             yield (identifier, seq)
 
 
-def _find_exons_pipeline(args: dict) -> Iterable[Tuple[str, int, int]]:
+def _find_exons_pipeline(args: dict) -> Iterable[Coordinate]:
     """Find exons according to the Bloom filter -> BED
 
     Main pipeline:

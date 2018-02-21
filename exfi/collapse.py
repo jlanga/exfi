@@ -6,10 +6,15 @@ exfi.collapse_splice_graph: merge nodes with the exact same sequence
 
 import logging
 
+from typing import \
+    Dict
+
 import networkx as nx
 
+from exfi.classes import FastaDict, Node2Coordinates, Edge2Overlap, SpliceGraph, SpliceGraphDict
 
-def _compute_seq2node(node2coord: dict, transcriptome_dict: dict) -> dict:
+def _compute_seq2node(
+        node2coord: Node2Coordinates, transcriptome_dict: FastaDict) -> Dict[str, str]:
     """Compute seq2node dict
 
     From
@@ -23,7 +28,7 @@ def _compute_seq2node(node2coord: dict, transcriptome_dict: dict) -> dict:
     """
     # Get the node -> sequence
     logging.debug("\t_compute_seq2node")
-    seq2node = {}
+    seq2node: Dict[str, str] = {}
     for node_id, coordinates in node2coord.items():
         seqid, start, end = coordinates[0]  # Just take the first
         sequence = transcriptome_dict[seqid][start:end]
@@ -33,7 +38,7 @@ def _compute_seq2node(node2coord: dict, transcriptome_dict: dict) -> dict:
     return seq2node
 
 
-def _compute_old2new(seq2node: dict) -> dict:
+def _compute_old2new(seq2node: Dict[str, str]) -> Dict[str, str]:
     """Compute the dict of old identifiers to new
 
     :param seq2node: Sequence to node dict
@@ -47,7 +52,7 @@ def _compute_old2new(seq2node: dict) -> dict:
     return old2new
 
 
-def _compute_new_node2coord(old2new: dict, node2coord: dict):
+def _compute_new_node2coord(old2new: dict, node2coord: Node2Coordinates) -> Node2Coordinates:
     """Recompute the node to coordinate dict
 
     :param old2new: dict of old to new names
@@ -56,15 +61,16 @@ def _compute_new_node2coord(old2new: dict, node2coord: dict):
     """
     logging.debug("\t_compute_new_node2coord")
     # Compute the new set coordinates of each node
-    new_node2coord = {}
+    new_node2coord = Node2Coordinates()
     for old_id, new_id in old2new.items():
         if new_id not in new_node2coord:
             new_node2coord[new_id] = ()
         new_node2coord[new_id] += node2coord[old_id]
+
     return new_node2coord
 
 
-def _compute_new_link2overlap(old2new: dict, link2overlap: dict) -> dict:
+def _compute_new_link2overlap(old2new: dict, link2overlap: Edge2Overlap) -> Edge2Overlap:
     """Recompute the link2overlaps dict accordint to the new node_ids
 
     :param old2new: dict of old to new names
@@ -73,7 +79,7 @@ def _compute_new_link2overlap(old2new: dict, link2overlap: dict) -> dict:
     """
     logging.debug("\t_compute_new_link2overlap")
     # Compute the new set of edges and overlaps
-    new_link2overlap = {}
+    new_link2overlap = Edge2Overlap()
     for (node_from, node_to), overlap in link2overlap.items():
         new_from = old2new[node_from]
         new_to = old2new[node_to]
@@ -81,13 +87,13 @@ def _compute_new_link2overlap(old2new: dict, link2overlap: dict) -> dict:
     return new_link2overlap
 
 
-def _merge_node2coords(splice_graph_dict: dict) -> dict:
+def _merge_node2coords(splice_graph_dict: SpliceGraphDict) -> Node2Coordinates:
     """Take all node2coord from every graph and merge into a single dict
 
     :param splice_graph_dict: Dict of name: SpliceGraph.
     """
     logging.debug("\t_merge_node2coords")
-    node2coord_big = {}
+    node2coord_big = Node2Coordinates()
     for splice_graph in splice_graph_dict.values():
         # Get node and edge data
         node2coord = nx.get_node_attributes(G=splice_graph, name="coordinates")
@@ -100,7 +106,7 @@ def _merge_node2coords(splice_graph_dict: dict) -> dict:
     return node2coord_big
 
 
-def _merge_link2overlap(splice_graph_dict: dict) -> dict:
+def _merge_link2overlap(splice_graph_dict: SpliceGraphDict) -> Edge2Overlap:
     """Take all link2overlap from every graph and merge into a single dict
 
     :param splice_graph_dict:  Dict of name -> SpliceGraph.
@@ -116,7 +122,8 @@ def _merge_link2overlap(splice_graph_dict: dict) -> dict:
     return link2overlap_big
 
 
-def collapse_splice_graph_dict(splice_graph_dict: dict, transcriptome_dict: dict) -> nx.DiGraph:
+def collapse_splice_graph_dict(
+        splice_graph_dict: SpliceGraphDict, transcriptome_dict: FastaDict) -> SpliceGraph:
     """Collapse nodes by sequence identity
 
     :param splice_graph_dict: Dict of name -> SpliceGraph.

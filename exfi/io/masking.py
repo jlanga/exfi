@@ -7,6 +7,10 @@ exfi.io.masking.py: submodule to soft and hard mask sequence strings
 import logging
 
 
+from exfi.classes import \
+    FastaDict, \
+    Edge2Overlap
+
 def _process_overlap_cigar(cigar_string: str) -> list:
     """Process a simple CIGAR string.
 
@@ -33,13 +37,13 @@ def _soft_mask_left(string: str, n_bases: int) -> str:
     return string[:n_bases].lower() + string[n_bases:]
 
 
-def _soft_mask(exon_dict: dict, overlap_dict: dict) -> dict:
+def _soft_mask(exon_dict: FastaDict, overlap_dict: Edge2Overlap) -> FastaDict:
     """Soft mask all overlaps in the exon_dict.
 
     :param dict exon_dict: dict of exon_id: sequence
     :param dict overlap_dict: dict of (node1, node2): overlap
     """
-    exon_dict = exon_dict.copy()
+    exon_dict = FastaDict(exon_dict.copy())
     for (start, end), overlap in overlap_dict.items():
         if overlap > 0:
             exon_dict[start] = _soft_mask_right(exon_dict[start], overlap)
@@ -65,13 +69,13 @@ def _hard_mask_left(string: str, n_bases: int):
     return "N" * n_bases + string[n_bases:]
 
 
-def _hard_mask(exon_dict: dict, overlap_dict: dict) -> dict:
+def _hard_mask(exon_dict: FastaDict, overlap_dict: Edge2Overlap) -> FastaDict:
     """Hard mask all overlaps in the exon_dict.
 
     :param dict exon_dict: Dict of the shape exon_id: sequence.
     :param dict overlap_dict: Dict of the shape (exon1, exon2): overlap between them.
     """
-    exon_dict = exon_dict.copy()
+    exon_dict = FastaDict(exon_dict.copy())
     for (start, end), overlap in overlap_dict.items():
         if overlap > 0:
             exon_dict[start] = _hard_mask_right(exon_dict[start], overlap)
@@ -79,7 +83,7 @@ def _hard_mask(exon_dict: dict, overlap_dict: dict) -> dict:
     return exon_dict
 
 
-def _mask(exon_dict: dict, overlap_dict: dict, masking: str = "none") -> dict:
+def _mask(exon_dict: FastaDict, overlap_dict: Edge2Overlap, masking: str = "none") -> FastaDict:
     """If any of the soft mask or hard mask are activated, mask
 
     :param dict exon_dict: Dict of the shape exon_id: sequence.

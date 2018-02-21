@@ -9,8 +9,11 @@ import networkx as nx
 
 from natsort import natsorted
 
+from exfi.classes import \
+    SpliceGraph, \
+    SpliceGraphDict
 
-def join_components(dict_of_components: dict) -> nx.DiGraph:
+def join_components(dict_of_components: SpliceGraphDict) -> SpliceGraph:
     """Merge all splice graphs in dict_of_components into a single splice_graph
 
     :param dict dict_of_components: Dict of Splice Graphs, key is transcript_id, value is nx.DiGraph

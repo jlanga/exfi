@@ -31,7 +31,7 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    '--fasta', '-f',
+    '--input-fasta', '-f',
     type=str,
     required=True,
     help='Input transcriptome in FASTA format',
@@ -109,23 +109,23 @@ if __name__ == '__main__':
 
     # Store arguments
     args = vars(parser.parse_args())
-    args.fasta = abspath(args.fasta)
-    args.bloom = abspath(args.bloom)
-    args.threads = int(*args.threads)  # I don't know why it is parsed as tuple
+    args["fasta"] = abspath(args["fasta"])
+    args["bloom"] = abspath(args["bloom"])
+    args["threads"] = int(args["threads"])  # I don't know why it is parsed as tuple
 
     # Set up logger
-    if args.verbose:
+    if args["verbose"]:
         logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
     else:
         logging.basicConfig(level=logging.CRITICAL, format='%(asctime)s %(message)s')
 
     # Check inputs
-    assert isfile(args.transcriptome), 'ERROR: input fasta does not exist'
-    assert args.kmer >= 1, 'ERROR: incorrect kmer size'
+    assert isfile(args["fasta"]), 'ERROR: input fasta does not exist'
+    assert args["kmer"] >= 1, 'ERROR: incorrect kmer size'
     # assert bloom_size
-    assert args.levels >= 1, 'ERROR: incorrect number of levels'
-    assert args.threads >= 1, 'ERROR: incorrect number of threads'
-    for read_file in args.reads:
+    assert args["levels"] >= 1, 'ERROR: incorrect number of levels'
+    assert args["threads"] >= 1, 'ERROR: incorrect number of threads'
+    for read_file in args["reads"]:
         assert isfile(read_file), f'ERROR: file {read_file} does not exist'
 
     # Check if programs are in path
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     assert which('abyss-bloom') is not None, 'ERROR: abyss-bloom not in PATH'
 
     # Create output folder if it doesn't exist
-    output_dir = dirname(args.bloom)
+    output_dir = dirname(args["bloom"])
     if output_dir != "" and not exists(output_dir):
         makedirs(output_dir)
 

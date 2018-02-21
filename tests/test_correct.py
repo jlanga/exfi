@@ -173,7 +173,7 @@ class TestPrepareSealer(TestCase, CustomAssertions):
         actual = fasta_to_dict(sealer_input_fn)
         expected = fasta_to_dict("tests/correct/to_seal.fa")
         remove(sealer_input_fn)
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
 
 
@@ -190,7 +190,7 @@ class TestRunSealer(TestCase, CustomAssertions):
         expected = fasta_to_dict(sealer_out_fn)
         remove(sealer_in_fn)
         remove(sealer_out_fn)
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
 
 
@@ -217,7 +217,7 @@ class TestCollectSealerResults(TestCase):
 
 
 
-class TestFilledEdgeByTranscript(TestCase):
+class TestFilledEdgeByTranscript(TestCase, CustomAssertions):
     """Tests for _filled_edges_by_transcript(splice_graph: nx.DiGraph, filled_edges: str) -> dict"""
 
     def test_empty(self):
@@ -225,7 +225,7 @@ class TestFilledEdgeByTranscript(TestCase):
         initial = {}
         actual = _filled_edges_by_transcript(filled_edges=initial)
         expected = {}
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
     def test_some_data(self):
         """exfi.correct._filled_edge_by_transcript: some data"""
@@ -234,11 +234,11 @@ class TestFilledEdgeByTranscript(TestCase):
         )
         actual = _filled_edges_by_transcript(filled_edges=initial)
         expected = FILLED_EDGE_BY_TRANSCRIPT
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
 
 
-class TestRenameNodesFromCollapse(TestCase):
+class TestRenameNodesFromCollapse(TestCase, CustomAssertions):
     """Tests for _rename_nodes_from_collapse
 
     _rename_nodes_from_collapse(quotient_graph: nx.DiGraph) -> dict
@@ -249,18 +249,18 @@ class TestRenameNodesFromCollapse(TestCase):
         initial = nx.DiGraph()
         actual = _rename_nodes_from_collapse(initial)
         expected = {}
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
     def test_some_data(self):
         """exfi.correct._rename_nodes_from_collapse: some data"""
         actual = _rename_nodes_from_collapse(COLLAPSED_GRAPH)
         expected = QUOTIENT_RELABELING
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
 
 
 
-class TestRecomputeNode2Coord(TestCase):
+class TestRecomputeNode2Coord(TestCase, CustomAssertions):
     """Tests for exfi.correct._recompute_node2coord
 
     _recompute_node2coord(component: nx.DiGraph, quotient_relabeled: nx.DiGraph) -> dict
@@ -270,7 +270,7 @@ class TestRecomputeNode2Coord(TestCase):
         """exfi.correct._recompute_node2coord: empty case"""
         actual = _recompute_node2coord(nx.DiGraph(), nx.DiGraph())
         expected = {}
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
     def test_some_data(self):
         """exfi.correct._recompute_node2coord: some data"""
@@ -279,11 +279,11 @@ class TestRecomputeNode2Coord(TestCase):
             quotient_relabeled=QUOTIENT_RELABELED
         )
         expected = NEW_NODE2COORD
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
 
 
-class TestRecomputeEdge2Overlap(TestCase):
+class TestRecomputeEdge2Overlap(TestCase, CustomAssertions):
     """Tests for _recompute_edge2overlap
 
     _recompute_edge2overlap(component: nx.DiGraph, quotient_relabeled: nx.DiGraph) -> dict
@@ -293,7 +293,7 @@ class TestRecomputeEdge2Overlap(TestCase):
         """exfi.correct._recompute_edge2overlap: empty case"""
         actual = _recompute_edge2overlap(nx.DiGraph(), nx.DiGraph())
         expected = {}
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
     def test_some_data(self):
         """exfi.correct._recompute_edge2overlap: some data"""
@@ -302,7 +302,7 @@ class TestRecomputeEdge2Overlap(TestCase):
             quotient_relabeled=QUOTIENT_RELABELED
         )
         expected = NEW_EDGE2OVERLAP
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
 
 

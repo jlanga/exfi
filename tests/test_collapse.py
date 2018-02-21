@@ -4,9 +4,13 @@
 Tests for exfi.collapse
 """
 
+from typing import Tuple, Dict
+
 from unittest import TestCase, main
 
 import networkx as nx
+
+from exfi.classes import Coordinate, FastaDict, SpliceGraph
 
 from exfi.io.fasta_to_dict import \
     fasta_to_dict
@@ -28,7 +32,7 @@ from tests.test_data import \
     SPLICE_GRAPH_EMPTY_DICT, SPLICE_GRAPH_SIMPLE_DICT, SPLICE_GRAPH_COMPLEX_DICT
 
 
-def fasta_to_seq2node(fasta_dict) -> dict:
+def fasta_to_seq2node(fasta_dict: FastaDict) -> Dict[str, str]:
     """Revert fasta_dict: seq: seq_id"""
     return {value: (key,) for key, value in fasta_dict.items()}
 
@@ -36,7 +40,7 @@ SEQ2NODE_EMPTY = fasta_to_seq2node(fasta_to_dict("/dev/null"))
 SEQ2NODE_SIMPLE = fasta_to_seq2node(fasta_to_dict("tests/io/exons_simple.fa"))
 SEQ2NODE_COMPLEX = fasta_to_seq2node(fasta_to_dict("tests/io/exons_complex.fa"))
 
-OLD2NEW_EMPTY = {}
+OLD2NEW_EMPTY: Dict[str, str] = {}
 OLD2NEW_SIMPLE = {
     'ENSDART00000161035.1:0-326': 'exon_00000000'
 }
@@ -45,7 +49,7 @@ OLD2NEW_COMPLEX = dict(zip(
     ["exon_{exon_number:08d}".format(exon_number=i) for i in range(len(SEQ2NODE_COMPLEX))]
 ))
 
-NEW_NODE2COORD_EMPTY = {}
+NEW_NODE2COORD_EMPTY: Dict[str, Tuple[Coordinate, ...]] = {}
 NEW_NODE2COORD_SIMPLE = {
     'exon_00000000': (('ENSDART00000161035.1', 0, 326),)
 }
@@ -74,15 +78,15 @@ NEW_LINK2OVERLAP_COMPLEX = {
 }
 
 
-COLLAPSED_EMPTY = nx.DiGraph()
+COLLAPSED_EMPTY = SpliceGraph()
 
-COLLAPSED_SIMPLE = nx.DiGraph()
+COLLAPSED_SIMPLE = SpliceGraph()
 COLLAPSED_SIMPLE.add_nodes_from(NEW_NODE2COORD_SIMPLE.keys())
 COLLAPSED_SIMPLE.add_edges_from(NEW_LINK2OVERLAP_SIMPLE.keys())
 nx.set_node_attributes(G=COLLAPSED_SIMPLE, name="coordinates", values=NEW_NODE2COORD_SIMPLE)
 nx.set_edge_attributes(G=COLLAPSED_SIMPLE, name="overlaps", values=NEW_LINK2OVERLAP_SIMPLE)
 
-COLLAPSED_COMPLEX = nx.DiGraph()
+COLLAPSED_COMPLEX = SpliceGraph()
 COLLAPSED_COMPLEX.add_nodes_from(NEW_NODE2COORD_COMPLEX.keys())
 COLLAPSED_COMPLEX.add_edges_from(NEW_LINK2OVERLAP_COMPLEX.keys())
 nx.set_node_attributes(G=COLLAPSED_COMPLEX, name="coordinates", values=NEW_NODE2COORD_COMPLEX)
@@ -90,43 +94,43 @@ nx.set_edge_attributes(G=COLLAPSED_COMPLEX, name="overlaps", values=NEW_LINK2OVE
 
 
 
-class TestComputeSeq2Node(TestCase):
+class TestComputeSeq2Node(TestCase, CustomAssertions):
     """Tests for exfi.collapse._compute_seq2node"""
 
     def test_empty(self):
         """exfi.collapse._compute_seq2node: empty case"""
         actual = _compute_seq2node(NODE2COORDS_EMPTY, TRANSCRIPTOME_EMPTY_DICT)
         expected = SEQ2NODE_EMPTY
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
     def test_simple(self):
         """exfi.collapse._compute_seq2node: simple case"""
         actual = _compute_seq2node(NODE2COORDS_SIMPLE, TRANSCRIPTOME_SIMPLE_DICT)
         expected = SEQ2NODE_SIMPLE
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
     def test_complex(self):
         """exfi.collapse._compute_seq2node: complex case"""
         actual = _compute_seq2node(NODE2COORDS_COMPLEX, TRANSCRIPTOME_COMPLEX_DICT)
         expected = SEQ2NODE_COMPLEX
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
 
 
-class TestComputeOld2New(TestCase):
+class TestComputeOld2New(TestCase, CustomAssertions):
     """Tests for exfi.collapse._compute_old2new"""
 
     def test_empty(self):
         """exfi.collapse._compute_old2: empty case"""
         actual = _compute_old2new(SEQ2NODE_EMPTY)
         expected = OLD2NEW_EMPTY
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
     def test_simple(self):
         """exfi.collapse._compute_old2new: simple case"""
         actual = _compute_old2new(SEQ2NODE_SIMPLE)
         expected = OLD2NEW_SIMPLE
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
     def test_complex(self):
         """exfi.collapse._compute_old2new: complex case"""
@@ -136,53 +140,53 @@ class TestComputeOld2New(TestCase):
             print(key, value)
         for key, value in expected.items():
             print(key, value)
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
 
 
-class TestComputeNewNode2Coord(TestCase):
+class TestComputeNewNode2Coord(TestCase, CustomAssertions):
     """Tests for exfi.collapse._compute_new_node2coord"""
 
     def test_empty(self):
         """exfi.collapse._compute_new_node2coord: empty case"""
         actual = _compute_new_node2coord(OLD2NEW_EMPTY, NODE2COORDS_EMPTY)
         expected = NEW_NODE2COORD_EMPTY
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
     def test_simple(self):
         """exfi.collapse._compute_new_node2coord: simple case"""
         actual = _compute_new_node2coord(OLD2NEW_SIMPLE, NODE2COORDS_SIMPLE)
         expected = NEW_NODE2COORD_SIMPLE
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
     def test_complex(self):
         """exfi.collapse._compute_new_node2coord: complex case"""
         actual = _compute_new_node2coord(OLD2NEW_COMPLEX, NODE2COORDS_COMPLEX)
         expected = NEW_NODE2COORD_COMPLEX
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
 
 
-class TestComputeNewLink2Overlap(TestCase):
+class TestComputeNewLink2Overlap(TestCase, CustomAssertions):
     """Tests for exfi.collapse._compute_new_link2overlap"""
 
     def test_empty(self):
         """exfi.collapse._compute_new_link2overlap: empty case"""
         actual = _compute_new_link2overlap(OLD2NEW_EMPTY, OVERLAPS_EMPTY)
         expected = NEW_LINK2OVERLAP_EMPTY
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
     def test_simple(self):
         """exfi.collapse._compute_new_link2overlap: simple case"""
         actual = _compute_new_link2overlap(OLD2NEW_SIMPLE, OVERLAPS_SIMPLE)
         expected = NEW_LINK2OVERLAP_SIMPLE
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
     def test_complex(self):
         """exfi.collapse._compute_new_link2overlap: complex case"""
         actual = _compute_new_link2overlap(OLD2NEW_COMPLEX, OVERLAPS_COMPLEX)
         expected = NEW_LINK2OVERLAP_COMPLEX
-        self.assertEqual(actual, expected)
+        self.assertEqualDict(actual, expected)
 
 
 

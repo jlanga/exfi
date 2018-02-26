@@ -4,7 +4,6 @@
 export PATH="$HOME/miniconda3_$TRAVIS_OS_NAME/bin:$PATH"
 conda config --add channels conda-forge
 conda config --add channels defaults
-conda config --add channels r
 conda config --add channels bioconda
 conda install --yes \
     abyss \

@@ -13,11 +13,16 @@ import pandas as pd
 from natsort import \
     natsorted
 
+from exfi.classes import FastaDict, Node2Coordinates, Edge2Overlap, SpliceGraph, \
+    SpliceGraphDict
+
+from exfi.io import \
+    _coordinate_to_str
+
 from exfi.build_splice_graph_dict import \
     bed6df_to_path2node
 
-from exfi.classes import FastaDict, Node2Coordinates, Edge2Overlap, SpliceGraph, \
-    SpliceGraphDict
+
 
 
 def _get_node2coord(splice_graph: SpliceGraph) -> Node2Coordinates:
@@ -117,33 +122,28 @@ def _compute_containments(splice_graph_dict: SpliceGraphDict) -> Generator[str, 
                 yield f"C\t{transcript_id}\t+\t{node}\t+\t{start}\t{cigar}\n"
 
 
-def _compute_paths(splice_graph_dict: SpliceGraphDict):
+def _compute_paths(splice_graph_dict: SpliceGraphDict) -> Generator[str, None, None]:
     """Compute the paths in the splice graph: P transcript_id [node1, ..., nodeN]
 
     :param splice_graph_dict: Dict of splice graphs.
     """
     logging.info("\tComputing paths")
 
-    for _, splice_graph in natsorted(splice_graph_dict.items()):
+    # Transform all the coordinates to a bed6 dataframe
+    bed6_records = (
+        tuple(list(value[0]) + [_coordinate_to_str(value[0]), ".", "+"])
+        for splice_graph in splice_graph_dict.values()
+        for value in _get_node2coord(splice_graph).values()
+    )
+    bed6df = pd.DataFrame(
+        data=bed6_records,
+        columns=["chrom", "start", "end", "name", "score", "strand"]
+    )
 
-        # Make bed6df
-        node2coords = _get_node2coord(splice_graph)
-
-        bed6_records = (
-            (seqid, start, end, name, ".", "+")
-            for name, coordinates in node2coords.items()
-            for (seqid, start, end) in coordinates
-        )
-
-        bed6df = pd.DataFrame(
-            data=bed6_records,
-            columns=["chrom", "start", "end", "name", "score", "strand"]
-        )
-
-        path2nodes = bed6df_to_path2node(bed6df)
-        for transcript_id, path in natsorted(path2nodes.items()):
-            path = ",".join([node + "+" for node in path])
-            yield f"P\t{transcript_id}\t{path}\n"
+    path2nodes = bed6df_to_path2node(bed6df)
+    for transcript_id, path in natsorted(path2nodes.items()):
+        path = ",".join([node + "+" for node in path])
+        yield f"P\t{transcript_id}\t{path}\n"
 
 
 def splice_graph_dict_to_gfa1(

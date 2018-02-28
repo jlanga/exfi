@@ -170,12 +170,14 @@ def polish_splice_graph_dict(
     # pool.join()
 
     # Run
+    sg_fasta_pairs = (
+        (splice_graph, {transcript_id: fasta_dict[transcript_id]})
+        for transcript_id, splice_graph in splice_graph_dict.items()
+    )
+
     results = pool.starmap(
         func=polish_splice_graph,
-        iterable=(
-            (splice_graph_value, {splice_graph_key: fasta_dict[splice_graph_key]})
-            for splice_graph_key, splice_graph_value in splice_graph_dict.items()
-        ),
+        iterable=sg_fasta_pairs,
         chunksize=1000
     )
     pool.close()

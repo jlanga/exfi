@@ -153,17 +153,29 @@ def polish_splice_graph_dict(
     # Initialize pool of workers
     pool = mp.Pool(args["threads"])
 
-    def polish_wrapper(splice_graph: SpliceGraph) -> SpliceGraph:
-        """Export fasta_dict to function.
+    # def polish_wrapper(splice_graph: SpliceGraph) -> SpliceGraph:
+    #     """Export fasta_dict to function.
+    #
+    #     :param nx.DiGraph splice_graph: splice_graph to polish.
+    #     """
+    #     return polish_splice_graph(splice_graph, fasta_dict)
 
-        :param nx.DiGraph splice_graph: splice_graph to polish.
-        """
-        return polish_splice_graph(splice_graph, fasta_dict)
+    # # Run
+    # results = pool.starmap(
+    #     func=polish_wrapper,
+    #     iterable=splice_graph_dict.values(),
+    #     chunksize=1000
+    # )
+    # pool.close()
+    # pool.join()
 
     # Run
-    results = pool.map(
-        func=polish_wrapper,
-        iterable=splice_graph_dict.values(),
+    results = pool.starmap(
+        func=polish_splice_graph,
+        iterable=(
+            (splice_graph_value, {splice_graph_key: fasta_dict[splice_graph_key]})
+            for splice_graph_key, splice_graph_value in splice_graph_dict.items()
+        ),
         chunksize=1000
     )
     pool.close()

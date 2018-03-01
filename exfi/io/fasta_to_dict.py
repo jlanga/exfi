@@ -15,6 +15,6 @@ def fasta_to_dict(filename: str) -> FastaDict:
     """
     with open(filename, "r") as handle:
         return FastaDict(
-            (identifier.split(" ")[0], sequence)
+            (identifier.split()[0], sequence)
             for identifier, sequence in SimpleFastaParser(handle)
         )

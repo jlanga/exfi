@@ -17,6 +17,8 @@ from tests.custom_assertions import \
 EXONS_EMPTY_FN = "tests/io/exons_empty.fa"
 EXONS_SIMPLE_FN = "tests/io/exons_simple.fa"
 EXONS_COMPLEX_FN = "tests/io/exons_complex.fa"
+EXONS_SPACED_FN = "tests/io/spaced.fa"
+EXONS_TABBED_FN = "tests/io/tabbed.fa"
 
 EXONS_EMPTY_DICT = FastaDict()
 EXONS_SIMPLE_DICT = FastaDict({
@@ -92,6 +94,17 @@ class TestFastaToDict(TestCase, CustomAssertions):
         expected = EXONS_COMPLEX_DICT
         self.assertEqualDict(actual, expected)
 
+    def test_spaced(self):
+        """exfi.io.fasta_to_dict: process a fasta with spaces in the header"""
+        actual = fasta_to_dict(EXONS_SPACED_FN)
+        expected = EXONS_COMPLEX_DICT
+        self.assertEqualDict(actual, expected)
+
+    def test_tabbed(self):
+        """exfi.io.fasta_to_dict: process a fasta with tabs in the header"""
+        actual = fasta_to_dict(EXONS_TABBED_FN)
+        expected = EXONS_COMPLEX_DICT
+        self.assertEqualDict(actual, expected)
 
 if __name__ == '__main__':
     main()

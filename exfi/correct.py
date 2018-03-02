@@ -19,7 +19,7 @@ from os import remove
 
 import networkx as nx
 
-import pathos.multiprocessing as mp
+from pathos.threading import ThreadPool
 
 from Bio import \
     SeqIO, \
@@ -412,20 +412,19 @@ def correct_splice_graph_dict(splice_graph_dict: SpliceGraphDict, args: dict) ->
             filled_edges_by_transcript[transcript] = set()
 
     # Initialize pool of workers
-    pool = mp.Pool(args["threads"])
+    pool = ThreadPool(args["threads"])
 
     # Process each graph in parallel
     logging.info("\tCorrecting each splice graph")
-    corrected_splice_graphs = pool.starmap(
-        func=_sculpt_graph,
-        iterable=zip(
-            splice_graph_dict.values(),
-            filled_edges_by_transcript.values()
-        ),
+    corrected_splice_graphs = pool.map(
+        _sculpt_graph,
+        splice_graph_dict.values(),
+        filled_edges_by_transcript.values(),
         chunksize=1000
     )
     pool.close()
     pool.join()
+    pool.restart()
     splice_graph_dict = SpliceGraphDict(
         zip(splice_graph_dict.keys(), corrected_splice_graphs)
     )

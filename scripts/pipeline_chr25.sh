@@ -33,7 +33,7 @@ build_baited_bloom_filter \
 fi
 
 build_splice_graph \
-    --input-fasta data/Danio_rerio.GRCz10.cdna.all.fa \
+    --input-fasta data/Danio_rerio.GRCz10.cdna.25.fa \
     --input-bloom results/drer25sim_k${k}_m${m}_l${l}.bloom \
     --kmer $k \
     --max-fp-bases 3 \
@@ -42,7 +42,7 @@ build_splice_graph \
     --threads 4
 
 build_splice_graph \
-    --input-fasta data/Danio_rerio.GRCz10.cdna.all.fa \
+    --input-fasta data/Danio_rerio.GRCz10.cdna.25.fa \
     --input-bloom results/drer25sim_k${k}_m${m}_l${l}.bloom \
     --kmer $k \
     --max-fp-bases 3 \
@@ -52,7 +52,7 @@ build_splice_graph \
     --threads 4
 
 build_splice_graph \
-    --input-fasta data/Danio_rerio.GRCz10.cdna.all.fa \
+    --input-fasta data/Danio_rerio.GRCz10.cdna.25.fa \
     --input-bloom results/drer25sim_k${k}_m${m}_l${l}.bloom \
     --kmer $k \
     --max-fp-bases 3 \
@@ -63,7 +63,7 @@ build_splice_graph \
     --threads 4
 
 build_splice_graph \
-    --input-fasta data/Danio_rerio.GRCz10.cdna.all.fa \
+    --input-fasta data/Danio_rerio.GRCz10.cdna.25.fa \
     --input-bloom results/drer25sim_k${k}_m${m}_l${l}.bloom \
     --kmer $k \
     --max-fp-bases 3 \
@@ -75,7 +75,7 @@ build_splice_graph \
     --threads 4
 
 build_splice_graph \
-    --input-fasta data/Danio_rerio.GRCz10.cdna.all.fa \
+    --input-fasta data/Danio_rerio.GRCz10.cdna.25.fa \
     --input-bloom results/drer25real_k${k}_m${m}_l1.bloom \
     --kmer $k \
     --max-fp-bases 3 \

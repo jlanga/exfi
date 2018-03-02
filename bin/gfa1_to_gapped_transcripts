@@ -117,3 +117,5 @@ if __name__ == "__main__":
         number_of_ns=args["number_of_ns"],
         masking=masking
     )
+
+    logging.info("Done!")

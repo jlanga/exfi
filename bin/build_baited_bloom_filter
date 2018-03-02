@@ -141,3 +141,5 @@ if __name__ == '__main__':
 
     # Run the program
     build_baited_bloom_filter(args)
+
+    logging.info("Done!")

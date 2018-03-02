@@ -211,3 +211,5 @@ if __name__ == "__main__":
         transcriptome_dict=transcriptome_dict,
         filename=args["gfa1"]
     )
+
+    logging.info("Done!")

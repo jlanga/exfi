@@ -82,16 +82,19 @@ build_splice_graph \
     --correct \
     --output-gfa results/drer25real.gfa \
     --verbose \
-    --threads 4
+    --threads 4 \
+    --debug
 
 gfa1_to_exons \
     --input-gfa results/drer25sim.gfa \
     --output-fasta results/drer25sim_exons.fa \
-    --soft-mask-overlaps
+    --soft-mask-overlaps \
+    --debug
 
 gfa1_to_exons \
     --input-gfa results/drer25real.gfa \
     --output-fasta results/drer25real_exons.fa \
-    --soft-mask-overlaps
+    --soft-mask-overlaps \
+    --debug
 
 bash src/pr_chr25.sh

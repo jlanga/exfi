@@ -153,17 +153,20 @@ def polish_splice_graph_dict(
     """
 
     # Initialize pool of workers
-    pool = ThreadPool(args["threads"])
+    pool = mp.Pool(args["threads"])
 
-    results = pool.map(
+    splice_graphs = (splice_graph for splice_graph in splice_graph_dict.values())
+    fasta_dicts = (
+        {transcript_id: fasta_dict[transcript_id]} for transcript_id in splice_graph_dict.keys()
+    )
+
+    results = pool.starmap(
         polish_splice_graph,
-        splice_graph_dict.values(),
-        ({transcript_id: fasta_dict[transcript_id]} for transcript_id in splice_graph_dict.keys()),
+        zip(splice_graphs, fasta_dicts),
         chunksize=1000
     )
     pool.close()
     pool.join()
-    pool.restart()
 
     # Add results to splice_graph_dict
     for i, transcript in enumerate(splice_graph_dict.keys()):

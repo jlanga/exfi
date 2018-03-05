@@ -19,7 +19,7 @@ from os import remove
 
 import networkx as nx
 
-from pathos.threading import ThreadPool
+import pathos.multiprocessing as mp
 
 from Bio import \
     SeqIO, \
@@ -222,18 +222,6 @@ def _rename_nodes_from_collapse(quotient_graph: SpliceGraph) -> Dict[str, str]:
             mapping[key] = value[0]
     return mapping
 
-    # # Original dict
-    # mapping_raw: Dict[str, Tuple[str, ...]] = {  # Old -> New
-    #     node_id: tuple(natsorted(node for node in node_id))
-    #     for node_id in quotient_graph.nodes()
-    # }
-
-    # # New dict
-    # mapping: Dict[str, str] = {}
-    # for key, value in mapping_raw.items():
-    #     if len(value) == 1:
-    #         mapping[key] = value[0]
-    # return mapping
 
 
 def _recompute_node2coord(
@@ -412,19 +400,19 @@ def correct_splice_graph_dict(splice_graph_dict: SpliceGraphDict, args: dict) ->
             filled_edges_by_transcript[transcript] = set()
 
     # Initialize pool of workers
-    pool = ThreadPool(args["threads"])
+    pool = mp.Pool(args["threads"])
 
     # Process each graph in parallel
     logging.info("\tCorrecting each splice graph")
-    corrected_splice_graphs = pool.map(
+    corrected_splice_graphs = pool.starmap(
         _sculpt_graph,
-        splice_graph_dict.values(),
-        filled_edges_by_transcript.values(),
+        zip(splice_graph_dict.values(), filled_edges_by_transcript.values()),
         chunksize=1000
     )
     pool.close()
     pool.join()
-    pool.restart()
+
+
     splice_graph_dict = SpliceGraphDict(
         zip(splice_graph_dict.keys(), corrected_splice_graphs)
     )

@@ -9,7 +9,7 @@ import logging
 
 import networkx as nx
 import pandas as pd
-from pathos.threading import ThreadPool
+import pathos.multiprocessing as mp
 
 from exfi.classes import Node2Coordinates, Edge2Overlap, Coordinate, SpliceGraph, SpliceGraphDict, \
     Path2Nodes
@@ -191,18 +191,16 @@ def build_splice_graph_dict(
     bed6df_dict = bed3_records_to_bed6df_dict(bed3records)
 
     # Initialize pool of workers
-    pool = ThreadPool(args["threads"])
+    pool = mp.Pool(args["threads"])
 
     # Build graphs in parallel and merge results
     splice_graphs = pool.map(
-        build_splice_graph,
-        bed6df_dict.values(),
+        func=build_splice_graph,
+        iterable=bed6df_dict.values(),
         chunksize=1000
     )
     pool.close()
     pool.join()
-    pool.restart()
-
     splice_graph_dict = SpliceGraphDict(zip(bed6df_dict.keys(), splice_graphs))
 
     return splice_graph_dict

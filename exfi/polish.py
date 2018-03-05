@@ -6,13 +6,14 @@ from typing import Iterable
 
 import networkx as nx
 
-import pathos.multiprocessing as mp
 
+import pathos.multiprocessing as mp
 
 from exfi.io import \
     _coordinate_to_str
 
 from exfi.classes import Coordinate, SpliceGraph, SpliceGraphDict, FastaDict
+
 
 
 def trim_end(coordinate: Coordinate, bases: int) -> Coordinate:
@@ -152,37 +153,17 @@ def polish_splice_graph_dict(
     """
 
     # Initialize pool of workers
-    pool = mp.Pool(args["threads"])
+    pool = ThreadPool(args["threads"])
 
-    # def polish_wrapper(splice_graph: SpliceGraph) -> SpliceGraph:
-    #     """Export fasta_dict to function.
-    #
-    #     :param nx.DiGraph splice_graph: splice_graph to polish.
-    #     """
-    #     return polish_splice_graph(splice_graph, fasta_dict)
-
-    # # Run
-    # results = pool.starmap(
-    #     func=polish_wrapper,
-    #     iterable=splice_graph_dict.values(),
-    #     chunksize=1000
-    # )
-    # pool.close()
-    # pool.join()
-
-    # Run
-    sg_fasta_pairs = (
-        (splice_graph, {transcript_id: fasta_dict[transcript_id]})
-        for transcript_id, splice_graph in splice_graph_dict.items()
-    )
-
-    results = pool.starmap(
-        func=polish_splice_graph,
-        iterable=sg_fasta_pairs,
+    results = pool.map(
+        polish_splice_graph,
+        splice_graph_dict.values(),
+        ({transcript_id: fasta_dict[transcript_id]} for transcript_id in splice_graph_dict.keys()),
         chunksize=1000
     )
     pool.close()
     pool.join()
+    pool.restart()
 
     # Add results to splice_graph_dict
     for i, transcript in enumerate(splice_graph_dict.keys()):

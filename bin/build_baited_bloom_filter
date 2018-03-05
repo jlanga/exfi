@@ -105,6 +105,13 @@ parser.add_argument(
     help="Increase output verbosity"
 )
 
+parser.add_argument(
+    "-d", "--debug",
+    action="store_true",
+    dest="debug",
+    help="Log everything!"
+)
+
 if __name__ == '__main__':
 
     # Store arguments
@@ -114,10 +121,13 @@ if __name__ == '__main__':
     args["threads"] = int(args["threads"])  # I don't know why it is parsed as tuple
 
     # Set up logger
+    logger = logging.getLogger()
+    logging.basicConfig(format='%(asctime)s\t%(module)s\t%(message)s', level=logging.ERROR)
     if args["verbose"]:
-        logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
-    else:
-        logging.basicConfig(level=logging.CRITICAL, format='%(asctime)s %(message)s')
+        logger.setLevel(logging.INFO)
+    if args["debug"]:
+        logger.setLevel(logging.DEBUG)
+
 
     # Check inputs
     assert isfile(args["fasta"]), 'ERROR: input fasta does not exist'

@@ -117,7 +117,10 @@ def _compute_containments(splice_graph_dict: SpliceGraphDict) -> Generator[str, 
 
         for node, coordinates in natsorted(node2coordinates.items()):
             for (transcript_id, start, end) in coordinates:
-                logging.debug("\t\tProcessing %s - %s:%s-%s", node, transcript_id, start, end)
+                logging.debug(
+                    "\t\tProcessing node %s with coordinates %s:%s-%s",
+                    node, transcript_id, start, end
+                )
                 cigar = str(int(end) - int(start)) + "M"
                 yield f"C\t{transcript_id}\t+\t{node}\t+\t{start}\t{cigar}\n"
 

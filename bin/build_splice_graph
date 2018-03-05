@@ -165,6 +165,12 @@ parser.add_argument(
     help="Polish overlaps in which a AG-GT signal is detected"
 )
 
+parser.add_argument(
+    "-d", "--debug",
+    action="store_true",
+    dest="debug",
+    help="Log everything!"
+)
 
 args = parser.parse_args()
 
@@ -176,11 +182,12 @@ if __name__ == "__main__":
     args["fasta"] = abspath(args["fasta"])
     args["gfa1"] = abspath(args["gfa1"])
 
-    # Set up logger
+    logger = logging.getLogger()
+    logging.basicConfig(format='%(asctime)s\t%(module)s\t%(message)s', level=logging.ERROR)
     if args["verbose"]:
-        logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
-    else:
-        logging.basicConfig(level=logging.CRITICAL, format='%(asctime)s %(message)s')
+        logger.setLevel(logging.INFO)
+    if args["debug"]:
+        logger.setLevel(logging.DEBUG)
 
     # Get predicted exons in bed format
     positive_exons_bed = _find_exons_pipeline(args)

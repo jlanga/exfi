@@ -76,6 +76,12 @@ parser.add_argument(
     help="Increase output verbosity"
 )
 
+parser.add_argument(
+    "-d", "--debug",
+    action="store_true",
+    dest="debug",
+    help="Log everything!"
+)
 
 args = parser.parse_args()
 
@@ -87,10 +93,12 @@ if __name__ == "__main__":
     args["fasta"] = abspath(args["fasta"])
 
     # Set up logger
+    logger = logging.getLogger()
+    logging.basicConfig(format='%(asctime)s\t%(module)s\t%(message)s', level=logging.ERROR)
     if args["verbose"]:
-        logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
-    else:
-        logging.basicConfig(level=logging.CRITICAL, format='%(asctime)s %(message)s')
+        logger.setLevel(logging.INFO)
+    if args["debug"]:
+        logger.setLevel(logging.DEBUG)
 
     masking = "none"
     if args["soft_mask_overlaps"] == True:

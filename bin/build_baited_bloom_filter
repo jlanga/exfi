@@ -130,13 +130,10 @@ if __name__ == '__main__':
 
 
     # Check inputs
-    assert isfile(args["fasta"]), 'ERROR: input fasta does not exist'
     assert args["kmer"] >= 1, 'ERROR: incorrect kmer size'
     # assert bloom_size
     assert args["levels"] >= 1, 'ERROR: incorrect number of levels'
     assert args["threads"] >= 1, 'ERROR: incorrect number of threads'
-    for read_file in args["reads"]:
-        assert isfile(read_file), f'ERROR: file {read_file} does not exist'
 
     # Check if programs are in path
     from shutil import which

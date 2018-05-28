@@ -6,7 +6,7 @@ Get exons from a transcriptome and raw genomic reads using abyss-bloom and bedto
 
 ## Requirements
 ```
-abyss>=2.0.0
+abyss==2.0.1  (something is happening with 2.0.2 and abyss-bloom kmers)
 bedtools (tested on 2.0)
 python3
 biopython

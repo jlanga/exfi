@@ -400,14 +400,14 @@ def correct_splice_graph_dict(splice_graph_dict: SpliceGraphDict, args: dict) ->
             filled_edges_by_transcript[transcript] = set()
 
     # Initialize pool of workers
-    pool = mp.Pool(args["threads"])
+    pool = mp.Pool(args["threads"], maxtasksperchild=1)
 
     # Process each graph in parallel
     logging.info("\tCorrecting each splice graph")
     corrected_splice_graphs = pool.starmap(
         _sculpt_graph,
         zip(splice_graph_dict.values(), filled_edges_by_transcript.values()),
-        chunksize=1000
+        chunksize=1000  # Number of splice graphs to process at once.
     )
     pool.close()
     pool.join()

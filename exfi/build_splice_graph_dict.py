@@ -191,13 +191,13 @@ def build_splice_graph_dict(
     bed6df_dict = bed3_records_to_bed6df_dict(bed3records)
 
     # Initialize pool of workers
-    pool = mp.Pool(args["threads"])
+    pool = mp.Pool(args["threads"], maxtasksperchild=1)
 
     # Build graphs in parallel and merge results
     splice_graphs = pool.map(
         build_splice_graph,
         bed6df_dict.values(),
-        chunksize=1000
+        chunksize=1000  # Number of Transcripts to process at one
     )
     pool.close()
     pool.join()

@@ -153,7 +153,7 @@ def polish_splice_graph_dict(
     """
 
     # Initialize pool of workers
-    pool = mp.Pool(args["threads"])
+    pool = mp.Pool(args["threads"], maxtasksperchild=1)
 
     splice_graphs = (splice_graph for splice_graph in splice_graph_dict.values())
     fasta_dicts = (
@@ -163,7 +163,7 @@ def polish_splice_graph_dict(
     results = pool.starmap(
         polish_splice_graph,
         zip(splice_graphs, fasta_dicts),
-        chunksize=1000
+        chunksize=1000  # Number of splice_graphs to process at once
     )
     pool.close()
     pool.join()

@@ -16,9 +16,9 @@ import pandas as pd
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
 from exfi.find_exons import \
-    _process_output, \
-    _get_fasta, \
-    _find_exons_pipeline
+    process_output, \
+    get_fasta, \
+    find_exons
 
 from exfi.build_baited_bloom_filter import \
     _get_build_bf_command
@@ -26,7 +26,7 @@ from exfi.build_baited_bloom_filter import \
 def _command_to_list(command):
     """Execute command and return output as list of strings"""
     process = Popen(command, stdout=PIPE, shell=False)
-    results = _process_output(process)
+    results = process_output(process)
     return results
 
 
@@ -40,7 +40,7 @@ def _fasta_to_list(filename):
 
 def _getfasta_to_list(transcriptome_dict, iterable_of_bed):
     """Convert to a list the generator from getfasta"""
-    return list(_get_fasta(transcriptome_dict, iterable_of_bed))
+    return list(get_fasta(transcriptome_dict, iterable_of_bed))
 
 
 
@@ -76,7 +76,7 @@ def _bf_and_process(reads_fns, transcriptome_fn):
     command = _get_build_bf_command(args, reads_fns)
     process = _silent_popen(command)
     process.wait()
-    results = _find_exons_pipeline(args)
+    results = find_exons(args)
     shutil.rmtree(tmp_dir)
     bed3 = pd.DataFrame(
         data=results,

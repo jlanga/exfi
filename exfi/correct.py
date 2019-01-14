@@ -72,7 +72,7 @@ def prepare_sealer(bed4, transcriptome_dict, args):
     return sealer_input[1]
 
 
-def _run_sealer(sealer_input_fn: str, args: dict) -> str:
+def run_sealer(sealer_input_fn: str, args: dict) -> str:
     """Run abyss-sealer with the parameters in args, and the scaffold in
     sealer_input.
 
@@ -118,10 +118,9 @@ def collect_sealer_results(filename):
     """Read the fasta output from sealer and return the merged nodes"""
 
     if os.path.getsize(filename) == 0:
-        return pd.DataFrame(data=None, columns=["raw"])
+        return pd.DataFrame(data=None, columns=["u", "v"])
 
     headers = pd.read_csv(filename, header=None, sep="\t")
-    print(headers)
     headers = headers.iloc[::2]  # Take odd rows: headers.
 
     headers.columns = ["raw"]
@@ -132,6 +131,7 @@ def collect_sealer_results(filename):
         .str.split("~")
     headers["u"], headers["v"] = headers.clean.str
     headers = headers[["u", "v"]]
+    headers = headers.reset_index(drop=True)
     return headers
 
 
@@ -141,19 +141,20 @@ def apply_correction_to_bed4(bed4, sealed_edges):
         return bed4
     new_bed4 = bed4.copy().set_index("name")
     for row in sealed_edges.iloc[::-1].itertuples():
-        new_bed4.loc[row.u, "chromEnd"] = new_bed4.loc[row.v, "chromStart"]
-    new_bed4 = new_bed4.drop(sealed_edges["v"].values)
+        new_bed4.loc[row.u, "chromEnd"] = new_bed4.loc[row.v, "chromEnd"]
+    new_bed4 = new_bed4.drop(sealed_edges.v)
     new_bed4 = bed3_to_bed4(new_bed4[["chrom", "chromStart", "chromEnd"]])
-    return new_bed4
-
+    return new_bed4.reset_index(drop=True)
 
 
 def correct_bed4(bed4, transcriptome_dict, args):
     """Inspect the bed4 for small gaps and overlaps, write a fasta file for
     sealer, and correct the bed4.
     """
-    sealer_input_fn = prepare_sealer(bed4=bed4, transcriptome_dict=transcriptome_dict, args=args)
-    output_sealer_fn = _run_sealer(sealer_input_fn=sealer_input_fn, args=args)
+    sealer_input_fn = prepare_sealer(
+        bed4=bed4, transcriptome_dict=transcriptome_dict, args=args
+    )
+    output_sealer_fn = run_sealer(sealer_input_fn=sealer_input_fn, args=args)
     sealer_results = collect_sealer_results(filename=output_sealer_fn)
     bed4_corrected = apply_correction_to_bed4(bed4, sealer_results)
     return bed4_corrected

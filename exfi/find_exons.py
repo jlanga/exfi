@@ -16,7 +16,7 @@ from subprocess import Popen, PIPE
 import pandas as pd
 import numpy as np
 
-def _process_output(process):
+def process_output(process):
     """Get lines in bed format from the output of a Popen.
 
     :param Popen process: Popen object.
@@ -39,7 +39,7 @@ def _process_output(process):
     return bed3
 
 
-def _get_fasta(transcriptome_dict, iterable_of_bed):
+def get_fasta(transcriptome_dict, iterable_of_bed):
     """Extract subsequences in trancriptome_fn according to locis.
 
     :param dict transcriptome_dict: FastaDict of the transcriptome
@@ -53,8 +53,8 @@ def _get_fasta(transcriptome_dict, iterable_of_bed):
             yield (identifier, seq)
 
 
-def _find_exons_pipeline(args):
-    """Find exons according to the Bloom filter -> BED
+def find_exons(args):
+    """Find exons according to the Bloom filter -> BED3
 
     Main pipeline:
     - Check every kmer,
@@ -91,4 +91,4 @@ def _find_exons_pipeline(args):
     p_filter = Popen(c_filter, stdin=p_merge1.stdout, stdout=PIPE)
     p_merge2 = Popen(c_merge2, stdin=p_filter.stdout, stdout=PIPE)
     p_kmers.stdout.close()
-    return _process_output(p_merge2)
+    return process_output(p_merge2)

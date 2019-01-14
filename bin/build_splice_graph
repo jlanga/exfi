@@ -12,7 +12,7 @@ from Bio import SeqIO
 
 from exfi import __version__
 
-from exfi.find_exons import _find_exons_pipeline
+from exfi.find_exons import find_exons
 from exfi.io.bed import bed3_to_bed4
 from exfi.io.fasta_to_dict import fasta_to_dict
 from exfi.polish import polish_bed4
@@ -175,7 +175,7 @@ if __name__ == "__main__":
         logger.setLevel(logging.DEBUG)
 
     # Get predicted exons in bed format
-    bed3 = _find_exons_pipeline(args)
+    bed3 = find_exons(args)
     bed4 = bed3_to_bed4(bed3)
 
     # Transcriptome_dict

@@ -9,35 +9,37 @@ Module to compute positive exons in the bloom filter as follos:
 """
 
 
-# Import everything
-
-from typing import \
-    Iterable, \
-    Tuple
-
 import logging
 
 from subprocess import Popen, PIPE
 
-from exfi.classes import Coordinate, FastaDict
+import pandas as pd
+import numpy as np
 
-def _process_output(process: Popen) -> Iterable[Coordinate]:
+def _process_output(process):
     """Get lines in bed format from the output of a Popen.
 
     :param Popen process: Popen object.
     """
-    for stdout_line in iter(process.stdout.readline, b''):
-        chromosome, start, end = stdout_line.decode().strip().split()
-        coordinate = Coordinate(chromosome, int(start), int(end))
-        yield coordinate
-        # yield Coordinate(stdout_line.decode().strip().split())
+
+    bed3 = pd.DataFrame(
+        data=[
+            stdout_line.decode().strip().split()
+            for  stdout_line in iter(process.stdout.readline, b'')
+        ],
+        columns=["chrom", "chromStart", "chromEnd"]
+    )
+
+    bed3.chromStart = bed3.chromStart.astype(np.int64)
+    bed3.chromEnd = bed3.chromEnd.astype(np.int64)
+
     process.stdout.close()
     process.wait()
 
+    return bed3
 
-def _get_fasta(
-        transcriptome_dict: FastaDict, iterable_of_bed: Iterable[Coordinate]) -> \
-        Iterable[Tuple[str, str]]:
+
+def _get_fasta(transcriptome_dict, iterable_of_bed):
     """Extract subsequences in trancriptome_fn according to locis.
 
     :param dict transcriptome_dict: FastaDict of the transcriptome
@@ -51,7 +53,7 @@ def _get_fasta(
             yield (identifier, seq)
 
 
-def _find_exons_pipeline(args: dict) -> Iterable[Coordinate]:
+def _find_exons_pipeline(args):
     """Find exons according to the Bloom filter -> BED
 
     Main pipeline:
@@ -89,4 +91,4 @@ def _find_exons_pipeline(args: dict) -> Iterable[Coordinate]:
     p_filter = Popen(c_filter, stdin=p_merge1.stdout, stdout=PIPE)
     p_merge2 = Popen(c_merge2, stdin=p_filter.stdout, stdout=PIPE)
     p_kmers.stdout.close()
-    yield from _process_output(p_merge2)
+    return _process_output(p_merge2)

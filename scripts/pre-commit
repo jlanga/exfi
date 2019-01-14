@@ -1,0 +1,37 @@
+#!/bin/bash
+
+do_nosetests() {
+    nosetests --verbose --with-coverage --cover-package=exfi --cover-xml
+}
+
+do_sphinx() {
+    sphinx-apidoc -o docs/source .
+    sphinx-build docs/source docs/build
+}
+
+fail () {
+    echo "$@: [FAILED]"
+    exit 1
+}
+
+if git rev-parse --verify HEAD >/dev/null 2>&1
+then
+        against=HEAD
+else
+        # Initial commit: diff against an empty tree object
+        against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
+fi
+
+echo "checking pylint of package"
+pylint --jobs 0 exfi || fail pylint-exfi
+
+echo "checking unit tests with nosetests"
+do_nosetests nosetests || fail nosetests
+echo "checking pylint of tests"
+pylint --jobs 0 tests || fail pylint-tests
+
+#echo "Building Sphinx documentation"
+#do_sphinx || fail sphinx
+
+# If there are whitespace errors, print the offending file names and fail.
+exec git diff-index --check --cached $against --

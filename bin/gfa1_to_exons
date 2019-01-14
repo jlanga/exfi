@@ -10,7 +10,7 @@ from os.path import \
 
 from exfi import __version__
 
-from exfi.io.gfa1_to_exons import \
+from exfi.io.gfa1_to_fasta import \
     gfa1_to_exons
 
 parser = argparse.ArgumentParser(
@@ -34,7 +34,8 @@ parser.add_argument(
     '-i',
     type=str,
     required=True,
-    help='Input splice graph in GFA1 format (the results from build_splicegraph)',
+    help='Input splice graph in GFA1 format (the results from '
+         'build_splicegraph)',
     dest='gfa1',
     metavar='FILE'
 )
@@ -100,16 +101,16 @@ if __name__ == "__main__":
     if args["debug"]:
         logger.setLevel(logging.DEBUG)
 
-    masking = "none"
-    if args["soft_mask_overlaps"] == True:
-        masking = "soft"
-    if args["hard_mask_overlaps"] == True:
-        masking = "hard"
+    # masking = "none"
+    # if args["soft_mask_overlaps"] == True:
+    #     masking = "soft"
+    # if args["hard_mask_overlaps"] == True:
+    #     masking = "hard"
 
     gfa1_to_exons(
-        gfa_in_fn=args["gfa1"],
-        fasta_out_fn=args["fasta"],
-        masking=masking
+        fasta_out=args["fasta"],
+        gfa1_in=args["gfa1"],
+        # masking=masking
     )
 
     logging.info("Done!")

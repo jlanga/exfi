@@ -9,7 +9,7 @@ from os.path import \
     abspath
 
 from exfi import __version__
-from exfi.io.gfa1_to_gapped_transcripts import \
+from exfi.io.gfa1_to_fasta import \
     gfa1_to_gapped_transcripts
 
 
@@ -114,17 +114,17 @@ if __name__ == "__main__":
     if args["debug"]:
         logger.setLevel(logging.DEBUG)
 
-    masking = "none"
-    if args["soft_mask_overlaps"] == True:
-        masking = "soft"
-    if args["hard_mask_overlaps"] == True:
-        masking = "hard"
+    # masking = "none"
+    # if args["soft_mask_overlaps"] == True:
+    #     masking = "soft"
+    # if args["hard_mask_overlaps"] == True:
+    #     masking = "hard"
 
     gfa1_to_gapped_transcripts(
-        gfa_in=args["gfa1"],
         fasta_out=args["fasta"],
-        number_of_ns=args["number_of_ns"],
-        masking=masking
+        gfa1_in=args["gfa1"],
+        gap_size=args["number_of_ns"],
+        # masking=masking
     )
 
     logging.info("Done!")

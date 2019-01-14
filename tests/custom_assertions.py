@@ -20,8 +20,6 @@ import pandas as pd
 
 from Bio.SeqRecord import SeqRecord
 
-from exfi.classes import SpliceGraph, SpliceGraphDict
-
 def check_same_keys(dict1: dict, dict2: dict) -> None:
     """Check if two dicts have the exact same keys"""
     if set(dict1.keys()) != set(dict2.keys()):
@@ -49,7 +47,7 @@ def check_same_dict(dict1: dict, dict2: dict) -> None:
 
 
 
-def check_equal_node2coord(sg1: SpliceGraph, sg2: SpliceGraph) -> None:
+def check_equal_node2coord(sg1: dict, sg2: dict) -> None:
     """Check if two splice graphs have the same node2coord dicts"""
     node2coord1 = nx.get_node_attributes(G=sg1, name="coordinates")
     node2coord2 = nx.get_node_attributes(G=sg2, name="coordinates")
@@ -57,7 +55,7 @@ def check_equal_node2coord(sg1: SpliceGraph, sg2: SpliceGraph) -> None:
 
 
 
-def check_equal_edge2overlap(sg1: SpliceGraph, sg2: SpliceGraph) -> None:
+def check_equal_edge2overlap(sg1: dict, sg2: dict) -> None:
     """Check if two splice graphs have the same node2coord dicts"""
     edge2overlap1 = nx.get_edge_attributes(G=sg1, name="overlaps")
     edge2overlap2 = nx.get_edge_attributes(G=sg2, name="overlaps")
@@ -77,7 +75,7 @@ def check_equal_df_dict_values(dict1: dict, dict2: dict) -> None:
 
 
 
-def check_equal_splice_graphs(sg1: SpliceGraph, sg2: SpliceGraph) -> None:
+def check_equal_splice_graphs(sg1: dict, sg2: dict) -> None:
     """Check if two splice graphs are:
         - isomorphic
         - node2coord are equal
@@ -156,7 +154,7 @@ class CustomAssertions:
 
 
     @classmethod
-    def assertEqualSpliceGraphs(self, sg1: SpliceGraph, sg2: SpliceGraph) -> None:
+    def assertEqualSpliceGraphs(self, sg1: dict, sg2: dict) -> None:
         """Check if two splice graph are equal:"""
         # pylint: disable=invalid-name,bad-classmethod-argument
         check_equal_splice_graphs(sg1, sg2)
@@ -173,7 +171,7 @@ class CustomAssertions:
 
 
     @classmethod
-    def assertEqualDictOfSpliceGraphs(self, dict1: SpliceGraphDict, dict2: SpliceGraphDict) -> None:
+    def assertEqualDictOfSpliceGraphs(self, dict1: dict, dict2: dict) -> None:
         """Check if two dicts of nx.DiGraph and some data attached to nodes and edges are equal"""
         # pylint: disable=invalid-name, bad-classmethod-argument
         check_equal_dict_of_sg(dict1, dict2)

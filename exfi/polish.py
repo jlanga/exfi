@@ -90,4 +90,4 @@ def polish_bed4(bed4, transcriptome_dict):
         bed4_new.chromStart.map(str) + "-" + \
         bed4_new.chromEnd.map(str)
 
-    return bed4_new
+    return bed4_new[["chrom", "chromStart", "chromEnd", "name"]]

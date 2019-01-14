@@ -16,8 +16,6 @@ from os.path import dirname
 
 import pandas as pd
 
-import networkx as nx
-
 from exfi.build_baited_bloom_filter import \
     build_baited_bloom_filter
 

@@ -75,4 +75,4 @@ def bed4_to_edge2overlap(bed4):
     overlaps = overlaps\
         [["name", "nameNext", "overlap"]]\
         .rename({"name": "u", "nameNext": "v"}, axis=1)
-    return overlaps
+    return overlaps.reset_index(drop=True)

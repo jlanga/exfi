@@ -65,6 +65,7 @@ def compute_paths(bed4):
         .drop(columns=["chromStart", "chromEnd"])\
         .groupby("chrom", axis=0)\
         .aggregate(lambda x: ",".join(x.tolist()))
+    paths = paths.astype({"name": str})  # It may end up as float
     paths = paths.reset_index(drop=False)
     paths["RecordType"] = "P"
     paths = paths.rename({"chrom": "PathName", "name": "SegmentNames"}, axis=1)

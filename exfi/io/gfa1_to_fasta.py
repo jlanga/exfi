@@ -15,9 +15,13 @@ def gfa1_to_exons(fasta_out, gfa1_in):
             ],
             columns=["RecordType", "Name", "Sequence"],
         )
+
+        if segments.shape[0] == 0:
+            return
+
         segments["fasta"] = ">" + segments["Name"] + "\n" + segments["Sequence"]
         segments.fasta.values.tofile(fasta, sep="\n", format="%s")
-        fasta.write("\n")  # End line
+        fasta.write("\n")  # Final end line
 
 
 def gfa1_to_gapped_transcripts(fasta_out, gfa1_in, gap_size=100):
@@ -32,6 +36,9 @@ def gfa1_to_gapped_transcripts(fasta_out, gfa1_in, gap_size=100):
             x.strip().split("\t")
             for x in gfa.readlines() if x[0] in set(["S", "P"])
         ]
+
+        if not data:
+            return
 
         # Create {node_id: nucleotide}
         node2sequence = pd.DataFrame(
@@ -66,4 +73,4 @@ def gfa1_to_gapped_transcripts(fasta_out, gfa1_in, gap_size=100):
 
         # Dump everything
         paths.fasta.values.tofile(fasta, sep="\n", format="%s")
-        fasta.write("\n")  # End line
+        fasta.write("\n")  # Final end line

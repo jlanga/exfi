@@ -173,5 +173,7 @@ class TestBED4TOGFA1(TestCase):
         self.assertTrue(filecmp.cmp(tmp_file, GFA1_COMPLEX_FN))
         os.remove(tmp_file)
 
+
+
 if __name__ == '__main__':
     main()

@@ -9,6 +9,9 @@ BED3_EMPTY = pd.DataFrame(
     data=None,
     columns=["chrom", "chromStart", "chromEnd"]
 )
+BED3_EMPTY = BED3_EMPTY.astype(
+    {"chrom": str, "chromStart": np.int64, "chromEnd": np.int64}
+)
 
 BED3_SIMPLE = pd.DataFrame(
     data=[("ENSDART00000161035.1", 0, 326)],
@@ -39,8 +42,13 @@ BED3_COMPLEX = pd.DataFrame(
 
 
 BED4_EMPTY = pd.DataFrame(
-    data=None, columns=["chrom", "chromStart", "chromEnd", "name"]
+    data=None,
+    columns=["chrom", "chromStart", "chromEnd", "name"]
 )
+BED4_EMPTY = BED4_EMPTY.astype(
+    {"chrom": str, "chromStart": np.int64, "chromEnd": np.int64, "name": str}
+)
+
 
 BED4_SIMPLE = pd.DataFrame(
     data=[("ENSDART00000161035.1", 0, 326, "ENSDART00000161035.1:0-326")],
@@ -75,6 +83,10 @@ NODE2COORDINATES_EMPTY = pd.DataFrame(
     data=None,
     columns=["chrom", "chromStart", "chromEnd", "name"]
 ).set_index("name")
+NODE2COORDINATES_EMPTY = NODE2COORDINATES_EMPTY.astype(
+    {"chromStart": np.int64, "chromEnd": np.int64}
+)
+
 
 NODE2COORDINATES_SIMPLE = pd.DataFrame(
     data=[("ENSDART00000161035.1", 0, 326, "ENSDART00000161035.1:0-326")],
@@ -214,6 +226,7 @@ NODE2SEQUENCE_COMPLEX = pd.DataFrame(
 
 
 EDGE2OVERLAP_EMPTY = pd.DataFrame(columns=["u", "v", "overlap"])
+EDGE2OVERLAP_EMPTY = EDGE2OVERLAP_EMPTY.astype({"overlap": np.int64})
 
 EDGE2OVERLAP_SIMPLE = pd.DataFrame(columns=["u", "v", "overlap"])
 EDGE2OVERLAP_SIMPLE = EDGE2OVERLAP_SIMPLE.astype({"overlap": np.int64})

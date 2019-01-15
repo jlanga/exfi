@@ -23,6 +23,8 @@ from tests.io.transcriptome_dicts import \
     TRANSCRIPTOME_EMPTY_DICT, TRANSCRIPTOME_SIMPLE_DICT, \
     TRANSCRIPTOME_COMPLEX_DICT
 
+
+
 class TestBed3ToBed4(unittest.TestCase):
     """Tests for exfi.io.bed.bed3_to_bed4"""
 
@@ -40,6 +42,7 @@ class TestBed3ToBed4(unittest.TestCase):
         """exfi.io.bed.bed3_to_bed4: complex case"""
         observed = bed3_to_bed4(BED3_COMPLEX)
         self.assertTrue(observed.equals(BED4_COMPLEX))
+
 
 
 class TestBed4ToNode2Coordinates(unittest.TestCase):
@@ -60,6 +63,7 @@ class TestBed4ToNode2Coordinates(unittest.TestCase):
         self.assertTrue(observed.equals(NODE2COORDINATES_COMPLEX))
 
 
+
 class TestBed4ToPath2Nodes(unittest.TestCase):
     """Tests for exfi.io.bed.bed4_to_path2nodes"""
     def test_empty(self):
@@ -78,6 +82,7 @@ class TestBed4ToPath2Nodes(unittest.TestCase):
         print("Observed:\n", observed)
         print("Expected:\n", PATH2NODES_COMPLEX)
         self.assertEqual(observed, PATH2NODES_COMPLEX)
+
 
 
 class TestBed4ToNode2Sequence(unittest.TestCase):
@@ -101,12 +106,15 @@ class TestBed4ToNode2Sequence(unittest.TestCase):
         self.assertTrue(observed.equals(NODE2SEQUENCE_COMPLEX))
 
 
+
 class TestBed4ToEdge2Overlap(unittest.TestCase):
     """Tests for exfi.io.bed.bed4_to_edge2overlap"""
 
     def test_empty(self):
         """exfi.io.bed.bed4_to_edge2overlap: empty case"""
         observed = bed4_to_edge2overlap(BED4_EMPTY)
+        print("Observed:\n", observed, observed.dtypes)
+        print("Expected:\n", EDGE2OVERLAP_EMPTY, EDGE2OVERLAP_EMPTY.dtypes)
         self.assertTrue(observed.equals(EDGE2OVERLAP_EMPTY))
 
     def test_simple(self):
@@ -122,6 +130,7 @@ class TestBed4ToEdge2Overlap(unittest.TestCase):
         print("Observed:\n", observed, observed.dtypes)
         print("Expected:\n", EDGE2OVERLAP_COMPLEX, EDGE2OVERLAP_COMPLEX.dtypes)
         self.assertTrue(observed.equals(EDGE2OVERLAP_COMPLEX))
+
 
 
 if __name__ == '__main__':

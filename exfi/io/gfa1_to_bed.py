@@ -26,8 +26,11 @@ def gfa1_to_bed4(filename):
         "Contained": "name"
     }, axis=1)
     containments["Overlap"] = containments["Overlap"]\
-        .map(lambda x: int(x[:-1]))
+        .map(lambda x: np.int(x[:-1]))
     containments["chromStart"] = containments["Pos"]
     containments["chromEnd"] = containments["Pos"] + containments["Overlap"]
     containments = containments[["chrom", "chromStart", "chromEnd", "name"]]
+    containments = containments.astype(
+        {"chromStart": np.int64, "chromEnd": np.int64}
+    )
     return containments

@@ -3,6 +3,7 @@
 """tests.io.gfa1.py: Fragments of GFA1 files"""
 
 import pandas as pd
+import numpy as np
 
 HEADER = pd.DataFrame(
     data=[["H", "VN:Z:1.0"]],
@@ -180,6 +181,7 @@ CONTAINMENTS_EMPTY = pd.DataFrame(
     columns=["RecordType", "Container", "ContainerOrient", "Contained",
              "ContainedOrient", "Pos", "Overlap"]
 )
+CONTAINMENTS_EMPTY = CONTAINMENTS_EMPTY.astype({"Overlap": np.int64})
 
 CONTAINMENTS_SIMPLE = pd.DataFrame(
     data=[[

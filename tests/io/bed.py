@@ -5,6 +5,11 @@
 import pandas as pd
 import numpy as np
 
+BED3_EMPTY_FN = "tests/io/empty.bed"
+BED3_SIMPLE_FN = "tests/io/simple.bed"
+BED3_COMPLEX_FN = "tests/io/complex.bed"
+
+
 BED3_EMPTY = pd.DataFrame(
     data=None,
     columns=["chrom", "chromStart", "chromEnd"]

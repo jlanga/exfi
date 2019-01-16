@@ -11,7 +11,7 @@ import pandas as pd
 from exfi.polish import \
     polish_bed4
 
-from tests.data import \
+from tests.io.transcriptome_dicts import \
     TRANSCRIPTOME_EMPTY_DICT, \
     TRANSCRIPTOME_SIMPLE_DICT, \
     TRANSCRIPTOME_COMPLEX_DICT

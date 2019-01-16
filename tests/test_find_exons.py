@@ -7,9 +7,6 @@ Tests form the find_exons submodule
 
 import unittest
 
-import numpy as np
-import pandas as pd
-
 from exfi.io.fasta_to_dict import \
     fasta_to_dict
 
@@ -22,27 +19,9 @@ from tests.auxiliary_functions import \
 from tests.custom_assertions import \
     CustomAssertions
 
-from tests.data import \
-    BED3RECORDS_EMPTY, BED3RECORDS_SIMPLE, BED3RECORDS_COMPLEX, \
-    BED3RECORDS_EMPTY_FN, BED3RECORDS_SIMPLE_FN, BED3RECORDS_COMPLEX_FN
-
-def create_bed_from_lists(lists):
-    """tests.find_exons_pipeline.create_bed_from_lists: convert list of lists
-    to a BED3 dataframe"""
-    bed3 = pd.DataFrame(
-        data=lists,
-        columns=["chrom", "chromStart", "chromEnd"]
-    )
-
-    bed3.chromStart.astype(np.int64)
-    bed3.chromEnd.astype(np.int64)
-    return bed3
-
-
-
-BED3DF_EMPTY = create_bed_from_lists(BED3RECORDS_EMPTY)
-BED3DF_SIMPLE = create_bed_from_lists(BED3RECORDS_SIMPLE)
-BED3DF_COMPLEX = create_bed_from_lists(BED3RECORDS_COMPLEX)
+from tests.io.bed import \
+    BED3_EMPTY, BED3_SIMPLE, BED3_COMPLEX, \
+    BED3_EMPTY_FN, BED3_SIMPLE_FN, BED3_COMPLEX_FN
 
 
 
@@ -51,23 +30,23 @@ class TestProcessOutput(unittest.TestCase):
 
     def test_empty_process(self):
         """exfi.find_exons._command_to_list: process an empty stream"""
-        results = _command_to_list(["cat", BED3RECORDS_EMPTY_FN])
+        results = _command_to_list(["cat", BED3_EMPTY_FN])
         self.assertTrue(results.shape == (0, 3))
 
 
     def test_simple_process(self):
         """exfi.find_exons._command_to_list: process an simple stream"""
-        results = _command_to_list(["cat", BED3RECORDS_SIMPLE_FN])
+        results = _command_to_list(["cat", BED3_SIMPLE_FN])
         print("Observed:\n", results)
-        print("Expected:\n", BED3DF_SIMPLE)
-        self.assertTrue(results.equals(BED3DF_SIMPLE))
+        print("Expected:\n", BED3_SIMPLE)
+        self.assertTrue(results.equals(BED3_SIMPLE))
 
     def test_big_process(self):
         """exfi.find_exons._command_to_list: process an big stream"""
-        results = _command_to_list(["cat", BED3RECORDS_COMPLEX_FN])
+        results = _command_to_list(["cat", BED3_COMPLEX_FN])
         print("Observed:\n", results, results.dtypes)
-        print("Expected:\n", BED3DF_COMPLEX, BED3DF_COMPLEX.dtypes)
-        self.assertTrue(results.equals(BED3DF_COMPLEX))
+        print("Expected:\n", BED3_COMPLEX, BED3_COMPLEX.dtypes)
+        self.assertTrue(results.equals(BED3_COMPLEX))
 
 
 
@@ -136,6 +115,7 @@ class TestGetFastaToList(unittest.TestCase, CustomAssertions):
         )
 
 
+
 class TestFindExonsPipeline(unittest.TestCase):
     """Tests for find_exons_pipeline"""
 
@@ -146,7 +126,7 @@ class TestFindExonsPipeline(unittest.TestCase):
         transcriptome_fn = "/dev/null"
         results = _bf_and_process(reads_fns, transcriptome_fn)
         print("Observed:\n", results)
-        print("Expected:\n", BED3DF_EMPTY)
+        print("Expected:\n", BED3_EMPTY)
         self.assertEqual(results.shape, (0, 3))
 
     def test_transcriptome_noreads(self):
@@ -167,6 +147,7 @@ class TestFindExonsPipeline(unittest.TestCase):
         transcriptome_fn = 'tests/find_exons/small_transcriptome.fa'
         results = _bf_and_process(reads_fns, transcriptome_fn)
         self.assertEqual(results.shape, (0, 3))
+
 
 
 if __name__ == "__main__":

@@ -154,7 +154,9 @@ def correct_bed4(bed4, transcriptome_dict, args):
     sealer_input_fn = prepare_sealer(
         bed4=bed4, transcriptome_dict=transcriptome_dict, args=args
     )
-    output_sealer_fn = run_sealer(sealer_input_fn=sealer_input_fn, args=args)
-    sealer_results = collect_sealer_results(filename=output_sealer_fn)
+    sealer_output_fn = run_sealer(sealer_input_fn=sealer_input_fn, args=args)
+    sealer_results = collect_sealer_results(filename=sealer_output_fn)
     bed4_corrected = apply_correction_to_bed4(bed4, sealer_results)
+    os.remove(sealer_input_fn)
+    os.remove(sealer_output_fn)
     return bed4_corrected

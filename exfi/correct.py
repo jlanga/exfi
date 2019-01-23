@@ -32,12 +32,16 @@ def prepare_sealer(bed4, transcriptome_dict, args):
     edge2overlap = bed4_to_edge2overlap(bed4)
     node2sequence_dict = node2sequence.set_index("name").to_dict()["sequence"]
 
+    # Disable warnings
+    pd.options.mode.chained_assignment = None
+
+    # Compute the small gaps
     small_gaps = edge2overlap\
         .loc[(edge2overlap.overlap < 0) & (edge2overlap.overlap <= max_gap_size)]
 
-    small_gaps["data_to_map"] = tuple(zip(small_gaps.u, small_gaps.v))
+    small_gaps["identifier"] = small_gaps['u'] + "~" + small_gaps['v']
 
-    small_gaps["identifier"] = small_gaps.u + "~" + small_gaps.v
+    small_gaps["data_to_map"] = tuple(zip(small_gaps.u, small_gaps.v))
 
     small_gaps["sequence"] = small_gaps.data_to_map\
         .map(
@@ -49,6 +53,7 @@ def prepare_sealer(bed4, transcriptome_dict, args):
 
     small_gaps = small_gaps[["identifier", "sequence"]]
 
+    # Compute pairs of overlapping exons
     overlaps = edge2overlap.loc[edge2overlap.overlap >= 0]
     overlaps["data_to_map"] = tuple(zip(overlaps.u, overlaps.v, overlaps.overlap))
     overlaps["identifier"] = overlaps.u + "~" + overlaps.v
@@ -61,6 +66,10 @@ def prepare_sealer(bed4, transcriptome_dict, args):
         )
     overlaps = overlaps[["identifier", "sequence"]]
 
+    # Put again the warning
+    pd.options.mode.chained_assignment = 'warn'
+
+    # Merge the results
     for_sealer = pd.concat([small_gaps, overlaps])
     for_sealer["fasta"] = ">" + for_sealer["identifier"] + "\n" + for_sealer["sequence"] + "\n"
     for_sealer = for_sealer[["fasta"]]

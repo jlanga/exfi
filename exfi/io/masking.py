@@ -6,7 +6,20 @@ exfi.io.masking.py: submodule to soft and hard mask sequence strings
 
 import logging
 
-import pandas as pd
+import numpy as np
+
+def cigar_to_int(cigar):
+    """Convert a simple CIGAR string to overlap int
+
+    >>> cigar_to_int('71N')
+    -71
+    >>> cigar_to_int('3M')
+    3
+    """
+    if cigar[-1] == 'N':
+        return -int(cigar[:-1])
+    return int(cigar[:-1])
+
 
 def soft_mask(sequence, left, right):
     """Lowercase the first left bases and last right bases of sequence
@@ -26,7 +39,7 @@ def soft_mask(sequence, left, right):
         return sequence[:-right] + sequence[-right:].lower()
     if left > 0 and right == 0:
         return sequence[:left].lower() + sequence[left:]
-    return  sequence[:left].lower() + sequence[left:-right] + sequence[-right:].lower()
+    return sequence[:left].lower() + sequence[left:-right] + sequence[-right:].lower()
 
 
 
@@ -63,31 +76,34 @@ def mask(node2sequence, edge2overlap, masking: str = "none"):
     if masking == 'none':
         return node2sequence
 
-    edge2overlap['tmp_overlap'] = edge2overlap.overlap.map(
-        lambda x: x if x > 0 else 0
-    )
+    # Compose a dataframe of name, sequence, bases to trim to the left
+    # and bases to trim to the right
 
-    tmp = pd.merge(
-        node2sequence,
-        edge2overlap[['u', 'tmp_overlap']].rename(
-            columns={'u': 'name', 'tmp_overlap': 'mask_right'}
-        ),
-        on=['name']
-    )
+    complete = node2sequence.merge(
+        edge2overlap[['u', 'overlap']]\
+            .rename(columns={'u': 'name', 'overlap': 'mask_right'}),
+        on=['name'],
+        how='outer'
+    ).merge(
+        edge2overlap[['v', 'overlap']]\
+        .rename(columns={'v': 'name', 'overlap': 'mask_left'}),
+        on=['name'],
+        how='outer'
+    )\
+    .fillna(0)\
+    .astype({'mask_right': np.int64, 'mask_left':np.int64})
 
-    complete = complete = pd.merge(
-        tmp,
-        edge2overlap[['v', 'tmp_overlap']].rename(
-            columns={'v': 'name', 'tmp_overlap': 'mask_left'}
-        ),
-        on=['name']
-        )
+    # Set to zero overlaps < 0
+    complete['mask_right'] = complete.mask_right\
+        .map(lambda x: x if x > 0 else 0)
+    complete['mask_left'] = complete.mask_left\
+        .map(lambda x: x if x > 0 else 0)
 
     complete['tmp'] = tuple(zip(
-        complete.sequence, complete.mask_left, complete.mask_right
+        complete.sequence,
+        complete.mask_left,
+        complete.mask_right
     ))
-
-
 
     if masking == "hard":
         logging.info("\tHard masking sequences")
@@ -96,5 +112,8 @@ def mask(node2sequence, edge2overlap, masking: str = "none"):
         logging.info("\tSoft masking sequences")
         complete['sequence'] = complete.tmp.map(lambda x: soft_mask(*x))
 
-    exon_dict = complete[['name', 'sequence']].reset_index(drop=True)
-    return exon_dict
+    node2sequence_masked = complete\
+        [['name', 'sequence']]\
+        .reset_index(drop=True)
+
+    return node2sequence_masked

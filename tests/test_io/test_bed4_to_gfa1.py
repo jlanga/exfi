@@ -26,6 +26,7 @@ from tests.io.transcriptome_dicts import \
 from tests.io.gfa1 import \
     HEADER, \
     SEGMENTS_EMPTY, SEGMENTS_SIMPLE, SEGMENTS_COMPLEX, \
+    SEGMENTS_COMPLEX_SOFT, SEGMENTS_COMPLEX_HARD, \
     LINKS_EMPTY, LINKS_SIMPLE, LINKS_COMPLEX, \
     CONTAINMENTS_EMPTY, CONTAINMENTS_SIMPLE, CONTAINMENTS_COMPLEX, \
     PATHS_EMPTY, PATHS_SIMPLE, PATHS_COMPLEX, \
@@ -61,6 +62,21 @@ class TestComputeSegments(TestCase):
         """exfi.io.bed4_to_gfa1.compute_segments: complex case"""
         observed = compute_segments(BED4_COMPLEX, TRANSCRIPTOME_COMPLEX_DICT)
         self.assertTrue(observed.equals(SEGMENTS_COMPLEX))
+
+    def test_complex_simple(self):
+        """exfi.io.bed4_to_gfa1.compute_segments: complex case"""
+        observed = compute_segments(
+            BED4_COMPLEX, TRANSCRIPTOME_COMPLEX_DICT, 'soft'
+        )
+        self.assertTrue(observed.equals(SEGMENTS_COMPLEX_SOFT))
+
+
+    def test_complex_hard(self):
+        """exfi.io.bed4_to_gfa1.compute_segments: complex case"""
+        observed = compute_segments(
+            BED4_COMPLEX, TRANSCRIPTOME_COMPLEX_DICT, 'hard'
+        )
+        self.assertTrue(observed.equals(SEGMENTS_COMPLEX_HARD))
 
 
 class TestComputeLinks(TestCase):

@@ -273,3 +273,5 @@ PATHS_COMPLEX = pd.DataFrame(
 GFA1_EMPTY_FN = "tests/io/empty.gfa"
 GFA1_SIMPLE_FN = "tests/io/simple.gfa"
 GFA1_COMPLEX_FN = "tests/io/complex.gfa"
+GFA1_COMPLEX_SOFT_FN = "tests/io/complex_soft.gfa"
+GFA1_COMPLEX_HARD_FN = "tests/io/complex_hard.gfa"

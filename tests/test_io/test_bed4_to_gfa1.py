@@ -29,7 +29,8 @@ from tests.io.gfa1 import \
     LINKS_EMPTY, LINKS_SIMPLE, LINKS_COMPLEX, \
     CONTAINMENTS_EMPTY, CONTAINMENTS_SIMPLE, CONTAINMENTS_COMPLEX, \
     PATHS_EMPTY, PATHS_SIMPLE, PATHS_COMPLEX, \
-    GFA1_EMPTY_FN, GFA1_SIMPLE_FN, GFA1_COMPLEX_FN
+    GFA1_EMPTY_FN, GFA1_SIMPLE_FN, GFA1_COMPLEX_FN, \
+    GFA1_COMPLEX_SOFT_FN, GFA1_COMPLEX_HARD_FN
 
 
 
@@ -172,6 +173,33 @@ class TestBED4TOGFA1(TestCase):
         )
         self.assertTrue(filecmp.cmp(tmp_file, GFA1_COMPLEX_FN))
         os.remove(tmp_file)
+
+    def test_complex_soft(self):
+        """exfi.io.bed4_to_gfa1.bed4_to_gfa1: complex soft masked case"""
+        tmp_file = mkstemp()[1]
+        print(tmp_file)
+        bed4_to_gfa1(
+            gfa1_fn=tmp_file,
+            bed4=BED4_COMPLEX,
+            transcriptome_dict=TRANSCRIPTOME_COMPLEX_DICT,
+            masking='soft'
+        )
+        self.assertTrue(filecmp.cmp(tmp_file, GFA1_COMPLEX_SOFT_FN))
+        os.remove(tmp_file)
+
+    def test_complex_hard(self):
+        """exfi.io.bed4_to_gfa1.bed4_to_gfa1: complex hard masked case"""
+        tmp_file = mkstemp()[1]
+        print(tmp_file)
+        bed4_to_gfa1(
+            gfa1_fn=tmp_file,
+            bed4=BED4_COMPLEX,
+            transcriptome_dict=TRANSCRIPTOME_COMPLEX_DICT,
+            masking='hard'
+        )
+        self.assertTrue(filecmp.cmp(tmp_file, GFA1_COMPLEX_HARD_FN))
+        os.remove(tmp_file)
+
 
 
 

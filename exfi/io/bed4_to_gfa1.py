@@ -9,6 +9,9 @@ from exfi.io.bed import \
     bed4_to_node2sequence, \
     bed4_to_edge2overlap
 
+from exfi.io.masking import \
+    mask
+
 def compute_header():
     """Write GFA1 header"""
     header = pd.DataFrame(
@@ -18,15 +21,28 @@ def compute_header():
     return header
 
 
-def compute_segments(bed4, transcriptome_dict):
+def compute_segments(bed4, transcriptome_dict, masking='none'):
     """Create the Segments subdataframe for GFA1 file"""
-    segments = bed4_to_node2sequence(bed4=bed4, transcriptome_dict=transcriptome_dict)
+    segments = bed4_to_node2sequence(
+        bed4=bed4, transcriptome_dict=transcriptome_dict
+    )
+    edge2overlap = bed4_to_edge2overlap(bed4)
+    segments = mask(
+        node2sequence=segments, edge2overlap=edge2overlap, masking=masking
+    )
+    del edge2overlap
+
     # Add the S and length columns
     segments["RecordType"] = "S"
-    segments["SegmentLength"] = segments.sequence.map(lambda x: "LN:i:" + str(len(x)))
+
+    # Compute lengths
+    segments["SegmentLength"] = segments\
+        .sequence.map(lambda x: "LN:i:" + str(len(x)))
+
     # reorder
     segments = segments\
         [["RecordType", "name", "sequence", "SegmentLength"]]
+
     return segments
 
 
@@ -74,17 +90,19 @@ def compute_paths(bed4):
     return paths
 
 
-def bed4_to_gfa1(gfa1_fn, bed4, transcriptome_dict):
+def bed4_to_gfa1(gfa1_fn, bed4, transcriptome_dict, masking='none'):
     """Convert the BED4 dataframe into a GFA1 file"""
     with open(gfa1_fn, "w", 1024**3) as gfa:
         compute_header()\
             .to_csv(gfa, sep="\t", header=False, index=False)
     with open(gfa1_fn, "a", 1024**3) as gfa:
-        compute_segments(bed4, transcriptome_dict)\
+        compute_segments(
+            bed4=bed4, transcriptome_dict=transcriptome_dict, masking=masking
+            )\
             .to_csv(gfa, sep="\t", header=False, index=False)
-        compute_links(bed4)\
+        compute_links(bed4=bed4)\
             .to_csv(gfa, sep="\t", header=False, index=False)
-        compute_containments(bed4)\
+        compute_containments(bed4=bed4)\
             .to_csv(gfa, sep="\t", header=False, index=False)
-        compute_paths(bed4)\
+        compute_paths(bed4=bed4)\
             .to_csv(gfa, sep="\t", header=False, index=False)

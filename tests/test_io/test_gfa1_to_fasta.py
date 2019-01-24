@@ -17,7 +17,9 @@ from tests.io.gfa1 import \
 
 from tests.io.fasta import \
     EXONS_EMPTY_FN, EXONS_SIMPLE_FN, EXONS_COMPLEX_FN, \
-    GAPPED_EMPTY_FN, GAPPED_SIMPLE_FN, GAPPED_COMPLEX_FN
+    EXONS_COMPLEX_SOFT_FN, EXONS_COMPLEX_HARD_FN, \
+    GAPPED_EMPTY_FN, GAPPED_SIMPLE_FN, GAPPED_COMPLEX_FN, \
+    GAPPED_COMPLEX_SOFT_FN, GAPPED_COMPLEX_HARD_FN
 
 
 class TestGFA1ToExons(TestCase):
@@ -47,13 +49,29 @@ class TestGFA1ToExons(TestCase):
         self.assertTrue(filecmp.cmp(tmp_file, EXONS_COMPLEX_FN))
         os.remove(tmp_file)
 
-    # def test_soft_masking(self):
-    #     """exfi.io.gfa1_to_fasta.gfa1_to_exons: complex and soft masking case"""
-    #     pass
-    #
-    # def test_complex(self):
-    #     """exfi.io.gfa1_to_fasta.gfa1_to_exons: complex and hard masking case"""
-    #     pass
+    def test_soft_masking(self):
+        """exfi.io.gfa1_to_fasta.gfa1_to_exons: complex and soft masking case"""
+        tmp_file = mkstemp()[1]
+        print(tmp_file)
+        gfa1_to_exons(
+            fasta_out=tmp_file,
+            gfa1_in=GFA1_COMPLEX_FN,
+            masking='soft'
+        )
+        self.assertTrue(filecmp.cmp(tmp_file, EXONS_COMPLEX_SOFT_FN))
+        os.remove(tmp_file)
+
+    def test_hard_masking(self):
+        """exfi.io.gfa1_to_fasta.gfa1_to_exons: complex and hard masking case"""
+        tmp_file = mkstemp()[1]
+        print(tmp_file)
+        gfa1_to_exons(
+            fasta_out=tmp_file,
+            gfa1_in=GFA1_COMPLEX_FN,
+            masking='hard'
+        )
+        self.assertTrue(filecmp.cmp(tmp_file, EXONS_COMPLEX_HARD_FN))
+        os.remove(tmp_file)
 
 
 
@@ -84,13 +102,25 @@ class TestGFA1ToGappedTranscripts(TestCase):
         self.assertTrue(filecmp.cmp(tmp_file, GAPPED_COMPLEX_FN))
         os.remove(tmp_file)
 
-    # def test_soft_masking(self):
-    #     """exfi.io.gfa1_to_fasta.gfa1_to_gapped_transcripts: complex and soft masking case"""
-    #     pass
-    #
-    # def test_complex(self):
-    #     """exfi.io.gfa1_to_fasta.gfa1_to_gapped_transcripts: complex and hard masking case"""
-    #     pass
+    def test_soft_masking(self):
+        """exfi.io.gfa1_to_fasta.gfa1_to_gapped_transcripts: complex and soft masking case"""
+        tmp_file = mkstemp()[1]
+        print(tmp_file)
+        gfa1_to_gapped_transcripts(
+            fasta_out=tmp_file, gfa1_in=GFA1_COMPLEX_FN, masking='soft'
+        )
+        self.assertTrue(filecmp.cmp(tmp_file, GAPPED_COMPLEX_SOFT_FN))
+        os.remove(tmp_file)
+
+    def test_hard_masking(self):
+        """exfi.io.gfa1_to_fasta.gfa1_to_gapped_transcripts: complex and hard masking case"""
+        tmp_file = mkstemp()[1]
+        print(tmp_file)
+        gfa1_to_gapped_transcripts(
+            fasta_out=tmp_file, gfa1_in=GFA1_COMPLEX_FN, masking='hard'
+        )
+        self.assertTrue(filecmp.cmp(tmp_file, GAPPED_COMPLEX_HARD_FN))
+        os.remove(tmp_file)
 
 
 

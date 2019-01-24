@@ -5,26 +5,52 @@ store it in fasta format"""
 
 import pandas as pd
 
-def gfa1_to_exons(fasta_out, gfa1_in):
+from exfi.io.masking import mask, cigar_to_int
+
+def gfa1_to_exons(fasta_out, gfa1_in, masking='none'):
     """Extract the exons in Fasta format"""
     with open(gfa1_in, "r") as gfa, open(fasta_out, "w") as fasta:
-        segments = pd.DataFrame(
-            data=[
-                x.strip().split("\t")[0:3]
-                for x in gfa.readlines() if x[0] == "S"
-            ],
-            columns=["RecordType", "Name", "Sequence"],
-        )
 
-        if segments.shape[0] == 0:
+        data = [
+            x.strip().split("\t")
+            for x in gfa.readlines() if x[0] in set(["S", "L"])
+        ]
+
+        if not data:
             return
 
-        segments["fasta"] = ">" + segments["Name"] + "\n" + segments["Sequence"]
-        segments.fasta.values.tofile(fasta, sep="\n", format="%s")
+        node2sequence = pd.DataFrame(
+            data=[x[0:3] for x in data if x[0] == "S"],
+            columns=["RecordType", "name", "sequence"]
+        ).drop(columns="RecordType")
+
+        if node2sequence.shape[0] == 0:
+            return
+
+        edge2overlap = pd.DataFrame(
+            data=[x[0:6] for x in data if x[0] == 'L'],
+            columns=["RecordType", "u", "FromOrient", "v", "ToOrient",
+                     "OverlapCigar"]
+        ).drop(columns=["RecordType", "FromOrient", "ToOrient"])
+        edge2overlap["overlap"] = edge2overlap.OverlapCigar.map(cigar_to_int)
+
+        node2sequence = mask(
+            node2sequence=node2sequence,
+            edge2overlap=edge2overlap,
+            masking=masking
+        )
+
+        node2sequence["fasta"] = \
+            ">" + node2sequence["name"] + "\n" + \
+            node2sequence["sequence"]
+
+        node2sequence.fasta.values.tofile(fasta, sep="\n", format="%s")
         fasta.write("\n")  # Final end line
 
 
-def gfa1_to_gapped_transcripts(fasta_out, gfa1_in, gap_size=100):
+
+def gfa1_to_gapped_transcripts(
+        fasta_out, gfa1_in, gap_size=100, masking='none'):
     """Convert a GFA1 file to a gapped transcript file"""
 
     with open(gfa1_in, "r") as gfa, open(fasta_out, "w") as fasta:
@@ -34,43 +60,60 @@ def gfa1_to_gapped_transcripts(fasta_out, gfa1_in, gap_size=100):
         # Read only segments and paths
         data = [
             x.strip().split("\t")
-            for x in gfa.readlines() if x[0] in set(["S", "P"])
+            for x in gfa.readlines() if x[0] in set(["S", "P", "L"])
         ]
 
         if not data:
             return
 
-        # Create {node_id: nucleotide}
+        # Segments -> node2sequence
         node2sequence = pd.DataFrame(
             data=[x[0:3] for x in data if x[0] == "S"],
-            columns=["RecordType", "Name", "Sequence"],
-            )\
-            .drop(columns="RecordType")\
-            .set_index("Name")\
-            .to_dict()["Sequence"]
+            columns=["RecordType", "name", "sequence"],
+        )\
+        .drop(columns="RecordType")
 
-        # Get the path info
-        paths = pd.DataFrame(
+        # Links -> edge2overlap
+        edge2overlap = pd.DataFrame(
+            data=[x[0:6] for x in data if x[0] == 'L'],
+            columns=["RecordType", "u", "FromOrient", "v", "ToOrient",
+                     "OverlapCigar"]
+        ).drop(columns=["RecordType", "FromOrient", "ToOrient"])
+        edge2overlap["overlap"] = edge2overlap.OverlapCigar.map(cigar_to_int)
+
+        # Paths -> path2nodes
+        path2nodes = pd.DataFrame(
             data=[x[0:4] for x in data if x[0] == "P"],
             columns=["RecordType", "PathName", "SegmentNames", "Overlaps"]
             )\
             .drop(columns=["RecordType", "Overlaps"])
+        path2nodes["SegmentNames"] = path2nodes["SegmentNames"]\
+            .str.replace("+", "")
+
         del data
 
-        paths["SegmentNames"] = paths["SegmentNames"].str.replace("+", "")
+        # Mask the sequences
+        node2sequence = mask(
+            node2sequence=node2sequence,
+            edge2overlap=edge2overlap,
+            masking=masking
+        )
+
+        node2sequence_dict = node2sequence\
+            .set_index('name')\
+            .to_dict()['sequence']
 
         # Compose the sequence
-        paths["gapped_sequence"] = paths\
+        path2nodes["gapped_sequence"] = path2nodes\
             .SegmentNames\
             .str.split(',')\
-            .map(lambda x: separator.join([node2sequence[y] for y in x]))
-        del node2sequence
+            .map(lambda x: separator.join([node2sequence_dict[y] for y in x]))
 
         # Create the fasta line
-        paths["fasta"] = \
-            ">" + paths.PathName + " " + paths.SegmentNames + "\n" + \
-            paths.gapped_sequence
+        path2nodes["fasta"] = \
+            ">" + path2nodes.PathName + " " + path2nodes.SegmentNames + "\n" + \
+            path2nodes.gapped_sequence
 
         # Dump everything
-        paths.fasta.values.tofile(fasta, sep="\n", format="%s")
+        path2nodes.fasta.values.tofile(fasta, sep="\n", format="%s")
         fasta.write("\n")  # Final end line

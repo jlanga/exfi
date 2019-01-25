@@ -99,18 +99,18 @@ def mask(node2sequence, edge2overlap, masking: str = "none"):
     complete['mask_left'] = complete.mask_left\
         .map(lambda x: x if x > 0 else 0)
 
-    complete['tmp'] = tuple(zip(
-        complete.sequence,
-        complete.mask_left,
-        complete.mask_right
-    ))
-
     if masking == "hard":
         logging.info("\tHard masking sequences")
-        complete['sequence'] = complete.tmp.map(lambda x: hard_mask(*x))
+        complete['sequence'] = complete.apply(
+            lambda x: hard_mask(x.sequence, x.mask_left, x.mask_right),
+            axis=1
+        )
     elif masking == "soft":
         logging.info("\tSoft masking sequences")
-        complete['sequence'] = complete.tmp.map(lambda x: soft_mask(*x))
+        complete['sequence'] = complete.apply(
+            lambda x: soft_mask(x.sequence, x.mask_left, x.mask_right),
+            axis=1
+        )
 
     node2sequence_masked = complete\
         [['name', 'sequence']]\

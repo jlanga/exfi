@@ -101,16 +101,16 @@ if __name__ == "__main__":
     if args["debug"]:
         logger.setLevel(logging.DEBUG)
 
-    # masking = "none"
-    # if args["soft_mask_overlaps"] == True:
-    #     masking = "soft"
-    # if args["hard_mask_overlaps"] == True:
-    #     masking = "hard"
+    masking = "none"
+    if args["soft_mask_overlaps"] == True:
+        masking = "soft"
+    if args["hard_mask_overlaps"] == True:
+        masking = "hard"
 
     gfa1_to_exons(
         fasta_out=args["fasta"],
         gfa1_in=args["gfa1"],
-        # masking=masking
+        masking=masking
     )
 
     logging.info("Done!")

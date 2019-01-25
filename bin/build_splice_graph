@@ -11,13 +11,14 @@ from os.path import \
 from Bio import SeqIO
 
 from exfi import __version__
-
 from exfi.find_exons import find_exons
 from exfi.io.bed import bed3_to_bed4
 from exfi.io.fasta_to_dict import fasta_to_dict
 from exfi.polish import polish_bed4
 from exfi.correct import correct_bed4
 from exfi.io.bed4_to_gfa1 import bed4_to_gfa1
+
+
 
 parser = argparse.ArgumentParser(
     usage='build_splicegraph -i transcriptome.fa -b bloom_filter.bf -k 30 '
@@ -175,8 +176,7 @@ if __name__ == "__main__":
         logger.setLevel(logging.DEBUG)
 
     # Get predicted exons in bed format
-    bed3 = find_exons(args)
-    bed4 = bed3_to_bed4(bed3)
+    bed4 = bed3_to_bed4(find_exons(args))
 
     # Transcriptome_dict
     transcriptome_dict = fasta_to_dict(args["fasta"])
@@ -189,22 +189,9 @@ if __name__ == "__main__":
             bed4=bed4, transcriptome_dict=transcriptome_dict, args=args
         )
 
-    # if args["collapse"]:
-    #     splice_graph_dict = {
-    #         "collapsed": collapse_splice_graph_dict(
-    #             splice_graph_dict=splice_graph_dict,
-    #             transcriptome_dict=transcriptome_dict
-    #         )
-    #     }
-
     # Write to GFA1
     bed4_to_gfa1(
         gfa1_fn=args["gfa1"], bed4=bed4, transcriptome_dict=transcriptome_dict
     )
-    # splice_graph_dict_to_gfa1(
-    #     splice_graph_dict=splice_graph_dict,
-    #     transcriptome_dict=transcriptome_dict,
-    #     filename=args["gfa1"]
-    # )
 
     logging.info("Done!")

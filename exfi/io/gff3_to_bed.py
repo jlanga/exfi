@@ -5,9 +5,17 @@ coordinates are with respect to the transcriptome"""
 
 import sys
 
+import logging
+
 import pandas as pd
 
 from exfi.io.bed import BED3_COLS, BED3_DTYPES
+
+GFF3_COLS = [
+    "seqid", "source", "type", "start", "end", "score", "strand", "phase",
+    "attributes"
+]
+
 
 def gff3_to_bed3(gff3_in, mode="ensembl"):
     """Read a GFF3 file and convert it to BED3, where coordinates are with
@@ -19,11 +27,7 @@ def gff3_to_bed3(gff3_in, mode="ensembl"):
         - "ncbi": for GFF3 files downloaded from NCBI Genomes
     """
 
-    gff3_columns = [
-        "seqid", "source", "type", "start", "end", "score", "strand", "phase",
-        "attributes"
-    ]
-
+    logging.info("Reading GFF3 file")
     raw = pd.read_csv(
         sep='\t',
         na_values=".",
@@ -31,7 +35,7 @@ def gff3_to_bed3(gff3_in, mode="ensembl"):
         filepath_or_buffer=gff3_in,
         comment="#",
         header=None,
-        names=gff3_columns,
+        names=GFF3_COLS,
         low_memory=False  # Convert types at the end. Seqid is char, not int
     )
 
@@ -40,6 +44,7 @@ def gff3_to_bed3(gff3_in, mode="ensembl"):
         exons = exons.astype(BED3_DTYPES)
         return exons
 
+    logging.info('Extracting the transcript ids')
     if mode == "gmap":
         exons = raw[raw['type'] == 'cDNA_match'].drop(columns='type')
         exons['transcript_id'] = exons['attributes']\
@@ -58,6 +63,8 @@ def gff3_to_bed3(gff3_in, mode="ensembl"):
         return exons
 
     exons = exons[['transcript_id', 'strand', 'start', 'end']]
+
+    logging.info('Reordering exons by strand')
 
     positive = (
         exons
@@ -78,7 +85,10 @@ def gff3_to_bed3(gff3_in, mode="ensembl"):
 
     merged = pd.concat([positive, negative])
 
+
+    logging.info('Computing lengths')
     merged['length'] = merged['end'] - merged['start'] + 1
+    logging.info('Computing ends')
     merged['transcript_end'] = (
         merged
         .groupby('transcript_id')
@@ -86,8 +96,10 @@ def gff3_to_bed3(gff3_in, mode="ensembl"):
         .cumsum()
     )
 
+    logging.info('Computing starts')
     merged['transcript_start'] = merged['transcript_end'] - merged['length']
 
+    logging.info('Tidying up')
     merged = merged[['transcript_id', 'transcript_start', 'transcript_end']]
 
     merged = merged.rename(columns={
@@ -100,4 +112,5 @@ def gff3_to_bed3(gff3_in, mode="ensembl"):
 
     merged = merged.reset_index(drop=True)
 
+    logging.info('Done')
     return merged

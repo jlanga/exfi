@@ -2,6 +2,7 @@
 
 """exfi.new_correct.py: fill small overlaps and gaps with abyss-sealer"""
 
+import logging
 
 from tempfile import \
     mkstemp
@@ -161,11 +162,15 @@ def correct_bed4(bed4, transcriptome_dict, args):
     """Inspect the bed4 for small gaps and overlaps, write a fasta file for
     sealer, and correct the bed4.
     """
+    logging.info('Preparing abyss-sealer')
     sealer_input_fn = prepare_sealer(
         bed4=bed4, transcriptome_dict=transcriptome_dict, args=args
     )
+    logging.info('Running abyss-sealer')
     sealer_output_fn = run_sealer(sealer_input_fn=sealer_input_fn, args=args)
+    logging.info('Collecting abyss-sealer\'s results')
     sealer_results = collect_sealer_results(filename=sealer_output_fn)
+    logging.info('Applying correction to BED4')
     bed4_corrected = apply_correction_to_bed4(bed4, sealer_results)
     os.remove(sealer_input_fn)
     os.remove(sealer_output_fn)

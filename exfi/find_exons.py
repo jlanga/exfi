@@ -18,7 +18,7 @@ from exfi.io.bed import BED3_COLS, BED3_DTYPES
 
 
 def process_output(process):
-    """Get lines in bed format from the output of a Popen.
+    """Get lines in BED3 format from the output of a Popen.
 
     :param Popen process: Popen object.
     """
@@ -89,4 +89,5 @@ def find_exons(args):
     p_filter = Popen(c_filter, stdin=p_merge1.stdout, stdout=PIPE)
     p_merge2 = Popen(c_merge2, stdin=p_filter.stdout, stdout=PIPE)
     p_kmers.stdout.close()
+    logging.info('Done')
     return process_output(p_merge2)

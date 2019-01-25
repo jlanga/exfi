@@ -3,6 +3,8 @@
 """exfi.io.bed4_to_gfa1.py: submodule to write a BED4 dataframe to GFA1 format
 """
 
+import logging
+
 import pandas as pd
 
 from exfi.io.bed import \
@@ -17,6 +19,7 @@ from exfi.io.masking import \
 
 def compute_header():
     """Write GFA1 header"""
+    logging.info('Computing the header')
     header = pd.DataFrame(
         data=[["H", "VN:Z:1.0"]],
         columns=HEADER_COLS
@@ -26,47 +29,52 @@ def compute_header():
 
 def compute_segments(bed4, transcriptome_dict, masking='none'):
     """Create the Segments subdataframe for GFA1 file"""
+    logging.info('Computing node2sequence')
     segments = bed4_to_node2sequence(
         bed4=bed4, transcriptome_dict=transcriptome_dict
     )
+    logging.info('Computing edge2overlap')
     edge2overlap = bed4_to_edge2overlap(bed4)
+    logging.info('Masking')
     segments = mask(
         node2sequence=segments, edge2overlap=edge2overlap, masking=masking
     )
     del edge2overlap
 
-
     # Add the S and length columns
+    logging.info('Adding the record_type')
     segments["record_type"] = "S"
 
-    # reorder
-    segments = segments\
-        [SEGMENT_COLS]
-
-    return segments
+    return segments[SEGMENT_COLS]
 
 
 def compute_links(bed4):
     """Compute the Links subdataframe of a GFA1 file."""
+    logging.info('Computing edge2overlap')
     links = bed4_to_edge2overlap(bed4=bed4)\
         .rename(columns={'u': 'from', 'v': 'to'})
+    logging.info('Adding record_type, from_orient, to_orient')
     links["record_type"] = "L"
     links["from_orient"] = "+"
     links["to_orient"] = "+"
+    logging.info('Computing the overlap between exons')
     links["overlap"] = links.overlap.map(lambda x: str(x) + "M" if x >= 0 else str(-x) + "N")
-    links = links[LINK_COLS]
-    return links
+    logging.info('Reordering')
+    return links[LINK_COLS]
 
 
 def compute_containments(bed4):
     """Create the minimal containments subdataframe"""
     containments = bed4.copy()
+    logging.info('Adding record_type, container, container_orient, contained, '
+                 'contained_orient, and pos')
     containments["record_type"] = "C"
     containments["container"] = containments["chrom"]
     containments["container_orient"] = "+"
     containments["contained"] = containments["name"]
     containments["contained_orient"] = "+"
     containments["pos"] = containments["chrom_start"]
+    logging.info('Computing the overlap')
     containments["overlap"] = containments["chrom_end"] - containments["chrom_start"]
     containments["overlap"] = containments.overlap.map(lambda x: str(x) + "M")
     containments = containments.drop(
@@ -95,16 +103,21 @@ def compute_paths(bed4):
 def bed4_to_gfa1(gfa1_fn, bed4, transcriptome_dict, masking='none'):
     """Convert the BED4 dataframe into a GFA1 file"""
     with open(gfa1_fn, "w", 1024**3) as gfa:
+        logging.info('Writing the header')
         compute_header()\
             .to_csv(gfa, sep="\t", header=False, index=False)
     with open(gfa1_fn, "a", 1024**3) as gfa:
+        logging.info('Writing the segments')
         compute_segments(
             bed4=bed4, transcriptome_dict=transcriptome_dict, masking=masking
             )\
             .to_csv(gfa, sep="\t", header=False, index=False)
+        logging.info('Writing the links')
         compute_links(bed4=bed4)\
             .to_csv(gfa, sep="\t", header=False, index=False)
+        logging.info('Writing the containments')
         compute_containments(bed4=bed4)\
             .to_csv(gfa, sep="\t", header=False, index=False)
+        logging.info('Writing the paths')
         compute_paths(bed4=bed4)\
             .to_csv(gfa, sep="\t", header=False, index=False)

@@ -2,6 +2,8 @@
 
 """exfi.io.fasta_to_dict.py: submodule to convert a fasta file into a dict"""
 
+import logging
+
 from Bio.SeqIO.FastaIO import \
     SimpleFastaParser
 
@@ -13,8 +15,10 @@ def fasta_to_dict(filename):
     :param filename: str: Path to the fasta file
 
     """
+    logging.info('Dumping fasta to dict')
     with open(filename, "r") as handle:
         return {
             identifier.split()[0]: sequence
             for identifier, sequence in SimpleFastaParser(handle)
         }
+    logging.info('Done')

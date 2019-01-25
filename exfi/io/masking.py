@@ -73,12 +73,16 @@ def mask(node2sequence, edge2overlap, masking: str = "none"):
     :param str masking: Type of masking to apply. Options: hard, soft, none
      (Default value = "None")    .
     """
+
+    logging.info('Masking sequences')
+
     if masking == 'none':
         return node2sequence
 
     # Compose a dataframe of name, sequence, bases to trim to the left
     # and bases to trim to the right
 
+    logging.info('Computing bases to trim to the right and to the left')
     complete = node2sequence.merge(
         edge2overlap[['u', 'overlap']]\
             .rename(columns={'u': 'name', 'overlap': 'mask_right'}),
@@ -93,27 +97,29 @@ def mask(node2sequence, edge2overlap, masking: str = "none"):
     .fillna(0)\
     .astype({'mask_right': np.int64, 'mask_left':np.int64})
 
-    # Set to zero overlaps < 0
+    logging.info('Removing negative masking')
     complete['mask_right'] = complete.mask_right\
         .map(lambda x: x if x > 0 else 0)
     complete['mask_left'] = complete.mask_left\
         .map(lambda x: x if x > 0 else 0)
 
     if masking == "hard":
-        logging.info("\tHard masking sequences")
+        logging.info("Hard masking sequences")
         complete['sequence'] = complete.apply(
             lambda x: hard_mask(x.sequence, x.mask_left, x.mask_right),
             axis=1
         )
     elif masking == "soft":
-        logging.info("\tSoft masking sequences")
+        logging.info("Soft masking sequences")
         complete['sequence'] = complete.apply(
             lambda x: soft_mask(x.sequence, x.mask_left, x.mask_right),
             axis=1
         )
 
+    logging.info('Tidying up')
     node2sequence_masked = complete\
         [['name', 'sequence']]\
         .reset_index(drop=True)
 
+    logging.info('Done')
     return node2sequence_masked

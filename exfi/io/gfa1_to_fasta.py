@@ -52,7 +52,7 @@ def gfa1_to_gapped_transcripts(
 
         # Segments -> node2sequence
         node2sequence = gfa1['segments']\
-            .drop(columns=["record_type", 'length'])
+            .drop(columns=["record_type"])
 
         if node2sequence.shape[0] == 0:
             return

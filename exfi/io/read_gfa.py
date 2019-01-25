@@ -30,7 +30,7 @@ def read_gfa1(gfa1_fn):
         ).astype(HEADER_DTYPES)
 
         gfa1['segments'] = pd.DataFrame(
-            data=[x[0:4] for x in data if x[0] == "S"],
+            data=[x[0:3] for x in data if x[0] == "S"],
             columns=SEGMENT_COLS
         ).astype(SEGMENT_DTYPES)
 

@@ -39,10 +39,6 @@ def compute_segments(bed4, transcriptome_dict, masking='none'):
     # Add the S and length columns
     segments["record_type"] = "S"
 
-    # Compute lengths
-    segments["length"] = segments\
-        .sequence.map(lambda x: "LN:i:" + str(len(x)))
-
     # reorder
     segments = segments\
         [SEGMENT_COLS]

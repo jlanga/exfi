@@ -3,7 +3,7 @@
 '''exfi.io.gfa1.py: submodule for auxliary variables for gfa'''
 
 HEADER_COLS = ['record_type', 'version_number']
-SEGMENT_COLS = ['record_type', 'name', 'sequence', 'length']
+SEGMENT_COLS = ['record_type', 'name', 'sequence']
 LINK_COLS = ['record_type', 'from', 'from_orient', 'to', 'to_orient', 'overlap']
 CONTAINMENT_COLS = [
     'record_type', 'container', 'container_orient', 'contained',
@@ -14,7 +14,7 @@ PATH_COLS = ['record_type', 'path_name', 'segment_names', 'overlaps']
 
 HEADER_DTYPES = {'record_type': object, 'version_number': object}
 SEGMENT_DTYPES = {
-    'record_type': object, 'name': object, 'sequence': object, 'length': object
+    'record_type': object, 'name': object, 'sequence': object
 }
 LINK_DTYPES = {
     'record_type': object, 'from': object, 'from_orient': object, 'to': object,

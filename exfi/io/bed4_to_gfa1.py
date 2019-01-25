@@ -37,15 +37,14 @@ def compute_segments(bed4, transcriptome_dict, masking='none'):
 
 
     # Add the S and length columns
-    segments["RecordType"] = "S"
+    segments["record_type"] = "S"
 
     # Compute lengths
-    segments["Length"] = segments\
+    segments["length"] = segments\
         .sequence.map(lambda x: "LN:i:" + str(len(x)))
 
     # reorder
     segments = segments\
-        .rename(columns={'name': 'Name', 'sequence': 'Sequence'})\
         [SEGMENT_COLS]
 
     return segments
@@ -53,12 +52,12 @@ def compute_segments(bed4, transcriptome_dict, masking='none'):
 
 def compute_links(bed4):
     """Compute the Links subdataframe of a GFA1 file."""
-    links = bed4_to_edge2overlap(bed4=bed4)
-    links.columns = ["From", "To", "Overlap"]
-    links["RecordType"] = "L"
-    links["FromOrient"] = "+"
-    links["ToOrient"] = "+"
-    links["Overlap"] = links.Overlap.map(lambda x: str(x) + "M" if x >= 0 else str(-x) + "N")
+    links = bed4_to_edge2overlap(bed4=bed4)\
+        .rename(columns={'u': 'from', 'v': 'to'})
+    links["record_type"] = "L"
+    links["from_orient"] = "+"
+    links["to_orient"] = "+"
+    links["overlap"] = links.overlap.map(lambda x: str(x) + "M" if x >= 0 else str(-x) + "N")
     links = links[LINK_COLS]
     return links
 
@@ -66,15 +65,17 @@ def compute_links(bed4):
 def compute_containments(bed4):
     """Create the minimal containments subdataframe"""
     containments = bed4.copy()
-    containments["RecordType"] = "C"
-    containments["Container"] = containments["chrom"]
-    containments["ContainerOrient"] = "+"
-    containments["Contained"] = containments["name"]
-    containments["ContainedOrient"] = "+"
-    containments["Pos"] = containments["chromStart"]
-    containments["Overlap"] = containments["chromEnd"] - containments["chromStart"]
-    containments["Overlap"] = containments.Overlap.map(lambda x: str(x) + "M")
-    containments = containments.drop(["chrom", "chromStart", "chromEnd", "name"], axis=1)
+    containments["record_type"] = "C"
+    containments["container"] = containments["chrom"]
+    containments["container_orient"] = "+"
+    containments["contained"] = containments["name"]
+    containments["contained_orient"] = "+"
+    containments["pos"] = containments["chrom_start"]
+    containments["overlap"] = containments["chrom_end"] - containments["chrom_start"]
+    containments["overlap"] = containments.overlap.map(lambda x: str(x) + "M")
+    containments = containments.drop(
+        ["chrom", "chrom_start", "chrom_end", "name"], axis=1
+    )
     return containments[CONTAINMENT_COLS]
 
 
@@ -83,14 +84,14 @@ def compute_paths(bed4):
     paths = bed4.copy()
     paths["name"] = paths["name"].map(lambda x: x + "+")
     paths = paths\
-        .drop(columns=["chromStart", "chromEnd"])\
+        .drop(columns=["chrom_start", "chrom_end"])\
         .groupby("chrom", axis=0)\
         .aggregate(lambda x: ",".join(x.tolist()))
     paths = paths.astype({"name": str})  # It may end up as float
     paths = paths.reset_index(drop=False)
-    paths["RecordType"] = "P"
-    paths = paths.rename({"chrom": "PathName", "name": "SegmentNames"}, axis=1)
-    paths["Overlaps"] = "*"
+    paths["record_type"] = "P"
+    paths = paths.rename({"chrom": "path_name", "name": "segment_names"}, axis=1)
+    paths["overlaps"] = "*"
     paths = paths[PATH_COLS]
     return paths
 

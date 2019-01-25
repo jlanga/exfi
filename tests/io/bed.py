@@ -5,26 +5,21 @@
 import pandas as pd
 import numpy as np
 
-BED3_COLUMNS = ['chrom', 'chromStart', 'chromEnd']
-BED3_DTYPES = {'chrom': np.str, 'chromStart': np.int64, 'chromEnd': np.int64}
-
-BED4_COLUMNS = ['chrom', 'chromStart', 'chromEnd', 'name']
-BED4_DTYPES = {
-    'chrom': np.str, 'chromStart': np.int64, 'chromEnd': np.int64, 'name':np.str
-}
-
+from exfi.io.bed import \
+    BED3_COLS, BED3_DTYPES, \
+    BED4_COLS, BED4_DTYPES
 
 BED3_EMPTY_FN = "tests/io/empty.bed"
 BED3_SIMPLE_FN = "tests/io/simple.bed"
 BED3_COMPLEX_FN = "tests/io/complex.bed"
 
 
-BED3_EMPTY = pd.DataFrame(columns=BED3_COLUMNS)
+BED3_EMPTY = pd.DataFrame(columns=BED3_COLS)
 BED3_EMPTY = BED3_EMPTY.astype(BED3_DTYPES)
 
 BED3_SIMPLE = pd.DataFrame(
     data=[("ENSDART00000161035.1", 0, 326)],
-    columns=BED3_COLUMNS
+    columns=BED3_COLS
 )
 
 BED3_COMPLEX = pd.DataFrame(
@@ -45,18 +40,18 @@ BED3_COMPLEX = pd.DataFrame(
         ["ENSDART00000165342.1", 1098, 1175],
         ["ENSDART00000165342.1", 1176, 1324]
     ],
-    columns=BED3_COLUMNS
+    columns=BED3_COLS
 )
 
 
 
-BED4_EMPTY = pd.DataFrame(columns=BED4_COLUMNS)
+BED4_EMPTY = pd.DataFrame(columns=BED4_COLS)
 BED4_EMPTY = BED4_EMPTY.astype(BED4_DTYPES)
 
 
 BED4_SIMPLE = pd.DataFrame(
     data=[("ENSDART00000161035.1", 0, 326, "ENSDART00000161035.1:0-326")],
-    columns=BED4_COLUMNS
+    columns=BED4_COLS
 )
 
 BED4_COMPLEX = pd.DataFrame(
@@ -77,7 +72,7 @@ BED4_COMPLEX = pd.DataFrame(
         ["ENSDART00000165342.1", 1098, 1175, "ENSDART00000165342.1:1098-1175"],
         ["ENSDART00000165342.1", 1176, 1324, "ENSDART00000165342.1:1176-1324"]
     ],
-    columns=BED4_COLUMNS
+    columns=BED4_COLS
 )
 
 
@@ -279,9 +274,8 @@ BED3_ENSEMBL = pd.DataFrame(
         ['ENSDART00000167898', 424, 488],
         ['ENSDART00000167898', 488, 605]
     ],
-    columns=BED3_COLUMNS
+    columns=BED3_COLS
 )
-# BED3_NCBI = pd.DataFrame(columns=["chrom", "chromStart", "chromEnd"])
 BED3_GMAP = pd.DataFrame(
     data=[
         ['ENSDART00000171570', 0, 61],
@@ -361,7 +355,7 @@ BED3_GMAP = pd.DataFrame(
         ['ENSDART00000172182', 61, 413],
         ['ENSDART00000172374', 0, 355]
     ],
-    columns=BED3_COLUMNS
+    columns=BED3_COLS
 )
 
 
@@ -386,7 +380,7 @@ BED4_COMPLEX_POLISHED = pd.DataFrame(
         ["ENSDART00000165342.1", 1098, 1175, "ENSDART00000165342.1:1098-1175"],
         ["ENSDART00000165342.1", 1176, 1324, "ENSDART00000165342.1:1176-1324"]
     ],
-    columns=["chrom", "chromStart", "chromEnd", "name"]
+    columns=BED4_COLS
 )
 
 

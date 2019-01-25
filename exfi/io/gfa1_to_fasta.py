@@ -5,34 +5,47 @@ store it in fasta format"""
 
 import pandas as pd
 
+from exfi.io.read_gfa import read_gfa1
 from exfi.io.masking import mask, cigar_to_int
 
 def gfa1_to_exons(fasta_out, gfa1_in, masking='none'):
     """Extract the exons in Fasta format"""
-    with open(gfa1_in, "r") as gfa, open(fasta_out, "w") as fasta:
+    with open(fasta_out, "w") as fasta:
 
-        data = [
-            x.strip().split("\t")
-            for x in gfa.readlines() if x[0] in set(["S", "L"])
-        ]
+        gfa1 = read_gfa1(gfa1_in)
 
-        if not data:
-            return
+        # data = [
+        #     x.strip().split("\t")
+        #     for x in gfa.readlines() if x[0] in set(["S", "L"])
+        # ]
 
-        node2sequence = pd.DataFrame(
-            data=[x[0:3] for x in data if x[0] == "S"],
-            columns=["RecordType", "name", "sequence"]
-        ).drop(columns="RecordType")
+        # if not data:
+        #     return
+
+        # node2sequence = pd.DataFrame(
+        #     data=[x[0:3] for x in data if x[0] == "S"],
+        #     columns=["RecordType", "name", "sequence"]
+        # ).drop(columns="RecordType")
+
+        node2sequence = gfa1['segments']\
+            .drop(columns='record_type')
 
         if node2sequence.shape[0] == 0:
             return
 
-        edge2overlap = pd.DataFrame(
-            data=[x[0:6] for x in data if x[0] == 'L'],
-            columns=["RecordType", "u", "FromOrient", "v", "ToOrient",
-                     "OverlapCigar"]
-        ).drop(columns=["RecordType", "FromOrient", "ToOrient"])
-        edge2overlap["overlap"] = edge2overlap.OverlapCigar.map(cigar_to_int)
+        # edge2overlap = pd.DataFrame(
+        #     data=[x[0:6] for x in data if x[0] == 'L'],
+        #     columns=["RecordType", "u", "FromOrient", "v", "ToOrient",
+        #              "OverlapCigar"]
+        # ).drop(columns=["RecordType", "FromOrient", "ToOrient"])
+        # edge2overlap["overlap"] = edge2overlap.OverlapCigar.map(cigar_to_int)
+
+        edge2overlap = gfa1['links']\
+            .drop(columns=['record_type', 'from_orient', 'to_orient'])\
+            .rename(columns={
+                'from': 'u', 'to': 'v', 'overlap': 'overlap_cigar'
+            })
+        edge2overlap['overlap'] = edge2overlap.overlap_cigar.map(cigar_to_int)
 
         node2sequence = mask(
             node2sequence=node2sequence,

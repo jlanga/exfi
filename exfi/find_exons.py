@@ -14,7 +14,8 @@ import logging
 from subprocess import Popen, PIPE
 
 import pandas as pd
-import numpy as np
+from exfi.io.bed import BED3_COLS, BED3_DTYPES
+
 
 def process_output(process):
     """Get lines in bed format from the output of a Popen.
@@ -27,11 +28,8 @@ def process_output(process):
             stdout_line.decode().strip().split()
             for  stdout_line in iter(process.stdout.readline, b'')
         ],
-        columns=["chrom", "chromStart", "chromEnd"]
-    )
-
-    bed3.chromStart = bed3.chromStart.astype(np.int64)
-    bed3.chromEnd = bed3.chromEnd.astype(np.int64)
+        columns=BED3_COLS
+    ).astype(BED3_DTYPES)
 
     process.stdout.close()
     process.wait()

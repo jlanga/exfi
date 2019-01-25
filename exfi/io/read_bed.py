@@ -3,7 +3,8 @@
 """exfi.io.read_bed.py: BED importer"""
 
 import pandas as pd
-import numpy as np
+
+from exfi.io.bed import BED3_COLS, BED3_DTYPES
 
 
 def read_bed3(filename):
@@ -13,8 +14,7 @@ def read_bed3(filename):
         header=None,
         sep='\t',
         usecols=[0, 1, 2],
-        names=["chrom", "chromStart", "chromEnd"],
-        dtype={"chrom": np.str, "chromStart": np.int64, "chromEnd": np.int64},
+        names=BED3_COLS,
         engine='c'
-    )
+    ).astype(BED3_DTYPES)
     return bed3

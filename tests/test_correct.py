@@ -26,6 +26,7 @@ from exfi.io.fasta_to_dict import \
     fasta_to_dict
 
 from exfi.io.bed import \
+    BED4_COLS, BED4_DTYPES, \
     bed3_to_bed4
 
 from exfi.correct import \
@@ -81,8 +82,8 @@ BED4_CORRECTED = pd.DataFrame(
         ["ENSDART00000149335.2", 0, 486, "ENSDART00000149335.2:0-486"],
         ["ENSDART00000149335.2", 485, 3379, "ENSDART00000149335.2:485-3379"]
     ],
-    columns=["chrom", "chromStart", "chromEnd", "name"]
-)
+    columns=BED4_COLS
+).astype(BED4_DTYPES)
 
 
 def tearDownModule():

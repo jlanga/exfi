@@ -6,7 +6,8 @@ coordinates are with respect to the transcriptome"""
 import sys
 
 import pandas as pd
-import numpy as np
+
+from exfi.io.bed import BED3_COLS, BED3_DTYPES
 
 def gff3_to_bed3(gff3_in, mode="ensembl"):
     """Read a GFF3 file and convert it to BED3, where coordinates are with
@@ -23,11 +24,6 @@ def gff3_to_bed3(gff3_in, mode="ensembl"):
         "attributes"
     ]
 
-    bed3_columns = ["chrom", "chromStart", "chromEnd"]
-    bed3_dtypes = {
-        "chrom": np.str, "chromStart": np.int64, "chromEnd": np.int64
-    }
-
     raw = pd.read_csv(
         sep='\t',
         na_values=".",
@@ -40,8 +36,8 @@ def gff3_to_bed3(gff3_in, mode="ensembl"):
     )
 
     if raw.shape[0] == 0:
-        exons = pd.DataFrame(columns=bed3_columns)
-        exons = exons.astype(bed3_dtypes)
+        exons = pd.DataFrame(columns=BED3_COLS)
+        exons = exons.astype(BED3_DTYPES)
         return exons
 
     if mode == "gmap":
@@ -96,11 +92,11 @@ def gff3_to_bed3(gff3_in, mode="ensembl"):
 
     merged = merged.rename(columns={
         'transcript_id': 'chrom',
-        'transcript_start': 'chromStart',
-        'transcript_end': 'chromEnd'
+        'transcript_start': 'chrom_start',
+        'transcript_end': 'chrom_end'
     })
 
-    merged = merged.astype(bed3_dtypes)
+    merged = merged.astype(BED3_DTYPES)
 
     merged = merged.reset_index(drop=True)
 

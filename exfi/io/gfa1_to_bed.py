@@ -6,6 +6,7 @@
 import pandas as pd
 import numpy as np
 
+from exfi.io.bed import BED4_COLS, BED4_DTYPES
 
 def gfa1_to_bed4(filename):
     """Read a GFA1 file and convert it to BED4"""
@@ -27,10 +28,8 @@ def gfa1_to_bed4(filename):
     }, axis=1)
     containments["Overlap"] = containments["Overlap"]\
         .map(lambda x: np.int(x[:-1]))
-    containments["chromStart"] = containments["Pos"]
-    containments["chromEnd"] = containments["Pos"] + containments["Overlap"]
-    containments = containments[["chrom", "chromStart", "chromEnd", "name"]]
-    containments = containments.astype(
-        {"chromStart": np.int64, "chromEnd": np.int64}
-    )
+    containments["chrom_start"] = containments["Pos"]
+    containments["chrom_end"] = containments["Pos"] + containments["Overlap"]
+    containments = containments[BED4_COLS]
+    containments = containments.astype(BED4_DTYPES)
     return containments

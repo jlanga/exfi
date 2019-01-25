@@ -12,6 +12,7 @@ import os
 import pandas as pd
 
 from exfi.io.bed import \
+    BED3_COLS, \
     bed3_to_bed4, \
     bed4_to_node2sequence, \
     bed4_to_edge2overlap
@@ -150,9 +151,9 @@ def apply_correction_to_bed4(bed4, sealed_edges):
         return bed4
     new_bed4 = bed4.copy().set_index("name")
     for row in sealed_edges.iloc[::-1].itertuples():
-        new_bed4.loc[row.u, "chromEnd"] = new_bed4.loc[row.v, "chromEnd"]
+        new_bed4.loc[row.u, "chrom_end"] = new_bed4.loc[row.v, "chrom_end"]
     new_bed4 = new_bed4.drop(sealed_edges.v)
-    new_bed4 = bed3_to_bed4(new_bed4[["chrom", "chromStart", "chromEnd"]])
+    new_bed4 = bed3_to_bed4(new_bed4[BED3_COLS])
     return new_bed4.reset_index(drop=True)
 
 

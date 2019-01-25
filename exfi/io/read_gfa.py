@@ -4,10 +4,10 @@
 
 
 import pandas as pd
-import numpy as np
 
 from exfi.io.gfa1 import \
-    HEADER_COLS, SEGMENT_COLS, LINK_COLS, CONTAINMENT_COLS, PATH_COLS
+    HEADER_COLS, SEGMENT_COLS, LINK_COLS, CONTAINMENT_COLS, PATH_COLS, \
+    HEADER_DTYPES, SEGMENT_DTYPES, LINK_DTYPES, CONTAINMENT_DTYPES, PATH_DTYPES
 
 
 def read_gfa1(gfa1_fn):
@@ -27,26 +27,26 @@ def read_gfa1(gfa1_fn):
         gfa1['header'] = pd.DataFrame(
             data=[x[0:2] for x in data if x[0] == 'H'],
             columns=HEADER_COLS
-        )
+        ).astype(HEADER_DTYPES)
 
         gfa1['segments'] = pd.DataFrame(
             data=[x[0:4] for x in data if x[0] == "S"],
             columns=SEGMENT_COLS
-        )
+        ).astype(SEGMENT_DTYPES)
 
         gfa1['links'] = pd.DataFrame(
             data=[x[0:6] for x in data if x[0] == 'L'],
             columns=LINK_COLS
-        )
+        ).astype(LINK_DTYPES)
 
         gfa1['containments'] = pd.DataFrame(
             data=[x[0:7] for x in data if x[0] == 'C'],
             columns=CONTAINMENT_COLS
-        ).astype({'Pos': np.int})
+        ).astype(CONTAINMENT_DTYPES)
 
         gfa1['paths'] = pd.DataFrame(
             data=[x[0:4] for x in data if x[0] == 'P'],
             columns=PATH_COLS
-        )
+        ).astype(PATH_DTYPES)
 
         return gfa1

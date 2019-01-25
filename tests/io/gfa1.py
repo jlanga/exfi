@@ -6,19 +6,20 @@ import pandas as pd
 import numpy as np
 
 
-from exfi.io.read_gfa import \
-    HEADER_COLS, SEGMENT_COLS, LINK_COLS, CONTAINMENT_COLS, PATH_COLS
+from exfi.io.gfa1 import \
+    HEADER_COLS, SEGMENT_COLS, LINK_COLS, CONTAINMENT_COLS, PATH_COLS, \
+    HEADER_DTYPES, SEGMENT_DTYPES, LINK_DTYPES, CONTAINMENT_DTYPES, PATH_DTYPES
 
 HEADER = pd.DataFrame(
     data=[["H", "VN:Z:1.0"]],
     columns=HEADER_COLS
-)
+).astype(HEADER_DTYPES)
 
 
 
 SEGMENTS_EMPTY = pd.DataFrame(
     columns=SEGMENT_COLS
-)
+).astype(SEGMENT_DTYPES)
 
 SEGMENTS_SIMPLE = pd.DataFrame(
     data=[[
@@ -32,7 +33,7 @@ SEGMENTS_SIMPLE = pd.DataFrame(
         "LN:i:326"
         ]],
     columns=SEGMENT_COLS
-)
+).astype(SEGMENT_DTYPES)
 
 SEGMENTS_COMPLEX = pd.DataFrame(
     data=[[
@@ -123,7 +124,7 @@ SEGMENTS_COMPLEX = pd.DataFrame(
         "LN:i:148"
     ]],
     columns=SEGMENT_COLS
-)
+).astype(SEGMENT_DTYPES)
 
 SEGMENTS_COMPLEX_SOFT = pd.DataFrame(
     data=[[
@@ -214,7 +215,7 @@ SEGMENTS_COMPLEX_SOFT = pd.DataFrame(
         "LN:i:148"
     ]],
     columns=SEGMENT_COLS
-)
+).astype(SEGMENT_DTYPES)
 
 SEGMENTS_COMPLEX_HARD = pd.DataFrame(
     data=[[
@@ -305,18 +306,18 @@ SEGMENTS_COMPLEX_HARD = pd.DataFrame(
         "LN:i:148"
     ]],
     columns=SEGMENT_COLS
-)
+).astype(SEGMENT_DTYPES)
 
 
 
 
 LINKS_EMPTY = pd.DataFrame(
     columns=LINK_COLS
-)
+).astype(LINK_DTYPES)
 
 LINKS_SIMPLE = pd.DataFrame(
     columns=LINK_COLS
-)
+).astype(LINK_DTYPES)
 
 LINKS_COMPLEX = pd.DataFrame(
     data=[[
@@ -360,14 +361,13 @@ LINKS_COMPLEX = pd.DataFrame(
         "ENSDART00000165342.1:1176-1324", "+", "1N"
     ]],
     columns=LINK_COLS
-)
+).astype(LINK_DTYPES)
 
 
 
 CONTAINMENTS_EMPTY = pd.DataFrame(
     columns=CONTAINMENT_COLS
-)
-CONTAINMENTS_EMPTY = CONTAINMENTS_EMPTY.astype({"Overlap": np.int64})
+).astype(CONTAINMENT_DTYPES)
 
 CONTAINMENTS_SIMPLE = pd.DataFrame(
     data=[[
@@ -375,7 +375,8 @@ CONTAINMENTS_SIMPLE = pd.DataFrame(
         0, "326M"
     ]],
     columns=CONTAINMENT_COLS
-)
+).astype(CONTAINMENT_DTYPES)
+
 CONTAINMENTS_COMPLEX = pd.DataFrame(
     data=[[
         "C", "ENSDART00000161035.1", "+", "ENSDART00000161035.1:0-326", "+",
@@ -424,16 +425,16 @@ CONTAINMENTS_COMPLEX = pd.DataFrame(
         "+", 1176, "148M"
     ]],
     columns=CONTAINMENT_COLS
-)
+).astype(CONTAINMENT_DTYPES)
 
 
 PATHS_EMPTY = pd.DataFrame(
     columns=PATH_COLS
-)
+).astype(PATH_DTYPES)
 PATHS_SIMPLE = pd.DataFrame(
     data=[["P", "ENSDART00000161035.1", "ENSDART00000161035.1:0-326+", "*"]],
     columns=PATH_COLS
-)
+).astype(PATH_DTYPES)
 PATHS_COMPLEX = pd.DataFrame(
     data=[[
         "P", "ENSDART00000161035.1",
@@ -452,7 +453,7 @@ PATHS_COMPLEX = pd.DataFrame(
         "*"
     ]],
     columns=PATH_COLS
-)
+).astype(PATH_DTYPES)
 
 GFA1_EMPTY_FN = "tests/io/empty.gfa"
 GFA1_SIMPLE_FN = "tests/io/simple.gfa"

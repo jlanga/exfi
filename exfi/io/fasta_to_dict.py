@@ -21,4 +21,3 @@ def fasta_to_dict(filename):
             identifier.split()[0]: sequence
             for identifier, sequence in SimpleFastaParser(handle)
         }
-    logging.info('Done')

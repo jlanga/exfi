@@ -5,15 +5,19 @@
 import pandas as pd
 import numpy as np
 
+
+from exfi.io.read_gfa import \
+    HEADER_COLS, SEGMENT_COLS, LINK_COLS, CONTAINMENT_COLS, PATH_COLS
+
 HEADER = pd.DataFrame(
     data=[["H", "VN:Z:1.0"]],
-    columns=["RecordType", "Version"]
+    columns=HEADER_COLS
 )
 
 
 
 SEGMENTS_EMPTY = pd.DataFrame(
-    columns=["RecordType", "name", "sequence", "SegmentLength"]
+    columns=SEGMENT_COLS
 )
 
 SEGMENTS_SIMPLE = pd.DataFrame(
@@ -27,7 +31,7 @@ SEGMENTS_SIMPLE = pd.DataFrame(
         "TGCGTTCATGCCAAAATGGGATGTGGAAATTCCTCCGCCACGAGCA",
         "LN:i:326"
         ]],
-    columns=["RecordType", "name", "sequence", "SegmentLength"]
+    columns=SEGMENT_COLS
 )
 
 SEGMENTS_COMPLEX = pd.DataFrame(
@@ -118,7 +122,7 @@ SEGMENTS_COMPLEX = pd.DataFrame(
         "CCACAGCG",
         "LN:i:148"
     ]],
-    columns=["RecordType", "name", "sequence", "SegmentLength"]
+    columns=SEGMENT_COLS
 )
 
 SEGMENTS_COMPLEX_SOFT = pd.DataFrame(
@@ -209,7 +213,7 @@ SEGMENTS_COMPLEX_SOFT = pd.DataFrame(
         "CCACAGCG",
         "LN:i:148"
     ]],
-    columns=["RecordType", "name", "sequence", "SegmentLength"]
+    columns=SEGMENT_COLS
 )
 
 SEGMENTS_COMPLEX_HARD = pd.DataFrame(
@@ -300,18 +304,18 @@ SEGMENTS_COMPLEX_HARD = pd.DataFrame(
         "CCACAGCG",
         "LN:i:148"
     ]],
-    columns=["RecordType", "name", "sequence", "SegmentLength"]
+    columns=SEGMENT_COLS
 )
 
 
 
 
 LINKS_EMPTY = pd.DataFrame(
-    columns=["RecordType", "From", "FromOrient", "To", "ToOrient", "Overlap"]
+    columns=LINK_COLS
 )
 
 LINKS_SIMPLE = pd.DataFrame(
-    columns=["RecordType", "From", "FromOrient", "To", "ToOrient", "Overlap"]
+    columns=LINK_COLS
 )
 
 LINKS_COMPLEX = pd.DataFrame(
@@ -355,14 +359,13 @@ LINKS_COMPLEX = pd.DataFrame(
         "L", "ENSDART00000165342.1:1098-1175", "+",
         "ENSDART00000165342.1:1176-1324", "+", "1N"
     ]],
-    columns=["RecordType", "From", "FromOrient", "To", "ToOrient", "Overlap"]
+    columns=LINK_COLS
 )
 
 
 
 CONTAINMENTS_EMPTY = pd.DataFrame(
-    columns=["RecordType", "Container", "ContainerOrient", "Contained",
-             "ContainedOrient", "Pos", "Overlap"]
+    columns=CONTAINMENT_COLS
 )
 CONTAINMENTS_EMPTY = CONTAINMENTS_EMPTY.astype({"Overlap": np.int64})
 
@@ -371,8 +374,7 @@ CONTAINMENTS_SIMPLE = pd.DataFrame(
         "C", "ENSDART00000161035.1", "+", "ENSDART00000161035.1:0-326", "+",
         0, "326M"
     ]],
-    columns=["RecordType", "Container", "ContainerOrient", "Contained",
-             "ContainedOrient", "Pos", "Overlap"]
+    columns=CONTAINMENT_COLS
 )
 CONTAINMENTS_COMPLEX = pd.DataFrame(
     data=[[
@@ -421,17 +423,16 @@ CONTAINMENTS_COMPLEX = pd.DataFrame(
         "C", "ENSDART00000165342.1", "+", "ENSDART00000165342.1:1176-1324",
         "+", 1176, "148M"
     ]],
-    columns=["RecordType", "Container", "ContainerOrient", "Contained",
-             "ContainedOrient", "Pos", "Overlap"]
+    columns=CONTAINMENT_COLS
 )
 
 
 PATHS_EMPTY = pd.DataFrame(
-    columns=["RecordType", "PathName", "SegmentNames", "Overlaps"]
+    columns=PATH_COLS
 )
 PATHS_SIMPLE = pd.DataFrame(
     data=[["P", "ENSDART00000161035.1", "ENSDART00000161035.1:0-326+", "*"]],
-    columns=["RecordType", "PathName", "SegmentNames", "Overlaps"]
+    columns=PATH_COLS
 )
 PATHS_COMPLEX = pd.DataFrame(
     data=[[
@@ -450,7 +451,7 @@ PATHS_COMPLEX = pd.DataFrame(
         "ENSDART00000165342.1:1098-1175+,ENSDART00000165342.1:1176-1324+",
         "*"
     ]],
-    columns=["RecordType", "PathName", "SegmentNames", "Overlaps"]
+    columns=PATH_COLS
 )
 
 GFA1_EMPTY_FN = "tests/io/empty.gfa"

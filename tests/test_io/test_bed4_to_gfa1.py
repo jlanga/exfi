@@ -51,16 +51,19 @@ class TestComputeSegments(TestCase):
     def test_empty(self):
         """exfi.io.bed4_to_gfa1.compute_segments: empty case"""
         observed = compute_segments(BED4_EMPTY, TRANSCRIPTOME_EMPTY_DICT)
+        print("Observed:", observed, "Expected:", SEGMENTS_EMPTY, sep="\n")
         self.assertTrue(observed.equals(SEGMENTS_EMPTY))
 
     def test_simple(self):
         """exfi.io.bed4_to_gfa1.compute_segments: simple case"""
         observed = compute_segments(BED4_SIMPLE, TRANSCRIPTOME_SIMPLE_DICT)
+        print("Observed:", observed, "Expected:", SEGMENTS_SIMPLE, sep="\n")
         self.assertTrue(observed.equals(SEGMENTS_SIMPLE))
 
     def test_complex(self):
         """exfi.io.bed4_to_gfa1.compute_segments: complex case"""
         observed = compute_segments(BED4_COMPLEX, TRANSCRIPTOME_COMPLEX_DICT)
+        print("Observed:", observed, "Expected:", SEGMENTS_COMPLEX, sep="\n")
         self.assertTrue(observed.equals(SEGMENTS_COMPLEX))
 
     def test_complex_simple(self):
@@ -68,6 +71,8 @@ class TestComputeSegments(TestCase):
         observed = compute_segments(
             BED4_COMPLEX, TRANSCRIPTOME_COMPLEX_DICT, 'soft'
         )
+        print("Observed:", observed, "Expected:", SEGMENTS_COMPLEX_SOFT,
+              sep="\n")
         self.assertTrue(observed.equals(SEGMENTS_COMPLEX_SOFT))
 
 
@@ -76,6 +81,8 @@ class TestComputeSegments(TestCase):
         observed = compute_segments(
             BED4_COMPLEX, TRANSCRIPTOME_COMPLEX_DICT, 'hard'
         )
+        print("Observed:", observed, "Expected:", SEGMENTS_COMPLEX_HARD,
+              sep="\n")
         self.assertTrue(observed.equals(SEGMENTS_COMPLEX_HARD))
 
 

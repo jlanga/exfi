@@ -9,6 +9,9 @@ from exfi.io.bed import \
     bed4_to_node2sequence, \
     bed4_to_edge2overlap
 
+from exfi.io.gfa1 import \
+    HEADER_COLS, SEGMENT_COLS, LINK_COLS, CONTAINMENT_COLS, PATH_COLS
+
 from exfi.io.masking import \
     mask
 
@@ -16,7 +19,7 @@ def compute_header():
     """Write GFA1 header"""
     header = pd.DataFrame(
         data=[["H", "VN:Z:1.0"]],
-        columns=["RecordType", "Version"]
+        columns=HEADER_COLS
     )
     return header
 
@@ -32,16 +35,18 @@ def compute_segments(bed4, transcriptome_dict, masking='none'):
     )
     del edge2overlap
 
+
     # Add the S and length columns
     segments["RecordType"] = "S"
 
     # Compute lengths
-    segments["SegmentLength"] = segments\
+    segments["Length"] = segments\
         .sequence.map(lambda x: "LN:i:" + str(len(x)))
 
     # reorder
     segments = segments\
-        [["RecordType", "name", "sequence", "SegmentLength"]]
+        .rename(columns={'name': 'Name', 'sequence': 'Sequence'})\
+        [SEGMENT_COLS]
 
     return segments
 
@@ -54,7 +59,7 @@ def compute_links(bed4):
     links["FromOrient"] = "+"
     links["ToOrient"] = "+"
     links["Overlap"] = links.Overlap.map(lambda x: str(x) + "M" if x >= 0 else str(-x) + "N")
-    links = links[["RecordType", "From", "FromOrient", "To", "ToOrient", "Overlap"]]
+    links = links[LINK_COLS]
     return links
 
 
@@ -70,7 +75,7 @@ def compute_containments(bed4):
     containments["Overlap"] = containments["chromEnd"] - containments["chromStart"]
     containments["Overlap"] = containments.Overlap.map(lambda x: str(x) + "M")
     containments = containments.drop(["chrom", "chromStart", "chromEnd", "name"], axis=1)
-    return containments
+    return containments[CONTAINMENT_COLS]
 
 
 def compute_paths(bed4):
@@ -86,7 +91,7 @@ def compute_paths(bed4):
     paths["RecordType"] = "P"
     paths = paths.rename({"chrom": "PathName", "name": "SegmentNames"}, axis=1)
     paths["Overlaps"] = "*"
-    paths = paths[["RecordType", "PathName", "SegmentNames", "Overlaps"]]
+    paths = paths[PATH_COLS]
     return paths
 
 

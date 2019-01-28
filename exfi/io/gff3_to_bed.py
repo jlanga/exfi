@@ -59,9 +59,6 @@ def gff3_to_bed3(gff3_in, mode="ensembl"):
         sys.exit("Unknown mode")
 
 
-    if exons.shape[0] == 0:
-        return exons
-
     exons = exons[['transcript_id', 'strand', 'start', 'end']]
 
     logging.info('Reordering exons by strand')

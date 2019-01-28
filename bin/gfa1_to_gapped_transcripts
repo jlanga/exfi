@@ -9,7 +9,7 @@ from os.path import \
     abspath
 
 from exfi import __version__
-from exfi.io.gfa1_to_gapped_transcripts import \
+from exfi.io.gfa1_to_fasta import \
     gfa1_to_gapped_transcripts
 
 
@@ -121,9 +121,9 @@ if __name__ == "__main__":
         masking = "hard"
 
     gfa1_to_gapped_transcripts(
-        gfa_in=args["gfa1"],
         fasta_out=args["fasta"],
-        number_of_ns=args["number_of_ns"],
+        gfa1_in=args["gfa1"],
+        gap_size=args["number_of_ns"],
         masking=masking
     )
 

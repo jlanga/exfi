@@ -2,13 +2,15 @@
 
 import argparse
 import logging
-from exfi import __version__
-from exfi.build_baited_bloom_filter import build_baited_bloom_filter
 import sys
 from os.path import isfile, exists, dirname, abspath
 from os import \
     makedirs, \
     remove
+from shutil import which
+
+from exfi import __version__
+from exfi.build_baited_bloom_filter import build_baited_bloom_filter
 
 parser = argparse.ArgumentParser(
     usage='build_baited_bloom_filter '
@@ -122,7 +124,10 @@ if __name__ == '__main__':
 
     # Set up logger
     logger = logging.getLogger()
-    logging.basicConfig(format='%(asctime)s\t%(module)s\t%(message)s', level=logging.ERROR)
+    logging.basicConfig(
+        format='%(asctime)s\t%(module)s\t%(message)s',
+        level=logging.ERROR
+    )
     if args["verbose"]:
         logger.setLevel(logging.INFO)
     if args["debug"]:
@@ -130,13 +135,14 @@ if __name__ == '__main__':
 
 
     # Check inputs
+    logging.info('Checking input parameters')
     assert args["kmer"] >= 1, 'ERROR: incorrect kmer size'
     # assert bloom_size
     assert args["levels"] >= 1, 'ERROR: incorrect number of levels'
     assert args["threads"] >= 1, 'ERROR: incorrect number of threads'
 
     # Check if programs are in path
-    from shutil import which
+    logging.info('Checking if biobloom* and abyss-bloom are in $PATH')
     assert which('biobloommaker') is not None, 'ERROR: biobloommaker not in PATH'
     assert which('biobloomcategorizer') is not None, 'ERROR: biobloomcategorizer not in PATH'
     assert which('abyss-bloom') is not None, 'ERROR: abyss-bloom not in PATH'
@@ -147,6 +153,7 @@ if __name__ == '__main__':
         makedirs(output_dir)
 
     # Run the program
+    logging.info('Running build_baited_bloom_filter')
     build_baited_bloom_filter(args)
 
     logging.info("Done!")

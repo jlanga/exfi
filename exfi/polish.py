@@ -1,175 +1,106 @@
-#!/usr/bin/env python3
+"""exfi.polish.py
 
-"""exfi.polish_overlaps: submodule to polish the overlaps between two exons"""
+exfi submodule to polish a bed4 dataframe by checking if in the overlap between
+two exons there is the AG-GT splicing signal.
+"""
 
-from typing import Iterable
+import logging
 
-import networkx as nx
-
-
-import pathos.multiprocessing as mp
-
-from exfi.io import \
-    _coordinate_to_str
-
-from exfi.classes import Coordinate, SpliceGraph, SpliceGraphDict, FastaDict
-
-
-
-def trim_end(coordinate: Coordinate, bases: int) -> Coordinate:
-    """Trim bases to the end of the coordinate
-
-    :param tuple coordinate: BED3 record
-    :param int bases:  Number of bases to trim form end
+def polish_bed4(bed4, transcriptome_dict):
     """
-    return Coordinate(coordinate[0], coordinate[1], coordinate[2] - bases)
-
-
-
-def trim_start(coordinate: Coordinate, bases: int) -> Coordinate:
-    """Trim bases to the start of the coordinate
-
-    :param tuple coordinate: BED3 record.
-    :param int bases: Number of bases to trim from start.
+    Trim overlapping exons according to the AG-GT signal.
     """
-    return Coordinate(coordinate[0], coordinate[1] + bases, coordinate[2])
+    logging.info("Polishing BED4")
+
+    polished = bed4.copy()
+
+    logging.info("Get the transcript_id of the next exon")
+    polished["chrom_next"] = polished["chrom"].shift(-1)
+
+    logging.info('Get the name of the next exon')
+    polished["name_next"] = polished["name"].shift(-1)
+
+    logging.info('Get the start of the next exon')
+    polished["chrom_start_next"] = polished["chrom_start"].shift(-1)
+
+    logging.info('Get the end of the next exon')
+    polished["chrom_end_next"] = polished["chrom_end"].shift(-1)
+
+    logging.info('Remove rows with different transcripts')
+    polished = polished\
+        [polished["chrom"] == polished["chrom_next"]]
+
+    logging.info('Cast from float to int (just in case)')
+    polished = polished.astype({
+        "chrom_start_next": int,
+        "chrom_end_next": int
+    })
+
+    logging.info('Compute the overlap')
+    polished["overlap"] = polished["chrom_end"] - polished["chrom_start_next"]
+
+    logging.info('Throw away lines that cannot be polished')
+    polished = polished[polished.overlap >= 4]
+
+    logging.info('Get the entire transcript sequence')
+    polished["sequence"] = polished.chrom.map(transcriptome_dict)
+
+    logging.info('Prepare a column with the data required to extract the '
+                 'overlapping sequence')
+    polished["data_to_map"] = list(zip(
+        polished.sequence,
+        polished.chrom_start_next + 1,
+        polished.chrom_end + 1
+    ))
+
+    logging.info('Get the overlapping sequence')
+    polished["overlap_str"] = polished\
+        .data_to_map\
+        .map(lambda x: x[0][x[1]:x[2]])
+
+    logging.info('Get the position in which the AGGT happens')
+    polished["overlap_index"] = polished["overlap_str"].str.rfind("AGGT")
+
+    logging.info('Throw away rows in which AGGT doesn\'t happen')
+    polished = polished[polished.overlap_index >= 0]
+
+    logging.info('Correct positions')
+    polished["chrom_end_corrected"] = polished["chrom_end"] - 2
+    polished["chrom_start_next_corrected"] = \
+        polished["chrom_start_next"] + polished["overlap_index"] + 2
+
+    logging.info('Organize the elements to correct')
+    ends_to_change = polished\
+        [["name", "chrom_end_corrected"]]\
+        .rename({"chrom_end_corrected": "chrom_end"}, axis=1)\
+        .set_index("name")
+
+    starts_to_change = polished\
+        [["name_next", "chrom_start_next_corrected"]]\
+        .rename(columns={
+            "name_next": "name",
+            "chrom_start_next_corrected":
+            "chrom_start"
+        })\
+        .set_index("name")
 
 
+    bed4_new = bed4.set_index("name")
 
-def trim_multiple_ends(iterable_coordinate: Iterable[Coordinate], bases: int) \
-    -> Iterable[Coordinate]:
-    """Trim bases at the end of all elements in iterable_coordinate
+    logging.info('Correct the starts')
+    bed4_new.loc[starts_to_change.index.tolist()].chrom_start = \
+        starts_to_change.chrom_start
+    logging.info('Correct the ends')
+    bed4_new.loc[ends_to_change.index.tolist()].chrom_end = \
+        ends_to_change.chrom_end
 
-    :param tuple iterable_coordinate: iterable of bed3 records.
-    :param int bases: number of bases to trim from end.
-    """
-    return tuple(trim_end(coordinate, bases) for coordinate in iterable_coordinate)
+    logging.info('Compose the new names')
+    bed4_new = bed4_new.reset_index(drop=False)
+    bed4_new["name"] = \
+        bed4_new.chrom + ":" + \
+        bed4_new.chrom_start.map(str) + "-" + \
+        bed4_new.chrom_end.map(str)
 
+    logging.info('Done')
 
-
-def trim_multiple_starts(iterable_coordinate: Iterable[Coordinate], bases: int) \
-    -> Iterable[Coordinate]:
-    """Trim bases at the start of all elements in iterable_coordinate
-
-    :param tuple iterable_coordinate: iterable of bed3 records.
-    :param int bases: Number of bases to trim from start.
-
-    """
-    return tuple(trim_start(coordinate, bases) for coordinate in iterable_coordinate)
-
-
-
-def polish_splice_graph(splice_graph: SpliceGraph, fasta_dict: FastaDict) -> SpliceGraph:
-    """Trim overlaps according to the AG/GT signal (AC/CT in the reverse strand)
-
-    :param nx.DiGraph splice_graph: SpliceGraph to polish.
-    :param dict fasta_dict: FastaDict of transcriptome.
-    """
-
-    node2coordinates = nx.get_node_attributes(G=splice_graph, name="coordinates")
-    edge2overlap = nx.get_edge_attributes(G=splice_graph, name="overlaps")
-    node_mapping = {node: node for node in splice_graph.nodes()}  # old: new
-
-    for (node_u, node_v), overlap in edge2overlap.items():
-
-        if overlap >= 4:
-
-            # Get one of the coordinates (there should be one)
-            node_u_coord = node2coordinates[node_u][0]
-            node_v_coord = node2coordinates[node_v][0]
-
-            # Get overlapping thing
-            overlap_seq = fasta_dict[node_u_coord[0]][node_v_coord[1]:node_u_coord[2]]
-
-            # When there is an overlap,
-            # Exon structure should be EXON...AG - GT...intron...AG - GT...exon
-            if "AGGT" in overlap_seq:
-
-                index = overlap_seq.rfind("AGGT")
-
-                # rename both transcripts
-                ## u: delete overlap untul AG
-                ## v: delete overlap until GT
-                new_node_u = _coordinate_to_str(trim_end(node_u_coord, overlap - index - 2))
-                new_node_v = _coordinate_to_str(trim_start(node_v_coord, index + 2))
-
-                # Update old -> new renaming
-                node_mapping[node_u] = new_node_u
-                node_mapping[node_v] = new_node_v
-
-                # change coordinate dict values
-                ## u
-                node2coordinates[node_u] = trim_multiple_ends(
-                    iterable_coordinate=node2coordinates[node_u], bases=overlap - index - 2
-                )
-                ## v
-                node2coordinates[node_v] = trim_multiple_starts(
-                    iterable_coordinate=node2coordinates[node_v], bases=index + 2
-                )
-
-                # change overlap dict values
-                edge2overlap[(node_u, node_v)] = 0
-
-            # else:
-                # merge nodes into one
-                # Leave as it is?
-
-    # rename nodes in graph
-    splice_graph = nx.relabel_nodes(G=splice_graph, mapping=node_mapping)
-
-    # assign attributes
-    ## Nodes
-    nx.set_node_attributes(
-        G=splice_graph,
-        name="coordinates",
-        values={
-            node_mapping[node]: coordinates
-            for node, coordinates in node2coordinates.items()
-        }
-    )
-    ## Edges
-    nx.set_edge_attributes(
-        G=splice_graph,
-        name="overlaps",
-        values={
-            (node_mapping[node_u], node_mapping[node_v]): overlap
-            for (node_u, node_v), overlap in edge2overlap.items()
-        }
-    )
-
-    return splice_graph
-
-
-
-def polish_splice_graph_dict(
-        splice_graph_dict: SpliceGraphDict, fasta_dict: FastaDict, args: dict) -> SpliceGraphDict:
-    """Polish all overlaps in a splice graph dict
-
-    :param dict splice_graph_dict: SpliceGraphDict to polish.
-    :param dict fasta_dict: FastaDict of transcriptome.
-    :param dict args: Dict of arguments for processing.
-
-    args must at least be {"threads": 1}
-    """
-
-    # Initialize pool of workers
-    pool = mp.Pool(args["threads"], maxtasksperchild=1)
-
-    splice_graphs = (splice_graph for splice_graph in splice_graph_dict.values())
-    fasta_dicts = (
-        {transcript_id: fasta_dict[transcript_id]} for transcript_id in splice_graph_dict.keys()
-    )
-
-    results = pool.starmap(
-        polish_splice_graph,
-        zip(splice_graphs, fasta_dicts),
-        chunksize=1000  # Number of splice_graphs to process at once
-    )
-    pool.close()
-    pool.join()
-
-    # Add results to splice_graph_dict
-    for i, transcript in enumerate(splice_graph_dict.keys()):
-        splice_graph_dict[transcript] = results[i]
-
-    return splice_graph_dict
+    return bed4_new[["chrom", "chrom_start", "chrom_end", "name"]]

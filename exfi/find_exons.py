@@ -9,35 +9,35 @@ Module to compute positive exons in the bloom filter as follos:
 """
 
 
-# Import everything
-
-from typing import \
-    Iterable, \
-    Tuple
-
 import logging
 
 from subprocess import Popen, PIPE
 
-from exfi.classes import Coordinate, FastaDict
+import pandas as pd
+from exfi.io.bed import BED3_COLS, BED3_DTYPES
 
-def _process_output(process: Popen) -> Iterable[Coordinate]:
-    """Get lines in bed format from the output of a Popen.
+
+def process_output(process):
+    """Get lines in BED3 format from the output of a Popen.
 
     :param Popen process: Popen object.
     """
-    for stdout_line in iter(process.stdout.readline, b''):
-        chromosome, start, end = stdout_line.decode().strip().split()
-        coordinate = Coordinate(chromosome, int(start), int(end))
-        yield coordinate
-        # yield Coordinate(stdout_line.decode().strip().split())
+
+    bed3 = pd.DataFrame(
+        data=[
+            stdout_line.decode().strip().split()
+            for  stdout_line in iter(process.stdout.readline, b'')
+        ],
+        columns=BED3_COLS
+    ).astype(BED3_DTYPES)
+
     process.stdout.close()
     process.wait()
 
+    return bed3
 
-def _get_fasta(
-        transcriptome_dict: FastaDict, iterable_of_bed: Iterable[Coordinate]) -> \
-        Iterable[Tuple[str, str]]:
+
+def get_fasta(transcriptome_dict, iterable_of_bed):
     """Extract subsequences in trancriptome_fn according to locis.
 
     :param dict transcriptome_dict: FastaDict of the transcriptome
@@ -51,8 +51,8 @@ def _get_fasta(
             yield (identifier, seq)
 
 
-def _find_exons_pipeline(args: dict) -> Iterable[Coordinate]:
-    """Find exons according to the Bloom filter -> BED
+def find_exons(args):
+    """Find exons according to the Bloom filter -> BED3
 
     Main pipeline:
     - Check every kmer,
@@ -89,4 +89,5 @@ def _find_exons_pipeline(args: dict) -> Iterable[Coordinate]:
     p_filter = Popen(c_filter, stdin=p_merge1.stdout, stdout=PIPE)
     p_merge2 = Popen(c_merge2, stdin=p_filter.stdout, stdout=PIPE)
     p_kmers.stdout.close()
-    yield from _process_output(p_merge2)
+    logging.info('Done')
+    return process_output(p_merge2)

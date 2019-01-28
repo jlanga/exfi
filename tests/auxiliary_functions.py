@@ -4,49 +4,47 @@
 Auxiliary functions and classes for testing
 """
 
-from typing import Iterable, List, Tuple
 
 import tempfile
 import shutil
 from subprocess import \
     Popen, PIPE
 
+import numpy as np
+import pandas as pd
+
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
 from exfi.find_exons import \
-    _process_output, \
-    _get_fasta, \
-    _find_exons_pipeline
+    process_output, \
+    get_fasta, \
+    find_exons
 
 from exfi.build_baited_bloom_filter import \
     _get_build_bf_command
 
-from exfi.classes import FastaDict, Coordinate
-
-def _command_to_list(command: List[str]) -> List[Coordinate]:
+def _command_to_list(command):
     """Execute command and return output as list of strings"""
     process = Popen(command, stdout=PIPE, shell=False)
-    results = list(_process_output(process))
+    results = process_output(process)
     return results
 
 
 
-def _fasta_to_list(filename: str) -> List[Tuple[str, str]]:
+def _fasta_to_list(filename):
     """fasta to list with SimpleFastaParser"""
     with open(filename, "r") as handle:
         return [record for record in SimpleFastaParser(handle)]
 
 
 
-def _getfasta_to_list(
-        transcriptome_dict: FastaDict, iterable_of_bed: Iterable[Coordinate]) \
-        -> List[Tuple[str, str]]:
+def _getfasta_to_list(transcriptome_dict, iterable_of_bed):
     """Convert to a list the generator from getfasta"""
-    return list(_get_fasta(transcriptome_dict, iterable_of_bed))
+    return list(get_fasta(transcriptome_dict, iterable_of_bed))
 
 
 
-def _silent_popen(command: List[str]) -> Popen:
+def _silent_popen(command):
     """Create a Popen with no stderr and stdout"""
     return Popen(
         command,
@@ -57,7 +55,7 @@ def _silent_popen(command: List[str]) -> Popen:
 
 
 
-def _bf_and_process(reads_fns: List[str], transcriptome_fn: str) -> List[Coordinate]:
+def _bf_and_process(reads_fns, transcriptome_fn):
     """(list of str, str) -> list
 
     Build the BF and process the reads
@@ -78,6 +76,13 @@ def _bf_and_process(reads_fns: List[str], transcriptome_fn: str) -> List[Coordin
     command = _get_build_bf_command(args, reads_fns)
     process = _silent_popen(command)
     process.wait()
-    results = _find_exons_pipeline(args)
+    results = find_exons(args)
     shutil.rmtree(tmp_dir)
-    return list(results)
+    bed3 = pd.DataFrame(
+        data=results,
+        columns=["chrom", "chromStart", "chromEnd"]
+    )
+
+    bed3.chromStart.astype(np.int64)
+    bed3.chromEnd.astype(np.int64)
+    return bed3

@@ -1,130 +1,42 @@
 #!/usr/bin/env python3
 
-import argparse
+
+'''gfa1_to_gapped_transcripts: convert a splice graph in GFA1 format into a
+FASTA file where predicted introns are annotated with a trail of Ns
+'''
 
 import logging
 
-from os.path import \
-    isfile, \
-    abspath
+from os.path import abspath
 
-from exfi import __version__
-from exfi.io.gfa1_to_fasta import \
-    gfa1_to_gapped_transcripts
-
-
-
-
-
-parser = argparse.ArgumentParser(
-    usage='gfa1_to_gapped_transcript -i splice_graph.gfa -o '
-        'gapped_transcripts.fa',
-    description='Compose the transcriptome as a set of exons separated with '
-        'gaps',
-    epilog='Jorge Langa. Send issues and pull requests to github.com/jlanga/'
-           'exfi',
-)
-
-parser.add_argument(
-    '--version',
-    action='version',
-    version='%(prog)s {version}'.format(
-        version=__version__
-    )
-)
-
-parser.add_argument(
-    '--input-gfa',
-    '-i',
-    type=str,
-    required=True,
-    help='Input splice graph in GFA1 format (the results from build_splicegraph)',
-    dest='gfa1',
-    metavar='FILE'
-)
-
-parser.add_argument(
-    '--output-fasta',
-    '-o',
-    type=str,
-    required=True,
-    help='Path to output fasta file (the gapped transcripts)',
-    dest="fasta",
-    metavar="FILE"
-)
-
-parser.add_argument(
-    '--number-of-ns',
-    '-n',
-    type=int,
-    required=False,
-    help='Put this number of N between exons [100]',
-    dest="number_of_ns",
-    metavar="INT",
-    default=100
-)
-
-parser.add_argument(
-    '--soft-mask-overlaps',
-    '-s',
-    action='store_true',
-    required=False,
-    help='Mask overlaps as lowercase nucleotides [False]',
-    dest="soft_mask_overlaps",
-    default=False
-)
-
-parser.add_argument(
-    '--hard-mask-overlaps',
-    '-m',
-    action='store_true',
-    required=False,
-    help='Mask overlaps as Ns [False]',
-    dest="hard_mask_overlaps",
-    default=False
-)
-
-parser.add_argument(
-    "-v", "--verbose",
-    action="store_true",
-    dest="verbose",
-    help="Increase output verbosity"
-)
-
-parser.add_argument(
-    "-d", "--debug",
-    action="store_true",
-    dest="debug",
-    help="Log everything!"
-)
+from exfi.arguments import gfa1_to_gapped_transcripts_args
+from exfi.logger import set_up_logger
+from exfi.io.gfa1_to_fasta import gfa1_to_gapped_transcripts
 
 
 if __name__ == "__main__":
 
+    PARSER = gfa1_to_gapped_transcripts_args()
+
     # Parse
-    args = vars(parser.parse_args())
-    args["gfa1"] = abspath(args["gfa1"])
-    args["fasta"] = abspath(args["fasta"])
+    ARGS = vars(PARSER.parse_args())
+    ARGS["gfa1"] = abspath(ARGS["gfa1"])
+    ARGS["fasta"] = abspath(ARGS["fasta"])
 
-    # Set up logger
-    logger = logging.getLogger()
-    logging.basicConfig(format='%(asctime)s\t%(module)s\t%(message)s', level=logging.ERROR)
-    if args["verbose"]:
-        logger.setLevel(logging.INFO)
-    if args["debug"]:
-        logger.setLevel(logging.DEBUG)
+    # Set up the logger
+    LOGGER = set_up_logger(ARGS)
 
-    masking = "none"
-    if args["soft_mask_overlaps"] == True:
-        masking = "soft"
-    if args["hard_mask_overlaps"] == True:
-        masking = "hard"
+    MASKING = "none"
+    if ARGS["soft_mask_overlaps"]:
+        MASKING = "soft"
+    if ARGS["hard_mask_overlaps"]:
+        MASKING = "hard"
 
     gfa1_to_gapped_transcripts(
-        fasta_out=args["fasta"],
-        gfa1_in=args["gfa1"],
-        gap_size=args["number_of_ns"],
-        masking=masking
+        fasta_out=ARGS["fasta"],
+        gfa1_in=ARGS["gfa1"],
+        gap_size=ARGS["number_of_ns"],
+        masking=MASKING
     )
 
     logging.info("Done!")

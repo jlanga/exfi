@@ -27,7 +27,7 @@ def bed3_to_bed4(bed3):
         bed4.chrom + ":" + \
         bed4.chrom_start.map(str) + "-" + \
         bed4.chrom_end.map(str)
-    return bed4
+    return bed4.sort_values(['chrom', 'chrom_start'])
 
 
 def bed4_to_node2coordinates(bed4):

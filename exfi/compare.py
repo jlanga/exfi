@@ -23,6 +23,16 @@ TP_DF_DTYPES = {
     'chrom_true': object, 'chrom_start_true': np.int, 'chrom_end_true': np.int
 }
 
+STATS_COLS = [
+    'true', 'predicted', 'true_positives', 'false_positives', 'false_negatives',
+    'precision', 'recall', 'f_1'
+]
+
+STATS_DTYPES = {
+    'true': np.float, 'predicted': np.float, 'true_positives': np.float,
+    'false_positives': np.float, 'false_negatives': np.float,
+    'precision': np.float, 'recall': np.float, 'f_1': np.float
+}
 
 def bedtools_intersect(bed1_fn, bed2_fn, additional_flags=None):
     """Bedtools intersect wrapper
@@ -82,7 +92,7 @@ def classify(bed3_true, bed3_pred, fraction=0.95):
     )\
     .rename(columns={i: j for i, j in enumerate(TP_DF_COLS)})\
     .astype(dtype=TP_DF_DTYPES)\
-    .drop(columns=6)\
+    .drop(columns=6)
 
     false_positives_df = bedtools_intersect(
         bed1_fn=bed3_pred_fn,
@@ -112,19 +122,37 @@ def classify(bed3_true, bed3_pred, fraction=0.95):
 
 
 def compute_precision(true_positives, false_positives):
-    """Compute precision"""
+    """Compute precision
+
+    >>> compute_precision(0, 10)
+    0.0
+    >>> compute_precision(446579, 13932)
+    0.969747
+    """
     return true_positives / (true_positives + false_positives)
 
 
 
 def compute_recall(true_positives, false_negatives):
-    """Compute recall"""
+    """Compute recall
+
+    >>> compute_recall(0, 10)
+    0.0
+    >>> compute_recall(446579, 48621)
+    0.901815
+    """
     return true_positives / (true_positives + false_negatives)
 
 
 
 def compute_f_1(true_positives, false_positives, false_negatives):
-    """Compute F_1"""
+    """Compute F_1
+
+    >>> compute_f_1(0, 10, 10)
+    0
+    >>> compute_f_1(446579, 13932, 48621)
+    0.934548
+    """
     precision = compute_precision(true_positives, false_positives)
     recall = compute_recall(true_positives, false_negatives)
     return 2 * precision * recall * (precision + recall)
@@ -141,8 +169,8 @@ def compute_stats_per_exon(classification):
     fp_exons = classification['false_positives'].shape[0]
     fn_exons = classification['false_negatives'].shape[0]
 
-    true_exons = tp_exons.shape[0] + fn_exons.shape[0]
-    pred_exons = tp_exons.shape[0] + tp_exons.shape[0]
+    true_exons = tp_exons + fn_exons
+    pred_exons = tp_exons + tp_exons
 
     stats = pd.DataFrame(
         data=[[
@@ -152,40 +180,30 @@ def compute_stats_per_exon(classification):
             compute_recall(tp_exons, fn_exons),
             compute_f_1(tp_exons, fp_exons, fn_exons)
         ]],
-        columns=[
-            'true', 'predicted',
-            'true_positives', 'false_positives', 'false_negatives',
-            'precision', 'recall', 'f_1'
-        ]
-    )
+        columns=STATS_COLS
+    )\
+    .astype(STATS_DTYPES)
 
     return stats
 
-
-# def separate_true_positives(classification):
-#     tp_true_df = tp_df[['chrom_true', 'chrom_start_true', 'chrom_end_true']]
-#     tp_true_df.columns = BED3_COLS
-#
-#     tp_pred_df = tp_df[['chrom_pred', 'chrom_start_pred', 'chrom_end_pred']]
-#     tp_pred_df.columns = BED3_COLS
-#
-#     return tp_true_df, tp_pred_df
 
 
 def compute_true_bases(classification):
     """Compute the total number of bases in the truth splice graph"""
     true_positives, _, false_negatives = classification.values()
     return \
-        np.sum(true_positives.chrom_end - true_positives.chrom_start) + \
+        np.sum(true_positives.chrom_end_true - true_positives.chrom_start_true) + \
         np.sum(false_negatives.chrom_end - false_negatives.chrom_start)
+
 
 
 def compute_pred_bases(classification):
     """Compute the total number of bases in the predicted splice graph"""
     true_positives, false_positives, _ = classification.values()
     return \
-        np.sum(true_positives.chrom_end - true_positives.chrom_start) + \
+        np.sum(true_positives.chrom_end_pred - true_positives.chrom_start_pred) + \
         np.sum(false_positives.chrom_end - false_positives.chrom_start)
+
 
 
 def compute_true_positive_bases(classification):
@@ -199,6 +217,7 @@ def compute_true_positive_bases(classification):
         true_positives[['chrom_end_true', 'chrom_end_pred']].min(axis=1) -
         true_positives[['chrom_start_true', 'chrom_start_pred']].max(axis=1)
     )
+
 
 
 def compute_false_positive_bases(classification):
@@ -246,6 +265,7 @@ def compute_false_negative_bases(classification):
     return fn_bases
 
 
+
 def compute_stats_per_base(classification):
     """Compute the classification stats per base pair
 
@@ -268,11 +288,8 @@ def compute_stats_per_base(classification):
             compute_recall(tp_bases, fn_bases),
             compute_f_1(tp_bases, fp_bases, fn_bases)
         ]],
-        columns=[
-            'true_bases', 'predicted_bases',
-            'true_positives', 'false_positives', 'false_negatives',
-            'precision', 'recall', 'f_1'
-        ]
-    )
+        columns=STATS_COLS
+    )\
+    .astype(STATS_DTYPES)
 
     return stats

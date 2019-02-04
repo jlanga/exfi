@@ -274,6 +274,16 @@ def add_hard_mask_overlaps(parser):
         default=False
     )
 
+def add_to_gapped_transcript(parser):
+    """Add the gapped_transcript parser"""
+    parser.add_argument(
+        '--gapped-transcript', '-g',
+        action='store_true',
+        required=False,
+        help='Convert to gapped transcript instead of separated exons',
+        dest='gapped_transcript',
+        default=False
+    )
 
 def add_number_of_ns(parser):
     """Add the number_of_ns parser"""
@@ -388,10 +398,10 @@ def build_splice_graph_args():
     return parser
 
 
-def gfa1_to_exons_args():
+def gfa1_to_fasta_args():
     """Create the gfa1_to_exons parser"""
     parser = argparse.ArgumentParser(
-        usage='gfa_to_exons -i splice_graph.gfa -o exons.fa',
+        usage='gfa_to_fasta -i splice_graph.gfa -o exons.fa',
         description='Extract the exons from a splice graph in GFA format. '
                     'Optionally mask overlaps between consecutive exons',
         epilog=EPILOG
@@ -399,28 +409,12 @@ def gfa1_to_exons_args():
     add_common_args(parser)
     add_input_gfa(parser)
     add_output_fasta(parser)
-    add_soft_mask_overlaps(parser)
-    add_hard_mask_overlaps(parser)
-    return parser
-
-
-
-def gfa1_to_gapped_transcripts_args():
-    """Create the gfa1_to_gapped_transcripts parser"""
-    parser = argparse.ArgumentParser(
-        usage='gfa1_to_gapped_transcript -i splice_graph.gfa -o '
-              'gapped_transcripts.fa',
-        description='Compose the transcriptome as a set of exons separated '
-                    'with gaps',
-        epilog=EPILOG,
-    )
-    add_common_args(parser)
-    add_input_gfa(parser)
-    add_output_fasta(parser)
+    add_to_gapped_transcript(parser)
     add_number_of_ns(parser)
     add_soft_mask_overlaps(parser)
     add_hard_mask_overlaps(parser)
     return parser
+
 
 
 def compare_to_gff_args():

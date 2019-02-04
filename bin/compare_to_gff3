@@ -28,10 +28,13 @@ if __name__ == '__main__':
 
     # Check what is being read
     if ARGS['input_splice_graph'].endswith(".bed"):
+        logging.info("Input is BED")
         BED3_PRED = read_bed3(ARGS['input_splice_graph'])
     elif ARGS['input_splice_graph'].endswith(".gff3"):
+        logging.info('Input is GFF3')
         BED3_PRED = gff3_to_bed3(ARGS['input_splice_graph'], mode='gmap')
     elif ARGS['input_splice_graph'].endswith(".gfa"):
+        logging.info('Input is GFA1')
         BED3_PRED = gfa1_to_bed4(ARGS['input_splice_graph'])[BED3_COLS]
     else:
         sys.exit(

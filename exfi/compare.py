@@ -3,6 +3,7 @@
 """exfi.compare.py: submodule to compare BED, GFA and GFF3 files to measure exfi's performance"""
 
 import sys
+import logging
 from subprocess import Popen, PIPE
 from os import remove
 from tempfile import mkstemp
@@ -75,19 +76,23 @@ def classify(bed3_true, bed3_pred, fraction=0.95):
 
     Result is a dict where values are dataframes
     """
+    logging.info('Classifying')
 
     bed3_pred_fn = mkstemp()[1]
     bed3_true_fn = mkstemp()[1]
 
     # Dump to disk
+    logging.info("Dumping predictions to disk")
     bed3_true\
         .sort_values(by=['chrom', 'chrom_start', 'chrom_end'])\
         .to_csv(path_or_buf=bed3_true_fn, sep='\t', index=False)
 
+    logging.info('Dumping true values to disk')
     bed3_pred\
         .sort_values(by=['chrom', 'chrom_start', 'chrom_end'])\
         .to_csv(path_or_buf=bed3_pred_fn, sep='\t', index=False)
 
+    logging.info('Computing true positives')
     true_positives_df = bedtools_intersect(
         bed1_fn=bed3_pred_fn,
         bed2_fn=bed3_true_fn,
@@ -97,6 +102,7 @@ def classify(bed3_true, bed3_pred, fraction=0.95):
     .astype(dtype=TP_DF_DTYPES)\
     .drop(columns=6)
 
+    logging.info('Computing false positives')
     false_positives_df = bedtools_intersect(
         bed1_fn=bed3_pred_fn,
         bed2_fn=bed3_true_fn,
@@ -105,6 +111,7 @@ def classify(bed3_true, bed3_pred, fraction=0.95):
     .rename(columns={i: j for i, j in enumerate(BED3_COLS)})\
     .astype(BED3_DTYPES)
 
+    logging.info('Computing false negatives')
     false_negatives_df = bedtools_intersect(
         bed1_fn=bed3_true_fn,
         bed2_fn=bed3_pred_fn,
@@ -167,6 +174,8 @@ def compute_stats_per_exon(classification):
 
     Input should be the one from exfi.compare.classify
     """
+
+    logging.info('Computing the stats per exon')
 
     tp_exons = classification['true_positives'].shape[0]
     fp_exons = classification['false_positives'].shape[0]
@@ -274,6 +283,7 @@ def compute_stats_per_base(classification):
 
     Input should be the one from exfi.compare.classify
     """
+    logging.info('Computing the stats per base')
 
     true_bases = compute_true_bases(classification)
     pred_bases = compute_pred_bases(classification)

@@ -28,7 +28,8 @@ setup(
         "bin/build_baited_bloom_filter",
         "bin/build_splice_graph",
         "bin/gfa1_to_exons",
-        "bin/gfa1_to_gapped_transcripts"
+        "bin/gfa1_to_gapped_transcripts",
+        "bin/compare_to_gff3"
     ],
     include_package_data=True,
     zip_safe=False

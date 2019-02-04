@@ -155,7 +155,7 @@ def compute_f_1(true_positives, false_positives, false_negatives):
     """
     precision = compute_precision(true_positives, false_positives)
     recall = compute_recall(true_positives, false_negatives)
-    return 2 * precision * recall * (precision + recall)
+    return 2 * precision * recall / (precision + recall)
 
 
 
@@ -170,7 +170,7 @@ def compute_stats_per_exon(classification):
     fn_exons = classification['false_negatives'].shape[0]
 
     true_exons = tp_exons + fn_exons
-    pred_exons = tp_exons + tp_exons
+    pred_exons = tp_exons + fp_exons
 
     stats = pd.DataFrame(
         data=[[
@@ -293,3 +293,14 @@ def compute_stats_per_base(classification):
     .astype(STATS_DTYPES)
 
     return stats
+
+#
+# def compare_gfa1_to_gff3(
+#     input_gfa1, input_gff3, gff3_type='ensembl', fraction=.95):
+#     """Compare a GFA1 splice graph against a GFF3 annotation of a genome
+#
+#     gff3_type denotes the source of the GFF3 file (ensembl or gmap)
+#     fraction stands for the minimum simmilarity to consider two exons equal
+#     """
+#     bed3_pred = gfa1_to_bed4(input_gfa1)
+#     bed3_true = gff3_to_bed(input_gff3, )

@@ -288,6 +288,53 @@ def add_number_of_ns(parser):
     )
 
 
+
+def add_input_splice_graph(parser):
+    """Add the input_splice_graph parser"""
+    parser.add_argument(
+        '--input-splice-graph', '-i',
+        type=str,
+        required=True,
+        help='Input splice graph in BED, GFA or GFF3 format',
+        dest='input_splice_graph',
+        metavar='FILE'
+    )
+
+def add_input_gff3(parser):
+    """Add the input_gff3 parser"""
+    parser.add_argument(
+        '--input-gff3', '-t',
+        type=str,
+        required=True,
+        help='Input splice graph in GFF3 format (a genome assembly annotation)',
+        dest='input_gff3',
+        metavar='FILE'
+    )
+
+def add_gff3_type(parser):
+    """Add the gff3_type parser"""
+    parser.add_argument(
+        '--type-gff3', '-m',
+        type=str,
+        help='Source of the GFF3 type (ensembl or gmap)',
+        choices=['ensembl', 'gmap'],
+        default='ensembl',
+        metavar='STR',
+        dest='gff3_type'
+    )
+
+def add_input_fraction(parser):
+    """Add the fraction parser"""
+    parser.add_argument(
+        '--simmilarity-fraction', '-s',
+        type=float,
+        help='Minimum simmilarity between exons to consider them equal',
+        default=0.95,
+        metavar='FLOAT',
+        dest='fraction'
+    )
+
+
 def build_baited_bloom_filter_args():
     """Create the parser for build_baited_bloom_filter"""
     parser = argparse.ArgumentParser(
@@ -373,4 +420,23 @@ def gfa1_to_gapped_transcripts_args():
     add_number_of_ns(parser)
     add_soft_mask_overlaps(parser)
     add_hard_mask_overlaps(parser)
+    return parser
+
+
+def compare_to_gff_args():
+    """Create the compare_gfa_to_gff parser"""
+    parser = argparse.ArgumentParser(
+        usage='compare_gff_to_gfa -i splice_graph.gfa -t annotation.gff3 -m '
+              'ensembl -f 0.95',
+        description=\
+            'Compare a splice graph in GFA1/BED/GFF3 format against a genome annotation '
+            'in gff3 format.',
+        epilog=EPILOG
+    )
+    add_common_args(parser)
+    add_input_splice_graph(parser)
+    add_input_gff3(parser)
+    add_gff3_type(parser)
+    add_input_fraction(parser)
+
     return parser

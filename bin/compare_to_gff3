@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+
+"""compare_to_gff3: script to compare a transcriptome in gff3 format against
+a GFA1 prediction from exfi
+"""
+
+import logging
+import sys
+
+from exfi.arguments import compare_to_gff_args
+from exfi.logger import set_up_logger
+from exfi.io.bed import BED3_COLS
+from exfi.io.gfa1_to_bed import gfa1_to_bed4
+from exfi.io.gff3_to_bed import gff3_to_bed3
+from exfi.io.read_bed import read_bed3
+from exfi.compare import \
+    classify, compute_stats_per_base, compute_stats_per_exon
+
+
+if __name__ == '__main__':
+
+    # Parse arguments
+    PARSER = compare_to_gff_args()
+    ARGS = vars(PARSER.parse_args())
+
+    # Set up logger
+    LOGGER = set_up_logger(ARGS)
+
+    # Check what is being read
+    if ARGS['input_splice_graph'].endswith(".bed"):
+        BED3_PRED = read_bed3(ARGS['input_splice_graph'])
+    elif ARGS['input_splice_graph'].endswith(".gff3"):
+        BED3_PRED = gff3_to_bed3(ARGS['input_splice_graph'], mode='gmap')
+    elif ARGS['input_splice_graph'].endswith(".gfa"):
+        BED3_PRED = gfa1_to_bed4(ARGS['input_splice_graph'])[BED3_COLS]
+    else:
+        sys.exit(
+            "Unknown input file type: {file}\nValid file types are .bed .gfa .gff3".format(
+                file=ARGS['input_splice_graph'])
+        )
+
+    BED3_TRUE = gff3_to_bed3(ARGS['input_gff3'], mode='ensembl')
+
+    CLASSIFICATION = classify(BED3_TRUE, BED3_PRED, fraction=ARGS['fraction'])
+
+    EXON_STATS = compute_stats_per_exon(CLASSIFICATION)
+    BASE_STATS = compute_stats_per_base(CLASSIFICATION)
+
+    EXON_STATS.insert(loc=0, column='type', value='per_exon')
+    EXON_STATS.insert(loc=1, column='fraction', value=ARGS['fraction'])
+
+    BASE_STATS.insert(loc=0, column='type', value='per_base')
+    BASE_STATS.insert(loc=1, column='fraction', value=ARGS['fraction'])
+
+    EXON_STATS.to_csv(path_or_buf=sys.stdout, sep='\t', index=False)
+    BASE_STATS.to_csv(path_or_buf=sys.stdout, sep='\t', index=False)

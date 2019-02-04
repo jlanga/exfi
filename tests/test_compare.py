@@ -70,21 +70,6 @@ class TestBedtoolsIntersect(TestCase):
 class TestClassify(TestCase):
     """Tests for exfi.compare.classify"""
 
-    # def test_empty(self):
-    #     observed = classify(bed3_true=BED3_EMPTY, bed3_pred=BED3_EMPTY, fraction=0.99)
-    #     self.assertTrue(
-    #         observed['true_positives']\
-    #             .equals(CLASSIFICATION_EMPTY['true_positives'])
-    #     )
-    #     self.assertTrue(
-    #         observed['false_positives']\
-    #             .equals(CLASSIFICATION_EMPTY['false_positives'])
-    #     )
-    #     self.assertTrue(
-    #         observed['false_negatives']\
-    #             .equals(CLASSIFICATION_EMPTY['false_negatives'])
-    #     )
-
     def test_complex(self):
         """exfi.compare.classify: Test some exons"""
         observed = classify(
@@ -117,15 +102,14 @@ class TestClassify(TestCase):
 
 
 
-
 class TestComputeStatsPerExon(TestCase):
     """Tests for exfi.compare.compute_stats_per_exon"""
 
     def test_complex(self):
         """exfi.compare.compute_stats_per_exon: some exons"""
         observed = compute_stats_per_exon(CLASSIFICATION)
-        print(observed.dtypes)
-        print(STATS_PER_EXON.dtypes)
+        print(observed.values.tolist())
+        print(STATS_PER_EXON.values.tolist())
         self.assertTrue(observed.equals(STATS_PER_EXON))
 
 
@@ -188,6 +172,7 @@ class TestComputeStatsPerBase(TestCase):
         """exfi.compare.compute_stats_per_base: some exons"""
         observed = compute_stats_per_base(CLASSIFICATION)
         print(observed.values.tolist())
+        print(STATS_PER_BASE.values.tolist())
         self.assertTrue(observed.equals(STATS_PER_BASE))
 
 

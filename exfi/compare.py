@@ -44,7 +44,10 @@ def bedtools_intersect(bed1_fn, bed2_fn, additional_flags=None):
 
     returns a list of lists ()
     """
-    command = ["bedtools", "intersect", "-a", bed1_fn, "-b", bed2_fn] + additional_flags
+    if additional_flags is None:
+        additional_flags = []
+    command = ["bedtools", "intersect", "-a", bed1_fn, "-b", bed2_fn] + \
+        additional_flags
     process = Popen(command, stdout=PIPE, stderr=PIPE)
     bed3 = pd.DataFrame(
         data=[

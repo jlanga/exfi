@@ -3,8 +3,6 @@
 """exfi.io.gff3_to_bed.py: exfi submodule to convert a gff3 to bed3 where
 coordinates are with respect to the transcriptome"""
 
-import sys
-
 import logging
 
 import pandas as pd
@@ -46,17 +44,17 @@ def gff3_to_bed3(gff3_in, mode="ensembl"):
 
     logging.info('Extracting the transcript ids')
     if mode == "gmap":
+        logging.info("gff3 comes from gmap")
         exons = raw[raw['type'] == 'cDNA_match'].drop(columns='type')
         exons['transcript_id'] = exons['attributes']\
             .str.split(";").str[1]\
             .str.extract(r'Name=([\w\d.-_]+)')
-    elif mode == "ensembl":
+    else:
+        logging.info('gff3 comes from ensembl')
         exons = raw[raw['type'] == 'exon'].drop(columns='type')
         exons["transcript_id"] = exons["attributes"]\
             .str.split(";", 1, ).str[0]\
             .str.extract(r'Parent=transcript:([\w\d.-_]+)')
-    else:
-        sys.exit("Unknown mode")
 
 
     exons = exons[['transcript_id', 'strand', 'start', 'end']]

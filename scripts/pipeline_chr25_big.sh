@@ -62,17 +62,6 @@ build_splice_graph \
     --verbose \
     --threads 4
 
-build_splice_graph \
-    --input-fasta data/Danio_rerio.GRCz10.cdna.25.fa \
-    --input-bloom results/drer25sim_k${k}_m${m}_l${l}.bloom \
-    --kmer $k \
-    --max-fp-bases 3 \
-    --correct \
-    --polish \
-    --collapse \
-    --output-gfa results/drer25sim_correct_polish_collapse.gfa \
-    --verbose \
-    --threads 4
 
 build_splice_graph \
     --input-fasta data/Danio_rerio.GRCz10.cdna.25.fa \
@@ -80,18 +69,18 @@ build_splice_graph \
     --kmer $k \
     --max-fp-bases 3 \
     --correct \
+    --polish \
     --output-gfa results/drer25real.gfa \
     --verbose \
     --threads 4
 
-gfa1_to_exons \
+gfa1_to_fasta \
     --input-gfa results/drer25sim.gfa \
     --output-fasta results/drer25sim_exons.fa \
     --soft-mask-overlaps
 
-gfa1_to_exons \
+gfa1_to_fasta \
     --input-gfa results/drer25real.gfa \
     --output-fasta results/drer25real_exons.fa \
+    --gapped-transcript \
     --soft-mask-overlaps
-
-bash src/pr_chr25.sh

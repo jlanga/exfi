@@ -1,159 +1,54 @@
 #!/usr/bin/env python3
 
-import argparse
+"""build_baited_bloom_filter: script to build a bloom filter from a set of
+(genomic) reads that have related to a fasta file (a transcriptome)"""
+
 import logging
-import sys
-from os.path import isfile, exists, dirname, abspath
-from os import \
-    makedirs, \
-    remove
+from os.path import exists, dirname, abspath
+from os import makedirs
 from shutil import which
 
-from exfi import __version__
+from exfi.arguments import build_baited_bloom_filter_args
+from exfi.logger import set_up_logger
+
 from exfi.build_baited_bloom_filter import build_baited_bloom_filter
-
-parser = argparse.ArgumentParser(
-    usage='build_baited_bloom_filter '
-          '-i transcriptome.fa '
-          '-o bloom_filter.bf '
-          '-k 30 '
-          'reads1.fq ... readsn.fq',
-    description='Build a Bloom filter with reads that have at least one kmer '
-                'in the transcriptome.',
-    epilog='Jorge Langa. Send issues and pull requests to github.com/jlanga/'
-           'exfi'
-)
-
-parser.add_argument(
-    '--version',
-    action='version',
-    version='%(prog)s {version}'.format(
-        version=__version__
-    )
-)
-
-parser.add_argument(
-    '--input-fasta', '-f',
-    type=str,
-    required=True,
-    help='Input transcriptome in FASTA format',
-    dest='fasta',
-    metavar='FILE'
-)
-
-parser.add_argument(
-    '--kmer-size', '-k',
-    type=int,
-    required=False,
-    help='The size of the k-mer [31]',
-    dest='kmer',
-    metavar='INT',
-    default=31
-)
-
-parser.add_argument(
-    '--bloom-size', '-b',
-    type=str,
-    required=False,
-    help="Size of the Bloom filter [500M]. This is the total size. The final Bloom filter will be"
-        "size / levels.",
-    dest="bloom_size",
-    metavar='STR',
-    default='500M'
-)
-
-parser.add_argument(
-    '--levels', '-l',
-    type=int,
-    required=False,
-    help='Build a cascading bloom filter with N levels and '
-         'output the last level [1]',
-    dest='levels',
-    metavar='INT',
-    default=1
-)
-
-parser.add_argument(
-    '--threads', '-t',
-    type=int,
-    required=False,
-    help='Number of threads to build Bloom filters and bait reads',
-    dest='threads',
-    metavar='INT',
-    default=1
-)
-
-parser.add_argument(
-    '--output-bloom', '-o',
-    type=str,
-    required=True,
-    help='Path to write the resulting Bloom filter',
-    dest="bloom",
-    metavar="FILE"
-)
-
-parser.add_argument(
-    metavar='reads',
-    type=str,
-    nargs='+',
-    help='FASTA/Q files (gz or not)',
-    dest='reads'
-)
-
-parser.add_argument(
-    "-v", "--verbose",
-    action="store_true",
-    dest="verbose",
-    help="Increase output verbosity"
-)
-
-parser.add_argument(
-    "-d", "--debug",
-    action="store_true",
-    dest="debug",
-    help="Log everything!"
-)
 
 if __name__ == '__main__':
 
+    PARSER = build_baited_bloom_filter_args()
+
     # Store arguments
-    args = vars(parser.parse_args())
-    args["fasta"] = abspath(args["fasta"])
-    args["bloom"] = abspath(args["bloom"])
-    args["threads"] = int(args["threads"])  # I don't know why it is parsed as tuple
+    ARGS = vars(PARSER.parse_args())
+    ARGS["fasta"] = abspath(ARGS["fasta"])
+    ARGS["bloom"] = abspath(ARGS["bloom"])
+    ARGS["threads"] = int(ARGS["threads"])  # It is parsed as tuple
 
-    # Set up logger
-    logger = logging.getLogger()
-    logging.basicConfig(
-        format='%(asctime)s\t%(module)s\t%(message)s',
-        level=logging.ERROR
-    )
-    if args["verbose"]:
-        logger.setLevel(logging.INFO)
-    if args["debug"]:
-        logger.setLevel(logging.DEBUG)
-
+    # Set up the logger
+    LOGGER = set_up_logger(ARGS)
 
     # Check inputs
     logging.info('Checking input parameters')
-    assert args["kmer"] >= 1, 'ERROR: incorrect kmer size'
+    assert ARGS["kmer"] >= 1, 'ERROR: incorrect kmer size'
     # assert bloom_size
-    assert args["levels"] >= 1, 'ERROR: incorrect number of levels'
-    assert args["threads"] >= 1, 'ERROR: incorrect number of threads'
+    assert ARGS["levels"] >= 1, 'ERROR: incorrect number of levels'
+    assert ARGS["threads"] >= 1, 'ERROR: incorrect number of threads'
 
     # Check if programs are in path
     logging.info('Checking if biobloom* and abyss-bloom are in $PATH')
-    assert which('biobloommaker') is not None, 'ERROR: biobloommaker not in PATH'
-    assert which('biobloomcategorizer') is not None, 'ERROR: biobloomcategorizer not in PATH'
-    assert which('abyss-bloom') is not None, 'ERROR: abyss-bloom not in PATH'
+    assert which('biobloommaker') is not None, \
+        'ERROR: biobloommaker not in PATH'
+    assert which('biobloomcategorizer') is not None, \
+        'ERROR: biobloomcategorizer not in PATH'
+    assert which('abyss-bloom') is not None, \
+        'ERROR: abyss-bloom not in PATH'
 
     # Create output folder if it doesn't exist
-    output_dir = dirname(args["bloom"])
-    if output_dir != "" and not exists(output_dir):
-        makedirs(output_dir)
+    OUTPUT_DIR = dirname(ARGS["bloom"])
+    if OUTPUT_DIR != "" and not exists(OUTPUT_DIR):
+        makedirs(OUTPUT_DIR)
 
     # Run the program
     logging.info('Running build_baited_bloom_filter')
-    build_baited_bloom_filter(args)
+    build_baited_bloom_filter(ARGS)
 
     logging.info("Done!")

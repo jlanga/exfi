@@ -59,13 +59,14 @@ script:
     --kmer 27
     --max-fp-bases 5
     --output-gfa test_exons_raw.gfa
-  - gfa1_to_exons
+  - gfa1_to_fasta
     --input-gfa test_exons_raw.gfa
     --output-fasta exons.fa
     --soft-mask-overlaps
-  - gfa1_to_gapped_transcripts
+  - gfa1_to_fasta
     --input-gfa test_exons_raw.gfa
     --output-fasta gapped_transcripts.fa
+    --gapped-transcript
     --number-of-ns 100
     --hard-mask-overlaps
   - cat exons.fa

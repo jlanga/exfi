@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 
-import argparse
+"""build_splice_graph: given a bloom filter of genomic kmers, predict exons in
+a transcriptome.
+"""
 
 import logging
 
-from os.path import \
-    isfile, \
-    abspath
+from os.path import abspath
 
-from Bio import SeqIO
-
-from exfi import __version__
+from exfi.arguments import build_splice_graph_args
+from exfi.logger import set_up_logger
 from exfi.find_exons import find_exons
 from exfi.io.bed import bed3_to_bed4
 from exfi.io.fasta_to_dict import fasta_to_dict
@@ -19,179 +18,36 @@ from exfi.correct import correct_bed4
 from exfi.io.bed4_to_gfa1 import bed4_to_gfa1
 
 
-
-parser = argparse.ArgumentParser(
-    usage='build_splicegraph -i transcriptome.fa -b bloom_filter.bf -k 30 '
-          '-o exome.gfa',
-    description='Store the predicted exome in GFA format',
-    epilog='Jorge Langa. Send issues and pull requests to github.com/jlanga/'
-           'exfi',
-)
-
-parser.add_argument(
-    '--version',
-    action='version',
-    version='%(prog)s {version}'.format(
-        version=__version__
-    )
-)
-
-parser.add_argument(
-    '--input-fasta',
-    '-f',
-    type=str,
-    required=True,
-    help='Input transcriptome in FASTA format',
-    dest='fasta',
-    metavar='FILE'
-)
-
-parser.add_argument(
-    '--input-bloom',
-    '-b',
-    type=str,
-    required=True,
-    help='Bloom filter with genomic sequences (from build_baited_bloom_filter or'
-        'abyss-bloom)',
-    dest='bloom',
-    metavar='BLOOM'
-)
-
-parser.add_argument(
-    '--kmer-size',
-    '-k',
-    type=int,
-    required=True,
-    help='The size of the k-mer (enter the same as in the bloom filter) [31]',
-    dest='kmer',
-    metavar='KMER',
-    default=31
-)
-
-parser.add_argument(
-    '--max-fp-bases',
-    '-m',
-    type=int,
-    required=False,
-    help='Maximum number of consecutive false positives [5]',
-    dest="max_fp_bases",
-    metavar="INT",
-    default=5
-)
-
-parser.add_argument(
-    '--max-overlap',
-    '-l',
-    type=int,
-    required=False,
-    help='Maximum overlap in bp between pconsecutive exons (0 <= l <= k) [10]',
-    dest='max_overlap',
-    metavar='INT',
-    default=10
-)
-
-parser.add_argument(
-    '--max-gap-size',
-    '-g',
-    type=int,
-    required=False,
-    help="Maximum gap size between predicted exons to try to fill with sealer [10]",
-    dest="max_gap_size",
-    metavar='INT',
-    default=10
-)
-
-parser.add_argument(
-    '--output-gfa',
-    '-o',
-    type=str,
-    required=True,
-    help='Path to output GFA1 file (the splice graph)',
-    dest="gfa1",
-    metavar="FILE"
-)
-
-parser.add_argument(
-    '--collapse',
-    '-c',
-    help='Collapse splice graph by exon sequence [False]',
-    dest='collapse',
-    action="store_true"
-)
-
-parser.add_argument(
-    '--correct',
-    '-C',
-    help='Correct splice graph by using sealer between exons that seem nearby '
-        '[False]',
-    dest='correct',
-    action="store_true"
-)
-
-parser.add_argument(
-    "-v", "--verbose",
-    action="store_true",
-    dest="verbose",
-    help="Increase output verbosity"
-)
-
-parser.add_argument(
-    "-t", "--threads",
-    type=int,
-    help='number of threads to use when possible [1]',
-    dest="threads",
-    metavar="INT",
-    default=1
-)
-
-parser.add_argument(
-    "-p", "--polish",
-    action="store_true",
-    dest="polish",
-    help="Polish overlaps in which a AG-GT signal is detected"
-)
-
-parser.add_argument(
-    "-d", "--debug",
-    action="store_true",
-    dest="debug",
-    help="Log everything!"
-)
-
-args = parser.parse_args()
-
 if __name__ == "__main__":
 
-    args = vars(parser.parse_args())
-    # Convert relative paths to absolute paths, just in case
-    args["bloom"] = abspath(args["bloom"])
-    args["fasta"] = abspath(args["fasta"])
-    args["gfa1"] = abspath(args["gfa1"])
+    PARSER = build_splice_graph_args()
 
-    logger = logging.getLogger()
-    logging.basicConfig(format='%(asctime)s\t%(module)s\t%(message)s', level=logging.ERROR)
-    if args["verbose"]:
-        logger.setLevel(logging.INFO)
-    if args["debug"]:
-        logger.setLevel(logging.DEBUG)
+    ARGS = vars(PARSER.parse_args())
+    # Convert relative paths to absolute paths, just in case
+    ARGS["bloom"] = abspath(ARGS["bloom"])
+    ARGS["fasta"] = abspath(ARGS["fasta"])
+    ARGS["gfa1"] = abspath(ARGS["gfa1"])
+
+    # Set up the logger
+    LOGGER = set_up_logger(ARGS)
 
     # Get predicted exons in bed format
-    bed4 = bed3_to_bed4(find_exons(args))
+    BED4 = bed3_to_bed4(find_exons(ARGS))
 
     # Transcriptome_dict
-    transcriptome_dict = fasta_to_dict(args["fasta"])
+    TRANSCRIPTOME_DICT = fasta_to_dict(ARGS["fasta"])
 
-    if args["polish"]:
-        bed4 = polish_bed4(bed4=bed4, transcriptome_dict=transcriptome_dict)
+    if ARGS["polish"]:
+        BED4 = polish_bed4(bed4=BED4, transcriptome_dict=TRANSCRIPTOME_DICT)
 
-    if args["correct"]:
-        bed4 = correct_bed4(
-            bed4=bed4, transcriptome_dict=transcriptome_dict, args=args
+    if ARGS["correct"]:
+        BED4 = correct_bed4(
+            bed4=BED4, transcriptome_dict=TRANSCRIPTOME_DICT, args=ARGS
         )
 
     # Write to GFA1
     bed4_to_gfa1(
-        gfa1_fn=args["gfa1"], bed4=bed4, transcriptome_dict=transcriptome_dict
+        gfa1_fn=ARGS["gfa1"], bed4=BED4, transcriptome_dict=TRANSCRIPTOME_DICT
     )
 
     logging.info("Done!")

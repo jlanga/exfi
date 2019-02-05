@@ -9,7 +9,7 @@ from os.path import abspath
 
 from exfi.arguments import gfa1_to_fasta_args
 from exfi.logger import set_up_logger
-from exfi.io.gfa1_to_fasta import gfa1_to_exons, gfa1_to_gapped_transcripts
+from exfi.io.gfa1_to_fasta import gfa1_to_fasta
 
 
 if __name__ == "__main__":
@@ -31,18 +31,12 @@ if __name__ == "__main__":
     if ARGS["hard_mask_overlaps"]:
         MASKING = "hard"
 
-    if ARGS['gapped_transcript']:
-        gfa1_to_gapped_transcripts(
-            fasta_out=ARGS['fasta'],
-            gfa1_in=ARGS['gfa1'],
-            masking=MASKING,
-            gap_size=ARGS['number_of_ns'],
-        )
-    else:
-        gfa1_to_exons(
-            fasta_out=ARGS["fasta"],
-            gfa1_in=ARGS["gfa1"],
-            masking=MASKING
-        )
+    gfa1_to_fasta(
+        fasta_out=ARGS['fasta'],
+        gfa1_in=ARGS['gfa1'],
+        masking=MASKING,
+        number_of_ns=ARGS['number_of_ns'],
+        transcripts=ARGS['gapped_transcript']
+    )
 
     logging.info("Done!")

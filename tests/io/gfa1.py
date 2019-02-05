@@ -3,7 +3,6 @@
 """tests.io.gfa1.py: Fragments of GFA1 files"""
 
 import pandas as pd
-import numpy as np
 
 
 from exfi.io.gfa1 import \

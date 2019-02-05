@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 
 from exfi.io.bed import \
-    BED3_COLS, BED3_DTYPES, \
+    BED3_COLS, \
     BED4_COLS, BED4_DTYPES
 
 BED3_EMPTY_FN = "tests/io/empty.bed"

@@ -43,7 +43,6 @@ def gff3_to_bed3(gff3_in, mode="ensembl"):
         return exons
 
     logging.info('Extracting the transcript ids')
-    assert mode in {'gmap', 'ensembl'}, 'Error: unknown mode'
     if mode == "gmap":
         logging.info("gff3 comes from gmap")
         exons = raw[raw['type'] == 'cDNA_match'].drop(columns='type')

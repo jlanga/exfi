@@ -85,12 +85,12 @@ def classify(bed3_true, bed3_pred, fraction=0.95):
     logging.info("Dumping predictions to disk")
     bed3_true\
         .sort_values(by=['chrom', 'chrom_start', 'chrom_end'])\
-        .to_csv(path_or_buf=bed3_true_fn, sep='\t', index=False)
+        .to_csv(path_or_buf=bed3_true_fn, sep='\t', index=False, header=False)
 
     logging.info('Dumping true values to disk')
     bed3_pred\
         .sort_values(by=['chrom', 'chrom_start', 'chrom_end'])\
-        .to_csv(path_or_buf=bed3_pred_fn, sep='\t', index=False)
+        .to_csv(path_or_buf=bed3_pred_fn, sep='\t', index=False, header=False)
 
     logging.info('Computing true positives')
     true_positives_df = bedtools_intersect(

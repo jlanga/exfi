@@ -18,7 +18,6 @@ setup(
     install_requires=[
         'numpy',
         'Biopython',
-        'networkx',
         'pandas',
     ],
     long_description=open('README.md').read(),

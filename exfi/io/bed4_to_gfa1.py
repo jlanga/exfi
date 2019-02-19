@@ -17,6 +17,43 @@ from exfi.io.gfa1 import \
 from exfi.io.masking import \
     mask
 
+
+
+def compute_old2new(bed4, transcriptome_dict):
+    """Identify exons that have the exact same sequence
+
+    Parameters
+    ----------
+    bed4 : pd.DataFrame
+        BED4 dataframe with the exon name and coordinates
+    transcriptome_dict : dict
+        {transcript_id : sequence}
+
+    Output:
+    old2new : dict
+        {old_id : new_id}
+    """
+    seq2node_df = bed4_to_node2sequence(
+        bed4=bed4, transcriptome_dict=transcriptome_dict
+    )\
+    [['name', 'sequence']]\
+
+    seq2node_dict = {}
+    for name, sequence in seq2node_df.values.tolist():
+        if sequence not in seq2node_dict:
+            seq2node_dict[sequence] = [name]
+        else:
+            seq2node_dict[sequence].append(name)
+
+    old2new = {}
+    for i, old_nodes in enumerate(seq2node_dict.values()):
+        new_node = f"EXON{i:08}"
+        for old_node in old_nodes:
+            old2new[old_node] = new_node
+
+    return old2new
+
+
 def compute_header():
     """Write GFA1 header"""
     logging.info('Computing the header')
@@ -100,24 +137,49 @@ def compute_paths(bed4):
     return paths
 
 
-def bed4_to_gfa1(gfa1_fn, bed4, transcriptome_dict, masking='none'):
-    """Convert the BED4 dataframe into a GFA1 file"""
+def bed4_to_gfa1(gfa1_fn, bed4, transcriptome_dict, masking='none', collapse=False):
+    """Convert the BED4 dataframe into a GFA1 file
+
+    Parameters
+    -------
+    gfa1_fn : str
+        where to store the GFA1
+    transcriptome : dict
+        dict of {transcript_id : sequence} with the transcritpome
+    masking : str
+        whether to not mask ("none"), soft mask ("soft") or hard mask ("hard")
+        the overlaps between predicted exons
+    collapse : bool
+        whether to merge or exons by sequence
+    """
+
+    if collapse:
+        logging.info('Merging exons by sequence')
+        old2new = compute_old2new(bed4=bed4, transcriptome_dict=transcriptome_dict)
+        bed4['name'] = bed4.name.map(lambda x: old2new[x])
+        del old2new
+
     with open(gfa1_fn, "w", 1024**3) as gfa:
         logging.info('Writing the header')
         compute_header()\
             .to_csv(gfa, sep="\t", header=False, index=False)
+
     with open(gfa1_fn, "a", 1024**3) as gfa:
         logging.info('Writing the segments')
         compute_segments(
             bed4=bed4, transcriptome_dict=transcriptome_dict, masking=masking
             )\
+            .drop_duplicates()\
             .to_csv(gfa, sep="\t", header=False, index=False)
         logging.info('Writing the links')
         compute_links(bed4=bed4)\
+            .drop_duplicates()\
             .to_csv(gfa, sep="\t", header=False, index=False)
         logging.info('Writing the containments')
         compute_containments(bed4=bed4)\
+            .drop_duplicates()\
             .to_csv(gfa, sep="\t", header=False, index=False)
         logging.info('Writing the paths')
         compute_paths(bed4=bed4)\
+            .drop_duplicates()\
             .to_csv(gfa, sep="\t", header=False, index=False)

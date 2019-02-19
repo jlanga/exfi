@@ -46,6 +46,19 @@ build_splice_graph \
     --correct \
     --polish
 
+build_splice_graph \
+    --input-fasta data/transcript.fa \
+    --input-bloom results/test_k27_m500M_l1.bloom \
+    --kmer-size 27 \
+    --max-fp-bases 5 \
+    --output-gfa results/test_correct_polish_collapse.gfa \
+    --verbose \
+    --threads 4 \
+    --correct \
+    --polish \
+    --collapse
+
+
 gfa1_to_fasta \
     --input-gfa results/test.gfa \
     --output-fasta results/test_exons.fa \
@@ -55,6 +68,19 @@ gfa1_to_fasta \
 gfa1_to_fasta \
     --input-gfa results/test.gfa \
     --output-fasta results/test_gapped.fa \
+    --hard-mask-overlaps \
+    --gapped-transcript \
+    --verbose
+
+gfa1_to_fasta \
+    --input-gfa results/test_correct_polish_collapse.gfa \
+    --output-fasta results/test_exons_collapsed.fa \
+    --soft-mask-overlaps \
+    --verbose
+
+gfa1_to_fasta \
+    --input-gfa results/test_correct_polish_collapse.gfa \
+    --output-fasta results/test_gapped_collapsed.fa \
     --hard-mask-overlaps \
     --gapped-transcript \
     --verbose

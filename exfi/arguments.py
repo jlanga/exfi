@@ -14,6 +14,7 @@ DEFAULT_MAX_FP_BASES = 5
 DEFAULT_MAX_OVERLAP = 10
 DEFAULT_MAX_GAP_SIZE = 10
 DEFAULT_NUMBER_OF_NS = 100
+DEFAULT_COLLAPSE = False
 
 EPILOG = 'Jorge Langa. Send issues and pull requests to github.com/jlanga/exfi'
 
@@ -200,7 +201,8 @@ def add_collapse(parser):
         '-c',
         help='Collapse splice graph by exon sequence [False]',
         dest='collapse',
-        action="store_true"
+        action="store_true",
+        default=DEFAULT_COLLAPSE
     )
 
 
@@ -395,6 +397,7 @@ def build_splice_graph_args():
     add_correct(parser)
     add_polish(parser)
     add_threads(parser)
+    add_collapse(parser)
     return parser
 
 

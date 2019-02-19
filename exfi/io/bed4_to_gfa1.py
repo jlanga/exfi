@@ -156,6 +156,7 @@ def bed4_to_gfa1(gfa1_fn, bed4, transcriptome_dict, masking='none', collapse=Fal
     if collapse:
         logging.info('Merging exons by sequence')
         old2new = compute_old2new(bed4=bed4, transcriptome_dict=transcriptome_dict)
+        bed4 = bed4.copy()
         bed4['name'] = bed4.name.map(lambda x: old2new[x])
         del old2new
 

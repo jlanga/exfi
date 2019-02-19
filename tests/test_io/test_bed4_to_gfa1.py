@@ -31,7 +31,9 @@ from tests.io.gfa1 import \
     CONTAINMENTS_EMPTY, CONTAINMENTS_SIMPLE, CONTAINMENTS_COMPLEX, \
     PATHS_EMPTY, PATHS_SIMPLE, PATHS_COMPLEX, \
     GFA1_EMPTY_FN, GFA1_SIMPLE_FN, GFA1_COMPLEX_FN, \
-    GFA1_COMPLEX_SOFT_FN, GFA1_COMPLEX_HARD_FN
+    GFA1_COMPLEX_SOFT_FN, GFA1_COMPLEX_HARD_FN, \
+    GFA1_COMPLEX_COLLAPSED_FN, \
+    GFA1_COMPLEX_COLLAPSED_SOFT_FN, GFA1_COMPLEX_COLLAPSED_HARD_FN
 
 
 
@@ -168,7 +170,8 @@ class TestBED4TOGFA1(TestCase):
         bed4_to_gfa1(
             gfa1_fn=tmp_file,
             bed4=BED4_EMPTY,
-            transcriptome_dict=TRANSCRIPTOME_EMPTY_DICT
+            transcriptome_dict=TRANSCRIPTOME_EMPTY_DICT,
+            collapse=False
         )
         self.assertTrue(filecmp.cmp(tmp_file, GFA1_EMPTY_FN))
         os.remove(tmp_file)
@@ -180,7 +183,8 @@ class TestBED4TOGFA1(TestCase):
         bed4_to_gfa1(
             gfa1_fn=tmp_file,
             bed4=BED4_SIMPLE,
-            transcriptome_dict=TRANSCRIPTOME_SIMPLE_DICT
+            transcriptome_dict=TRANSCRIPTOME_SIMPLE_DICT,
+            collapse=False
         )
         self.assertTrue(filecmp.cmp(tmp_file, GFA1_SIMPLE_FN))
         os.remove(tmp_file)
@@ -192,7 +196,8 @@ class TestBED4TOGFA1(TestCase):
         bed4_to_gfa1(
             gfa1_fn=tmp_file,
             bed4=BED4_COMPLEX,
-            transcriptome_dict=TRANSCRIPTOME_COMPLEX_DICT
+            transcriptome_dict=TRANSCRIPTOME_COMPLEX_DICT,
+            collapse=False
         )
         self.assertTrue(filecmp.cmp(tmp_file, GFA1_COMPLEX_FN))
         os.remove(tmp_file)
@@ -218,12 +223,53 @@ class TestBED4TOGFA1(TestCase):
             gfa1_fn=tmp_file,
             bed4=BED4_COMPLEX,
             transcriptome_dict=TRANSCRIPTOME_COMPLEX_DICT,
-            masking='hard'
+            masking='hard',
+            collapse=False
         )
         self.assertTrue(filecmp.cmp(tmp_file, GFA1_COMPLEX_HARD_FN))
         os.remove(tmp_file)
 
+    def test_complex_collapse(self):
+        """exfi.io.bed4_to_gfa1.bed4_to_gfa1: complex collapsed case"""
+        tmp_file = mkstemp()[1]
+        print(tmp_file)
+        bed4_to_gfa1(
+            gfa1_fn=tmp_file,
+            bed4=BED4_COMPLEX,
+            transcriptome_dict=TRANSCRIPTOME_COMPLEX_DICT,
+            collapse=True
+        )
+        self.assertTrue(filecmp.cmp(tmp_file, GFA1_COMPLEX_COLLAPSED_FN))
 
+    def test_complex_collapse(self):
+        """exfi.io.bed4_to_gfa1.bed4_to_gfa1: complex collapsed and soft masked
+        case"""
+        tmp_file = mkstemp()[1]
+        print(tmp_file)
+        bed4_to_gfa1(
+            gfa1_fn=tmp_file,
+            bed4=BED4_COMPLEX,
+            transcriptome_dict=TRANSCRIPTOME_COMPLEX_DICT,
+            masking='soft',
+            collapse=True
+        )
+        self.assertTrue(filecmp.cmp(tmp_file, GFA1_COMPLEX_COLLAPSED_SOFT_FN))
+        os.remove(tmp_file)
+
+    def test_complex_hard_collapse(self):
+        """exfi.io.bed4_to_gfa1.bed4_to_gfa1: complex collapsed and hard masked
+        case"""
+        tmp_file = mkstemp()[1]
+        print(tmp_file)
+        bed4_to_gfa1(
+            gfa1_fn=tmp_file,
+            bed4=BED4_COMPLEX,
+            transcriptome_dict=TRANSCRIPTOME_COMPLEX_DICT,
+            masking='hard',
+            collapse=True
+        )
+        self.assertTrue(filecmp.cmp(tmp_file, GFA1_COMPLEX_COLLAPSED_HARD_FN))
+        os.remove(tmp_file)
 
 
 if __name__ == '__main__':

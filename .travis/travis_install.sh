@@ -6,14 +6,11 @@ conda config --add channels conda-forge
 conda config --add channels defaults
 conda config --add channels bioconda
 conda install --yes \
-    abyss \
+    abyss=2.0.1 \
     biopython \
     bedtools \
-    networkx \
     pandas \
-    pip \
-    natsort \
-    pathos
+    pip
 conda clean --all --yes
 
 pushd /opt/

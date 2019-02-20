@@ -50,12 +50,10 @@ def bedtools_intersect(bed1_fn, bed2_fn, additional_flags=None):
     command = ["bedtools", "intersect", "-a", bed1_fn, "-b", bed2_fn] + \
         additional_flags
     process = Popen(command, stdout=PIPE, stderr=PIPE)
-    bed3 = pd.DataFrame(
-        data=[
-            line.decode().strip().split()
-            for line in process.stdout.readlines()
-        ]
-    )
+    data = [
+        line.decode().strip().split()
+        for line in process.stdout.readlines()
+    ]
     process.stdout.close()
     status_code = process.wait()
     if status_code != 0:
@@ -63,7 +61,7 @@ def bedtools_intersect(bed1_fn, bed2_fn, additional_flags=None):
             "ERROR: something went wrong:\n" + \
             ",".join([x.decode() for x in process.stderr.readlines()])
         )
-    return bed3
+    return data
 
 
 
@@ -93,32 +91,35 @@ def classify(bed3_true, bed3_pred, fraction=0.95):
         .to_csv(path_or_buf=bed3_pred_fn, sep='\t', index=False, header=False)
 
     logging.info('Computing true positives')
-    true_positives_df = bedtools_intersect(
-        bed1_fn=bed3_pred_fn,
-        bed2_fn=bed3_true_fn,
-        additional_flags=['-f', f'{fraction}', '-r', '-wo']
-    )\
-    .rename(columns={i: j for i, j in enumerate(TP_DF_COLS)})\
-    .astype(dtype=TP_DF_DTYPES)\
+    true_positives_df = pd.DataFrame(
+        data=bedtools_intersect(
+            bed1_fn=bed3_pred_fn,
+            bed2_fn=bed3_true_fn,
+            additional_flags=['-f', f'{fraction}', '-r', '-wo']
+        ),
+        columns=TP_DF_COLS + [6]
+    ).astype(dtype=TP_DF_DTYPES)\
     .drop(columns=6)
 
     logging.info('Computing false positives')
-    false_positives_df = bedtools_intersect(
-        bed1_fn=bed3_pred_fn,
-        bed2_fn=bed3_true_fn,
-        additional_flags=['-f', f'{fraction}', '-r', '-v']
-    )\
-    .rename(columns={i: j for i, j in enumerate(BED3_COLS)})\
-    .astype(BED3_DTYPES)
+    false_positives_df = pd.DataFrame(
+        data=bedtools_intersect(
+            bed1_fn=bed3_pred_fn,
+            bed2_fn=bed3_true_fn,
+            additional_flags=['-f', f'{fraction}', '-r', '-v'],
+        ),
+        columns=BED3_COLS
+    ).astype(BED3_DTYPES)
 
     logging.info('Computing false negatives')
-    false_negatives_df = bedtools_intersect(
-        bed1_fn=bed3_true_fn,
-        bed2_fn=bed3_pred_fn,
-        additional_flags=['-f', f'{fraction}', '-r', '-v']
-    )\
-    .rename(columns={i: j for i, j in enumerate(BED3_COLS)})\
-    .astype(BED3_DTYPES)
+    false_negatives_df = pd.DataFrame(
+        data=bedtools_intersect(
+            bed1_fn=bed3_true_fn,
+            bed2_fn=bed3_pred_fn,
+            additional_flags=['-f', f'{fraction}', '-r', '-v']
+        ),
+        columns=BED3_COLS
+    ).astype(BED3_DTYPES)
 
     remove(bed3_pred_fn)
     remove(bed3_true_fn)
@@ -306,14 +307,3 @@ def compute_stats_per_base(classification):
     .astype(STATS_DTYPES)
 
     return stats
-
-#
-# def compare_gfa1_to_gff3(
-#     input_gfa1, input_gff3, gff3_type='ensembl', fraction=.95):
-#     """Compare a GFA1 splice graph against a GFF3 annotation of a genome
-#
-#     gff3_type denotes the source of the GFF3 file (ensembl or gmap)
-#     fraction stands for the minimum simmilarity to consider two exons equal
-#     """
-#     bed3_pred = gfa1_to_bed4(input_gfa1)
-#     bed3_true = gff3_to_bed(input_gff3, )

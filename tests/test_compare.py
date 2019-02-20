@@ -32,8 +32,8 @@ class TestBedtoolsIntersect(TestCase):
     def test_empty(self):
         """exfi.compare.bedtools_intersect: empty case"""
         observed = bedtools_intersect(BED3_EMPTY_FN, BED3_EMPTY_FN, [])
-        print('Observed:', observed.values, 'Expected:', BED3_EMPTY.values, sep='\n')
-        self.assertEqual(observed.values.tolist(), BED3_EMPTY.values.tolist())
+        print('Observed:', observed, 'Expected:', BED3_EMPTY.values, sep='\n')
+        self.assertEqual(observed, [])
 
     def test_tp(self):
         """exfi.compare.bedtools_intersect: true positive case"""
@@ -42,8 +42,8 @@ class TestBedtoolsIntersect(TestCase):
             bed2_fn=BED3_TRUE_FN,
             additional_flags=['-f', '0.99', '-r', '-wo']
         )
-        print('Observed:', observed.values.tolist(), 'Expected:', TP_DF, sep='\n')
-        self.assertTrue(observed.equals(TP_DF))
+        print('Observed:', observed, 'Expected:', TP_DF, sep='\n')
+        self.assertEqual(observed, TP_DF.values.tolist())
 
     def test_fp(self):
         """exfi.compare.bedtools_intersect: false positive case"""
@@ -53,7 +53,7 @@ class TestBedtoolsIntersect(TestCase):
             additional_flags=['-f', '0.99', '-r', '-v']
         )
         print('Observed:', observed, 'Expected:', FP_DF, sep='\n')
-        self.assertTrue(observed.equals(FP_DF))
+        self.assertEqual(observed, FP_DF.values.tolist())
 
     def test_fn(self):
         """exfi.compare.bedtools_intersect: false negative case"""
@@ -63,7 +63,7 @@ class TestBedtoolsIntersect(TestCase):
             additional_flags=['-f', '0.99', '-r', '-v']
         )
         print('Observed:', observed, 'Expected:', FN_DF, sep='\n')
-        self.assertTrue(observed.equals(FN_DF))
+        self.assertEqual(observed, FN_DF.values.tolist())
 
 
 

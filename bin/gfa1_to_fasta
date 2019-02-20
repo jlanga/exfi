@@ -38,5 +38,3 @@ if __name__ == "__main__":
         number_of_ns=ARGS['number_of_ns'],
         transcripts=ARGS['gapped_transcript']
     )
-
-    logging.info("Done!")

@@ -241,7 +241,7 @@ class TestBED4TOGFA1(TestCase):
         )
         self.assertTrue(filecmp.cmp(tmp_file, GFA1_COMPLEX_COLLAPSED_FN))
 
-    def test_complex_collapse(self):
+    def test_complex_soft_collapse(self):
         """exfi.io.bed4_to_gfa1.bed4_to_gfa1: complex collapsed and soft masked
         case"""
         tmp_file = mkstemp()[1]

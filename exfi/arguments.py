@@ -433,6 +433,7 @@ def compare_to_gff_args():
     add_common_args(parser)
     add_input_splice_graph(parser)
     add_input_gff3(parser)
+    add_input_fasta(parser)
     add_gff3_type(parser)
     add_input_fraction(parser)
 

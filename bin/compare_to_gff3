@@ -13,6 +13,7 @@ from exfi.io.bed import BED3_COLS
 from exfi.io.gfa1_to_bed import gfa1_to_bed4
 from exfi.io.gff3_to_bed import gff3_to_bed3
 from exfi.io.read_bed import read_bed3
+from exfi.io.fasta_to_dict import fasta_to_dict
 from exfi.compare import \
     classify, compute_stats_per_base, compute_stats_per_exon
 
@@ -42,7 +43,12 @@ if __name__ == '__main__':
                 file=ARGS['input_splice_graph'])
         )
 
+    # Process GFF3
     BED3_TRUE = gff3_to_bed3(ARGS['input_gff3'], mode='ensembl')
+
+    # Filter out transcripts not present in the reference
+    TRANSCRIPTS = fasta_to_dict(ARGS['input_fasta']).keys()
+    BED3_TRUE = BED3_TRUE[not BED3_TRUE.chrom.isin(TRANSCRIPTS)]
 
     CLASSIFICATION = classify(BED3_TRUE, BED3_PRED, fraction=ARGS['fraction'])
 

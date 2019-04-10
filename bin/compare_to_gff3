@@ -47,7 +47,7 @@ if __name__ == '__main__':
     BED3_TRUE = gff3_to_bed3(ARGS['input_gff3'], mode='ensembl')
 
     # Filter out transcripts not present in the reference
-    TRANSCRIPTS = fasta_to_dict(ARGS['input_fasta']).keys()
+    TRANSCRIPTS = fasta_to_dict(ARGS['fasta']).keys()
     BED3_TRUE = BED3_TRUE[not BED3_TRUE.chrom.isin(TRANSCRIPTS)]
 
     CLASSIFICATION = classify(BED3_TRUE, BED3_PRED, fraction=ARGS['fraction'])

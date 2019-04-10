@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     # Filter out transcripts not present in the reference
     TRANSCRIPTS = fasta_to_dict(ARGS['fasta']).keys()
-    BED3_TRUE = BED3_TRUE[not BED3_TRUE.chrom.isin(TRANSCRIPTS)]
+    BED3_TRUE = BED3_TRUE[~BED3_TRUE.chrom.isin(TRANSCRIPTS)]
 
     CLASSIFICATION = classify(BED3_TRUE, BED3_PRED, fraction=ARGS['fraction'])
 

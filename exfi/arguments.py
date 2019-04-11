@@ -423,8 +423,8 @@ def gfa1_to_fasta_args():
 def compare_to_gff_args():
     """Create the compare_gfa_to_gff parser"""
     parser = argparse.ArgumentParser(
-        usage='compare_to_gff3 -i splice_graph.gfa -t annotation.gff3 -m '
-              'ensembl -f 0.95',
+        usage='compare_to_gff3 -i splice_graph.gfa -f transcriptome.fa '
+              '-t annotation.gff3 -m ensembl -s 0.95',
         description=\
             'Compare a splice graph in GFA1/BED/GFF3 format against a genome annotation '
             'in gff3 format.',

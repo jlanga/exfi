@@ -107,3 +107,12 @@ STATS_PER_BASE = pd.DataFrame(
     columns=STATS_COLS
 )\
 .astype(STATS_DTYPES)
+
+STATS_PER_IEB = pd.DataFrame(
+    data=[[
+        30.0, 30.0, 29.0, 1.0, 1.0,
+        0.9666666666666667, 0.9666666666666667, 0.9666666666666667
+    ]],
+    columns=STATS_COLS
+)\
+.astype(STATS_DTYPES)

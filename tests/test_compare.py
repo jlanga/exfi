@@ -14,7 +14,8 @@ from exfi.compare import \
     compute_true_positive_bases, \
     compute_false_positive_bases, \
     compute_false_negative_bases, \
-    compute_stats_per_base
+    compute_stats_per_base, \
+    compute_stats_per_ieb
 
 
 from tests.compare import \
@@ -22,7 +23,7 @@ from tests.compare import \
     BED3_EMPTY, BED3_TRUE, BED3_PRED, \
     TP_DF, FP_DF, FN_DF, \
     CLASSIFICATION, \
-    STATS_PER_EXON, STATS_PER_BASE
+    STATS_PER_EXON, STATS_PER_BASE, STATS_PER_IEB
 
 
 
@@ -174,6 +175,17 @@ class TestComputeStatsPerBase(TestCase):
         print(observed.values.tolist())
         print(STATS_PER_BASE.values.tolist())
         self.assertTrue(observed.equals(STATS_PER_BASE))
+
+
+class TestComputeStatsPerIEB(TestCase):
+    """Tests for exfi.compare.compute_stats_per_ieb"""
+
+    def test_complex(self):
+        """exfi.compare.compute_stats_per_ieb: some exons"""
+        observed = compute_stats_per_ieb(BED3_TRUE, BED3_PRED, 2)
+        print(observed.values.tolist())
+        print(STATS_PER_IEB.values.tolist())
+        self.assertTrue(observed.equals(STATS_PER_IEB))
 
 
 

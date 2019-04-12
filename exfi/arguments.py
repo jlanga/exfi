@@ -346,6 +346,17 @@ def add_input_fraction(parser):
         dest='fraction'
     )
 
+def add_max_distance(parser):
+    """Add the maximum distance to IEB"""
+    parser.add_argument(
+        '--max-distance-to-ieb', '-b',
+        type=int,
+        help='Maximum distance to an IEB to consider as same',
+        default=10,
+        metavar='INT',
+        dest='max_distance'
+    )
+
 
 def build_baited_bloom_filter_args():
     """Create the parser for build_baited_bloom_filter"""
@@ -436,5 +447,6 @@ def compare_to_gff_args():
     add_input_fasta(parser)
     add_gff3_type(parser)
     add_input_fraction(parser)
+    add_max_distance(parser)
 
     return parser

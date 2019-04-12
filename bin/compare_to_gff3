@@ -7,6 +7,8 @@ a GFA1 prediction from exfi
 import logging
 import sys
 
+import pandas as pd
+
 from exfi.arguments import compare_to_gff_args
 from exfi.logger import set_up_logger
 from exfi.io.bed import BED3_COLS
@@ -15,7 +17,8 @@ from exfi.io.gff3_to_bed import gff3_to_bed3
 from exfi.io.read_bed import read_bed3
 from exfi.io.fasta_to_dict import fasta_to_dict
 from exfi.compare import \
-    classify, compute_stats_per_base, compute_stats_per_exon
+    classify, \
+    compute_stats_per_base, compute_stats_per_exon, compute_stats_per_ieb
 
 
 if __name__ == '__main__':
@@ -56,12 +59,19 @@ if __name__ == '__main__':
 
     EXON_STATS = compute_stats_per_exon(CLASSIFICATION)
     BASE_STATS = compute_stats_per_base(CLASSIFICATION)
+    IEB_STATS = compute_stats_per_ieb(
+        BED3_TRUE, BED3_PRED,
+        max_distance=ARGS['max_distance']
+    )
 
     EXON_STATS.insert(loc=0, column='type', value='per_exon')
-    EXON_STATS.insert(loc=1, column='fraction', value=ARGS['fraction'])
+    EXON_STATS.insert(loc=1, column='fraction/dist', value=ARGS['fraction'])
 
     BASE_STATS.insert(loc=0, column='type', value='per_base')
-    BASE_STATS.insert(loc=1, column='fraction', value=ARGS['fraction'])
+    BASE_STATS.insert(loc=1, column='fraction/dist', value=ARGS['fraction'])
 
-    EXON_STATS.to_csv(path_or_buf=sys.stdout, sep='\t', index=False)
-    BASE_STATS.to_csv(path_or_buf=sys.stdout, sep='\t', index=False)
+    IEB_STATS.insert(loc=0, column='type', value='per_ieb')
+    IEB_STATS.insert(loc=1, column='fraction/dist', value=ARGS['max_distance'])
+
+    pd.concat([EXON_STATS, BASE_STATS, IEB_STATS])\
+        .to_csv(path_or_buf=sys.stdout, sep='\t', index=False)

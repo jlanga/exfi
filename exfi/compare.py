@@ -356,8 +356,6 @@ def get_distances(bed3_true, bed3_pred):
         '-d', '-k', '1', '-t', 'first'
     ]
 
-    print(command)
-
     with open(distances_fn, 'w') as out:
         process = Popen(command, stdout=out)
         process.wait()
@@ -400,8 +398,6 @@ def compute_stats_per_ieb(true_bed3, pred_bed3, max_distance=10):
 
     fp_ieb = pred_ieb - tp_ieb
     fn_ieb = true_ieb - tp_ieb
-
-    print(tp_ieb, fp_ieb, fn_ieb)
 
     stats = pd.DataFrame(
         data=[[

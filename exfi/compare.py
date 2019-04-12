@@ -35,6 +35,20 @@ STATS_DTYPES = {
     'precision': np.float, 'recall': np.float, 'f_1': np.float
 }
 
+DISTANCES_COLS = [
+    'pred_chrom', 'pred_chrom_start', 'pred_chrom_end',
+    'true_chrom', 'true_chrom_start', 'true_chrom_end',
+    'distance'
+]
+
+DISTANCES_DTYPES = {
+    'pred_chrom': object, 'pred_chrom_start': np.int, 'pred_chrom_end': np.int,
+    'true_chrom': object, 'true_chrom_start': np.int, 'true_chrom_end': np.int,
+    'distance': np.int
+}
+
+
+
 def bedtools_intersect(bed1_fn, bed2_fn, additional_flags=None):
     """Bedtools intersect wrapper
 
@@ -301,6 +315,97 @@ def compute_stats_per_base(classification):
             compute_precision(tp_bases, fp_bases),
             compute_recall(tp_bases, fn_bases),
             compute_f_1(tp_bases, fp_bases, fn_bases)
+        ]],
+        columns=STATS_COLS
+    )\
+    .astype(STATS_DTYPES)
+
+    return stats
+
+
+
+def get_starts(bed3):
+    """Get the BED coordinates of the first nucleotide of each record."""
+    starts = bed3.copy()
+    starts['chrom_end'] = starts['chrom_start'] + 1
+    return starts.sort_values(by=['chrom', 'chrom_start'])
+
+
+
+def get_ends(bed3):
+    """Get the BED coordinates of the last nucleotide of each record."""
+    ends = bed3.copy()
+    ends['chrom_start'] = ends['chrom_end'] - 1
+    return ends.sort_values(by=['chrom', 'chrom_start'])
+
+
+
+def get_distances(bed3_true, bed3_pred):
+    """For every record in bed3_pred, get the closest record and distance to
+    bed3_true."""
+    bed3_true_fn = mkstemp()[1]
+    bed3_pred_fn = mkstemp()[1]
+    distances_fn = mkstemp()[1]
+
+    bed3_true.to_csv(bed3_true_fn, sep='\t', index=False, header=False)
+    bed3_pred.to_csv(bed3_pred_fn, sep='\t', index=False, header=False)
+
+    command = [
+        'bedtools', 'closest',
+        '-a', bed3_pred_fn, '-b', bed3_true_fn,
+        '-d', '-k', '1', '-t', 'first'
+    ]
+
+    with open(distances_fn, 'w') as out:
+        process = Popen(command, stdout=out)
+        process.wait()
+
+    distances = pd.read_csv(
+        distances_fn,
+        sep='\t',
+        names=DISTANCES_COLS
+    )\
+    .astype(DISTANCES_DTYPES)
+
+    remove(bed3_true_fn)
+    remove(bed3_pred_fn)
+    remove(distances_fn)
+
+    return distances
+
+
+
+def compute_stats_per_ieb(true_bed3, pred_bed3, max_distance=10):
+    """Compute the classification stats per IEB"""
+
+    true_starts = get_starts(true_bed3)
+    true_ends = get_ends(true_bed3)
+
+    pred_starts = get_starts(pred_bed3)
+    pred_ends = get_ends(pred_bed3)
+
+    dist_start = get_distances(true_starts, pred_starts)
+    dist_end = get_distances(true_ends, pred_ends)
+
+    true_ieb = true_starts.shape[0] + true_ends.shape[0]
+    pred_ieb = pred_starts.shape[0] + pred_ends.shape[0]
+
+    tp_ieb = sum(
+        (dist_start.distance <= max_distance) & (dist_start.distance >= 0)
+    ) + sum(
+        (dist_end.distance <= max_distance) & (dist_end.distance >= 0)
+    )
+
+    fp_ieb = pred_ieb - tp_ieb
+    fn_ieb = true_ieb - tp_ieb
+
+    stats = pd.DataFrame(
+        data=[[
+            true_ieb, pred_ieb,
+            tp_ieb, fp_ieb, fn_ieb,
+            compute_precision(tp_ieb, fp_ieb),
+            compute_recall(tp_ieb, fn_ieb),
+            compute_f_1(tp_ieb, fp_ieb, fn_ieb)
         ]],
         columns=STATS_COLS
     )\

@@ -328,8 +328,8 @@ def add_gff3_type(parser):
     parser.add_argument(
         '--type-gff3', '-m',
         type=str,
-        help='Source of the GFF3 type (ensembl or gmap)',
-        choices=['ensembl', 'gmap'],
+        help='Source of the GFF3 type (ensembl, gmap, ncbi)',
+        choices=['ensembl', 'gmap', 'ncbi'],
         default='ensembl',
         metavar='STR',
         dest='gff3_type'

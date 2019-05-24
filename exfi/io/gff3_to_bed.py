@@ -49,6 +49,12 @@ def gff3_to_bed3(gff3_in, mode="ensembl"):
         exons['transcript_id'] = exons['attributes']\
             .str.split(";").str[1]\
             .str.extract(r'Name=([\w\d.-_]+)')
+    elif mode == "ncbi":
+        logging.info("gff3 comes from NCBI Genomes")
+        exons = raw[raw['type'] == 'exon'].drop(columns='type')
+        exons['transcript_id'] = exons.attributes\
+            .str.extract(r"transcript_id=([A-Za-z0-9_.]+)")
+        exons = exons.dropna()
     else:
         logging.info('gff3 comes from ensembl')
         exons = raw[raw['type'] == 'exon'].drop(columns='type')

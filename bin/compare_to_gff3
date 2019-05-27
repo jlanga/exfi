@@ -47,7 +47,7 @@ if __name__ == '__main__':
         )
 
     # Process GFF3
-    BED3_TRUE = gff3_to_bed3(ARGS['input_gff3'], mode='ensembl')
+    BED3_TRUE = gff3_to_bed3(ARGS['input_gff3'], mode=ARGS['gff3_type'])
 
     # Filter out transcripts not present in the reference
     TRANSCRIPT_IDS = fasta_to_dict(ARGS['fasta']).keys()

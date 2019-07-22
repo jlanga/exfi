@@ -49,8 +49,7 @@ popd
 4. Copy this repo and install it with `pip`:
 
 ```sh
-git clone --recursive https://github.com/jlanga/exfi.git
-pip install --user exfi
+pip install https://github.com/jlanga/exfi/archive/v1.5.6.zip
 ```
 
 If you have access to Docker, you can create a Debian container with the following command:

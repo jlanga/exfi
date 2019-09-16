@@ -32,18 +32,18 @@ conda install --yes abyss=2.0.1 bedtools biopython pandas pip
 
 3. Install `biobloomtools`
 
-You may need to use `sudo`:
+You may need to use `sudo` in the last command:
 
 ```sh
 # Install biobloomtools
-git clone --recursive https://github.com/bcgsc/biobloom.git
-pushd biobloom/ && \
+git clone --recursive https://github.com/bcgsc/biobloom.git && \
+cd biobloom/ && \
 git submodule update --init && \
+git checkout 0a42916922d42611a087d4df871e424a8907896e && \
 ./autogen.sh && \
 ./configure --prefix=/usr/local/ && \
 make -j 4 && \
-sudo make install && \
-popd
+make install
 ```
 
 4. Copy this repo and install it with `pip`:

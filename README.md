@@ -82,8 +82,8 @@ build_baited_bloom_filter \
     --bloom-size 100M \
     --levels 1 \
     --threads 4 \
-    --output-bloom results/genome_k25_m100M_l1.bf \
-    genome.fa.gz
+    --output-bloom genome_k25_m100M_l1.bf \
+    data/genome.fa.gz
 ```
 
 2. Run `build_splice_graph` to get putative exons in the transcriptome.
@@ -95,7 +95,7 @@ build_baited_bloom_filter \
 ```sh
 build_splicegraph \
     --input-fasta data/transcript.fa \
-    --input-bloom results/genome_k25_m100M_l1.bloom \
+    --input-bloom genome_k25_m100M_l1.bloom \
     --kmer 25 \
     --max-fp-bases 5 \
     --output-gfa test.gfa

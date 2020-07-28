@@ -4,6 +4,13 @@
 # exfi
 Get exons from a transcriptome and raw genomic reads using abyss-bloom and bedtools
 
+## Citation
+
+exfi was published on Ecology and Evolution
+
+> Langa J, Estonba A, Conklin D. EXFI: Exon and splice graph prediction without a reference genome.
+> Ecol Evol. 2020;00:1–14. https://doi.org/10.1002/ece3.6587
+
 ## Requirements
 
 Docker or different apt and conda packages (see installation guide).
